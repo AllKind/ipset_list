@@ -1,0 +1,243 @@
+#!/bin/bash
+
+# -----------------------------------------------------------------
+# ipset set listing wrapper script
+# -----------------------------------------------------------------
+
+# Copyright (C) 2013 AllKind (AllKind@fastest.cc)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# -----------------------------------------------------------------
+# Tested with ipset versions:
+# 6.16.1
+# -----------------------------------------------------------------
+# Examples:
+# $0                 - no args, just list set names
+# $0 -c              - show all set names and their member sum
+# $0 -t              - show all sets, but headers only
+# $0 -c -t setA      - show headers and member sum of setA
+# $0 -i setA         - show only members entries of setA
+# $0 -c -m setA setB - show members and sum of setA & setB
+# $0 -a -c -d :      - show all sets members, sum and use `:' as entry delimiter
+# $0 -a -c setA      - show all info of setA and its members sum
+# $0 -c -m -d $'\n' setA - show members and sum of setA, delim with newline
+# $0 -c -m -r -s setA    - show members resolved and sorted + sum of setA
+# -----------------------------------------------------------------
+
+# -----------------------------------------------------------------
+# Modify here
+# -----------------------------------------------------------------
+# path to ipset
+ipset="/sbin/ipset"
+
+# default delimiter character
+delim=" "
+
+# default read timeout
+TMOUT=30
+# -----------------------------------------------------------------
+
+# bash check
+if [ -z "$BASH" ]; then
+	printf "\`BASH' variable is not available. Not running bash?\n"
+	exit 1
+fi
+
+# shell setting
+set -f
+shopt -s extglob
+
+# variables
+LC_ALL=C
+version=1
+ips_version=""
+show_all=0 show_count=0 show_members=0 headers_only=0 names_only=0
+in_header=0 isolate=0 found_set=0 i=0
+declare -a arr_opts arr_par
+
+while (($#)); do # parse cmd-line options
+	case "$1" in
+		-h) printf "ipset set listing wrapper script\n"
+		   	printf "%s [-{a|c|h|i|m|n|r|s|t}] [...] [-d char] [set-name] [...]\n" "${0//*\//}"
+			exit 0
+		;;
+		-a) show_all=1 # like `ipset list', but with space as delim
+			shift
+		;;
+		-c) show_count=1 # show sum of member entries
+			shift
+		;;
+		-i) isolate=1 # show only members of a single set
+			shift
+		;;
+		-m) show_members=1 # show set members
+			shift
+		;;
+		-n) names_only=1 # only list set names
+			shift
+		;;
+		-t) headers_only=1 # show only set headers
+			shift
+		;;
+		-s|-r) arr_par[i++]="$1" # ipset sort & resolve options are passed on
+			shift
+		;;
+		-d) if [[ -z $2 ]]; then # delimiter char for separating member entries
+				printf "delim character is missing\n" >&2
+				exit 2
+			else
+				if ((${#2} > 1)); then
+					printf "only one character is allowed as delim\n" >&2
+					exit 2
+				fi
+				delim="$2"
+				shift 2
+			fi
+		;;
+		-o) if [[ $2 != plain ]]; then
+				printf "only plain output is supported\n" >&2
+				exit 2
+			else
+				shift 2
+			fi
+		;;
+		-\!|-f) printf "unsupported option: \`$1'\n" >&2
+			exit 2
+		;;
+		-v) printf "%s version %s\n" "${0//*\//}" "$version"
+			exit 0
+		;;
+		*) break
+	esac
+done
+
+# check for ipset program and version
+[[ -x ${ipset:=/sbin/ipset} ]] || {
+	printf "ipset binary \`%s' does not exist, or is not executable. check \`ipset' variable.\n" "$ipset" >&2
+	exit 1
+}
+ips_version="$("$ipset" --version)"
+ips_version="${ips_version#ipset v}"
+ips_version="${ips_version%%.*}"
+if [[ $ips_version != +([[:digit:]]) ]]; then
+	printf "failed retrieving ipset version. expected digits, got: \`%s'.\n" "$ips_version" >&2
+	exit 1
+fi
+if ((ips_version < 6)); then
+	printf "found version \`%s' - ipset versions from 6.x and upwards are supported\n" "$ips_version" >&2
+	exit 1
+fi
+
+# option logic
+if ((names_only && headers_only)); then
+	printf "options -n and -t are mutually exclusive\n" >&2
+	exit 2
+elif ((headers_only)); then
+	if ((show_members || show_all || isolate)); then
+		printf "options -t and -a|-i|-m are mutually exclusive\n" >&2
+		exit 2
+	fi
+elif ((names_only)); then
+	if ((show_count || show_members || show_all || isolate)); then
+		printf "options -n and -a|-c|-i|-m are mutually exclusive\n" >&2
+		exit 2
+	fi
+	# raw ipset output
+	"$ipset" list -n
+	exit $?
+fi
+if ((isolate)); then
+	if ((show_count || show_all)); then
+		printf "options -i and -a|-c are mutually exclusive\n" >&2
+		exit 2
+	fi
+fi
+
+# sets to work on (no arg means all sets)
+i=0
+if [[ $1 ]]; then
+	if ((isolate)); then
+		if (($# != 1)); then
+			printf "option -i is only valid for a single set\n" >&2
+			exit 2
+		fi
+	fi
+	arr_opts=("$@")
+else
+	if ((isolate)); then
+		printf "option -i is only valid for a single set\n" >&2
+		exit 2
+	fi
+	while IFS=$'\n' read -r; do
+		arr_opts[i++]="$REPLY"
+	done < <("$ipset" list -n)
+	i=0
+fi
+
+# read sets
+for x in "${!arr_opts[@]}"; do found_set=0
+	while read -r; do
+		case "$REPLY" in
+			"") : ;;
+			Name:*) # header opened
+				if ((in_header)); then
+					printf "unexpected entry: \`%s' - header not closed?\n" "$REPLY" >&2
+					exit 1
+				fi
+				i=0 in_header=1 found_set=1
+				if ! ((isolate)); then
+					printf "\n%s\n" "$REPLY"
+				fi
+			;;
+			Members:*) # closes header (if not `ipset -t')
+				if ! ((in_header)); then
+					printf "unexpected entry: \`%s' - header not opened?\n" "$REPLY" >&2
+					exit 1
+				fi
+				in_header=0
+				if ((show_all)); then
+					printf "%s\n" "$REPLY"
+				fi
+			;;
+			*)
+				if ((found_set)); then
+					if ((in_header)); then
+						if ((headers_only || show_all)); then
+							printf "%s\n" "$REPLY"
+						fi
+					else
+						if ((headers_only && show_count == 0)); then
+							break # nothing more to do for this set
+						elif ((show_members || show_all || isolate)); then
+							printf "%s$delim" "$REPLY"
+						fi
+						let i+=1
+					fi
+				else
+					printf "no set opened by \`Name:'. unexpected entry \`%s'.\n" "$REPLY" >&2
+					exit 1
+				fi
+		esac
+	done < <("$ipset" list "${arr_opts[x]}" "${arr_par[@]}")
+	if ((found_set)); then
+		if ((show_members || show_all || isolate)) && [[ $delim != $'\n' ]]; then
+			printf "\n"
+		fi
+		if ((show_count)); then
+			printf "Member count: %d\n" $i
+		fi
+	fi
+done
+
