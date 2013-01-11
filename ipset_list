@@ -41,10 +41,10 @@
 # -----------------------------------------------------------------
 # Modify here
 # -----------------------------------------------------------------
-# path to ipset
+# path to ipset. defaults to `/sbin/ipset' if unset.
 ipset="/sbin/ipset"
 
-# default delimiter character
+# default delimiter character. defaults to whitespace if unset.
 delim=" "
 
 # default read timeout
@@ -222,7 +222,7 @@ for x in "${!arr_opts[@]}"; do found_set=0
 						if ((headers_only && show_count == 0)); then
 							break # nothing more to do for this set
 						elif ((show_members || show_all || isolate)); then
-							printf "%s$delim" "$REPLY"
+							printf "%s${delim:= }" "$REPLY"
 						fi
 						let i+=1
 					fi
