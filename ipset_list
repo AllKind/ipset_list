@@ -57,7 +57,7 @@ fi
 
 # shell setting
 set -f
-shopt -s extglob
+#shopt -s extglob
 
 # variables
 LC_ALL=C
