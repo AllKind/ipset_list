@@ -2,6 +2,8 @@
 
 # -----------------------------------------------------------------
 # ipset set listing wrapper script
+#
+# https://github.com/AllKind/ipset_list
 # -----------------------------------------------------------------
 
 # Copyright (C) 2013 AllKind (AllKind@fastest.cc)
@@ -55,9 +57,8 @@ if [ -z "$BASH" ]; then
 	exit 1
 fi
 
-# shell setting
+# shell settings
 set -f
-#shopt -s extglob
 
 # variables
 LC_ALL=C
