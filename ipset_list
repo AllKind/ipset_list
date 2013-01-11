@@ -62,7 +62,7 @@ set -f
 
 # variables
 LC_ALL=C
-version=1
+version=1.1
 ips_version=""
 show_all=0 show_count=0 show_members=0 headers_only=0 names_only=0
 in_header=0 isolate=0 found_set=0 i=0
