@@ -61,7 +61,7 @@ fi
 set -f
 
 # variables
-LC_ALL=C
+export LC_ALL=C
 version=1.1
 ips_version=""
 show_all=0 show_count=0 show_members=0 headers_only=0 names_only=0
@@ -74,7 +74,7 @@ while (($#)); do # parse cmd-line options
 		   	printf "%s [-{a|c|h|i|m|n|r|s|t}] [...] [-d char] [set-name] [...]\n" "${0//*\//}"
 			exit 0
 		;;
-		-a) show_all=1 # like `ipset list', but with space as delim
+		-a) show_all=1 # like `ipset list', but with $delim as delim
 			shift
 		;;
 		-c) show_count=1 # show sum of member entries
@@ -192,7 +192,7 @@ for x in "${!arr_opts[@]}"; do found_set=0
 	while read -r; do
 		case "$REPLY" in
 			"") : ;;
-			Name:*) # header opened
+			Name:*) # header opened (set found)
 				if ((in_header)); then
 					printf "unexpected entry: \`%s' - header not closed?\n" "$REPLY" >&2
 					exit 1
@@ -200,6 +200,10 @@ for x in "${!arr_opts[@]}"; do found_set=0
 				i=0 in_header=1 found_set=1
 				if ! ((isolate)); then
 					printf "\n%s\n" "$REPLY"
+					if ((headers_only == 0 && show_members == 0 && show_all == 0 && show_count == 0)); then
+						in_header=0 found_set=0
+						break # nothing to show but the names
+					fi
 				fi
 			;;
 			Members:*) # closes header (if not `ipset -t')
@@ -220,6 +224,7 @@ for x in "${!arr_opts[@]}"; do found_set=0
 						fi
 					else
 						if ((headers_only && show_count == 0)); then
+							found_set=0
 							break # nothing more to do for this set
 						elif ((show_members || show_all || isolate)); then
 							printf "%s${delim:= }" "$REPLY"
