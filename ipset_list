@@ -25,6 +25,17 @@
 # Tested with ipset versions:
 # 6.16.1
 # -----------------------------------------------------------------
+
+# -----------------------------------------------------------------
+# Features (in addition to the native ipset options):
+# - Calculate sum of set members.
+# - Supress listing of headers.
+# - List only members of a specified set.
+# - Choose a delimiter character for separating members.
+# - Operate on a single, selected, or all sets.
+# -----------------------------------------------------------------
+
+# -----------------------------------------------------------------
 # Examples:
 # $0                 - no args, just list set names
 # $0 -c              - show all set names and their member sum
@@ -59,10 +70,12 @@ fi
 
 # shell settings
 set -f
+set +o posix
+set +u
 
 # variables
 export LC_ALL=C
-version=1.2
+version=1.3
 ips_version=""
 show_all=0 show_count=0 show_members=0 headers_only=0 names_only=0
 in_header=0 isolate=0 found_set=0 i=0
@@ -200,7 +213,7 @@ for x in "${!arr_opts[@]}"; do found_set=0
 				i=0 in_header=1 found_set=1
 				if ! ((isolate)); then
 					printf "\n%s\n" "$REPLY"
-					if ((headers_only == 0 && show_members == 0 && show_all == 0 && show_count == 0)); then
+					if ! ((headers_only || show_members || show_all || show_count)); then
 						in_header=0 found_set=0
 						break # nothing to show but the names
 					fi
