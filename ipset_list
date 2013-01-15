@@ -32,6 +32,7 @@
 # - Supress listing of headers.
 # - List only members of a specified set.
 # - Choose a delimiter character for separating members.
+# - Match entries using a globbing or regex pattern.
 # - Operate on a single, selected, or all sets.
 # -----------------------------------------------------------------
 
@@ -47,6 +48,7 @@
 # $0 -a -c setA      - show all info of setA and its members sum
 # $0 -c -m -d $'\n' setA - show members and sum of setA, delim with newline
 # $0 -c -m -r -s setA    - show members resolved and sorted + sum of setA
+# $0 -i -Fr "^210\..*" setA - show only members of setA matching the regex "^210\..*"
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -75,16 +77,16 @@ set +u
 
 # variables
 export LC_ALL=C
-version=1.3
-ips_version=""
+version=1.4
+ips_version="" str_search=""
 show_all=0 show_count=0 show_members=0 headers_only=0 names_only=0
-in_header=0 isolate=0 found_set=0 i=0
+in_header=0 isolate=0 found_set=0 glob_search=0 regex_search=0 i=0
 declare -a arr_opts arr_par
 
 while (($#)); do # parse cmd-line options
 	case "$1" in
 		-h) printf "ipset set listing wrapper script\n"
-		   	printf "%s [-{a|c|h|i|m|n|r|s|t}] [...] [-d char] [set-name] [...]\n" "${0//*\//}"
+		   	printf "%s [-{a|c|h|i|m|n|r|s|t}] [...] [-{Fg|Fr} pattern] [-d char] [set-name] [...]\n" "${0//*\//}"
 			exit 0
 		;;
 		-a) show_all=1 # like `ipset list', but with $delim as delim
@@ -124,6 +126,24 @@ while (($#)); do # parse cmd-line options
 				printf "only plain output is supported\n" >&2
 				exit 2
 			else
+				shift 2
+			fi
+		;;
+		-Fg) glob_search=1 # find entry with globbing pattern
+			if [[ -z $2 ]]; then
+				printf "glob pattern is missing\n" >&2
+				exit 2
+			else
+				str_search="$2"
+				shift 2
+			fi
+		;;
+		-Fr) regex_search=1 # find entry with regex pattern
+			if [[ -z $2 ]]; then
+				printf "regex pattern is missing\n" >&2
+				exit 2
+			else
+				str_search="$2"
 				shift 2
 			fi
 		;;
@@ -178,6 +198,12 @@ if ((isolate)); then
 		exit 2
 	fi
 fi
+if ((glob_search || regex_search)); then
+	if ! ((show_members || show_all || isolate)); then
+		printf "glob or regex search requires any of: -a|-i|-m\n" >&2
+		exit 2
+	fi
+fi
 
 # sets to work on (no arg means all sets)
 i=0
@@ -201,7 +227,7 @@ else
 fi
 
 # read sets
-for x in "${!arr_opts[@]}"; do found_set=0
+for x in "${!arr_opts[@]}"; do found_set=0 match_count=0
 	while read -r; do
 		case "$REPLY" in
 			"") : ;;
@@ -240,7 +266,17 @@ for x in "${!arr_opts[@]}"; do found_set=0
 							found_set=0
 							break # nothing more to do for this set
 						elif ((show_members || show_all || isolate)); then
-							printf "%s${delim:= }" "$REPLY"
+							if ((glob_search)); then
+								if [[ $REPLY = $str_search ]]; then let match_count+=1
+									printf "%s${delim:= }" "$REPLY"
+								fi
+							elif ((regex_search)); then
+								if [[ $REPLY =~ $str_search ]]; then let match_count+=1
+									printf "%s${delim:= }" "$REPLY"
+								fi
+							else
+								printf "%s${delim:= }" "$REPLY"
+							fi
 						fi
 						let i+=1
 					fi
@@ -255,6 +291,9 @@ for x in "${!arr_opts[@]}"; do found_set=0
 			printf "\n"
 		fi
 		if ((show_count)); then
+			if ((glob_search || regex_search)); then
+				printf "Match count: %d\n" $match_count
+			fi
 			printf "Member count: %d\n" $i
 		fi
 	fi
