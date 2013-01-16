@@ -78,7 +78,7 @@ set +u
 
 # variables
 export LC_ALL=C
-readonly version=1.5
+readonly version=1.6
 declare ips_version="" str_search=""
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=0
 declare -i in_header=found_set=glob_search=regex_search=match_count=i=0
