@@ -200,6 +200,10 @@ if ((isolate)); then
 	fi
 fi
 if ((glob_search || regex_search)); then
+	if ((glob_search && regex_search)); then
+		printf "options -Fg and -Fr are mutually exclusive\n" >&2
+		exit 2
+	fi
 	if ! ((show_members || show_all || isolate)); then
 		printf "glob or regex search requires any of: -a|-i|-m\n" >&2
 		exit 2
