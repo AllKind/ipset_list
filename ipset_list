@@ -71,16 +71,17 @@ if [ -z "$BASH" ]; then
 fi
 
 # shell settings
+shopt -s extglob
 set -f
 set +o posix
 set +u
 
 # variables
 export LC_ALL=C
-version=1.4
-ips_version="" str_search=""
-show_all=0 show_count=0 show_members=0 headers_only=0 names_only=0
-in_header=0 isolate=0 found_set=0 glob_search=0 regex_search=0 i=0
+readonly version=1.5
+declare ips_version="" str_search=""
+declare -i show_all=show_count=show_members=headers_only=names_only=isolate=0
+declare -i in_header=found_set=glob_search=regex_search=match_count=i=0
 declare -a arr_opts arr_par
 
 while (($#)); do # parse cmd-line options
