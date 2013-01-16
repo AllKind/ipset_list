@@ -78,11 +78,12 @@ set +u
 
 # variables
 export LC_ALL=C
-readonly version=1.6
+readonly version=1.7
+readonly oIFS="$IFS"
 declare ips_version="" str_search=""
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=0
-declare -i in_header=found_set=glob_search=regex_search=match_count=i=0
-declare -a arr_opts arr_par
+declare -i in_header=found_set=glob_search=regex_search=member_count=match_count=i=x=idx=0
+declare -a arr_opts arr_par arr_hcache arr_mcache
 
 while (($#)); do # parse cmd-line options
 	case "$1" in
@@ -211,7 +212,6 @@ if ((glob_search || regex_search)); then
 fi
 
 # sets to work on (no arg means all sets)
-i=0
 if [[ $1 ]]; then
 	if ((isolate)); then
 		if (($# != 1)); then
@@ -226,13 +226,13 @@ else
 		exit 2
 	fi
 	while IFS=$'\n' read -r; do
-		arr_opts[i++]="$REPLY"
+		arr_opts[idx++]="$REPLY"
 	done < <("$ipset" list -n)
-	i=0
 fi
 
 # read sets
-for x in "${!arr_opts[@]}"; do found_set=0 match_count=0
+for idx in "${!arr_opts[@]}"; do
+   	found_set=0 arr_hcache=() arr_mcache=()
 	while read -r; do
 		case "$REPLY" in
 			"") : ;;
@@ -241,12 +241,14 @@ for x in "${!arr_opts[@]}"; do found_set=0 match_count=0
 					printf "unexpected entry: \`%s' - header not closed?\n" "$REPLY" >&2
 					exit 1
 				fi
-				i=0 in_header=1 found_set=1
+				in_header=1 found_set=1 member_count=0 match_count=0 i=0 x=0 
 				if ! ((isolate)); then
-					printf "\n%s\n" "$REPLY"
 					if ! ((headers_only || show_members || show_all || show_count)); then
-						in_header=0 found_set=0
+						in_header=0 
+						arr_hcache[x++]="$REPLY"
 						break # nothing to show but the names
+					else
+						arr_hcache[x++]=$'\n'"$REPLY"
 					fi
 				fi
 			;;
@@ -257,49 +259,54 @@ for x in "${!arr_opts[@]}"; do found_set=0 match_count=0
 				fi
 				in_header=0
 				if ((show_all)); then
-					printf "%s\n" "$REPLY"
+					arr_hcache[x++]="$REPLY"
 				fi
 			;;
 			*)
 				if ((found_set)); then
 					if ((in_header)); then
 						if ((headers_only || show_all)); then
-							printf "%s\n" "$REPLY"
+							arr_hcache[x++]="$REPLY"
 						fi
 					else
 						if ((headers_only && show_count == 0)); then
-							found_set=0
 							break # nothing more to do for this set
 						elif ((show_members || show_all || isolate)); then
 							if ((glob_search)); then
 								if [[ $REPLY = $str_search ]]; then let match_count+=1
-									printf "%s${delim:= }" "$REPLY"
+									arr_mcache[i++]="$REPLY"
 								fi
 							elif ((regex_search)); then
 								if [[ $REPLY =~ $str_search ]]; then let match_count+=1
-									printf "%s${delim:= }" "$REPLY"
+									arr_mcache[i++]="$REPLY"
 								fi
 							else
-								printf "%s${delim:= }" "$REPLY"
+								arr_mcache[i++]="$REPLY"
 							fi
 						fi
-						let i+=1
+						let member_count+=1
 					fi
 				else
 					printf "no set opened by \`Name:'. unexpected entry \`%s'.\n" "$REPLY" >&2
 					exit 1
 				fi
 		esac
-	done < <("$ipset" list "${arr_opts[x]}" "${arr_par[@]}")
+	done < <("$ipset" list "${arr_opts[idx]}" "${arr_par[@]}")
 	if ((found_set)); then
-		if ((show_members || show_all || isolate)) && [[ $delim != $'\n' ]]; then
+		if ((${#arr_hcache[@]})); then
+			printf "%s\n" "${arr_hcache[@]}"
+		fi
+		if ((${#arr_mcache[@]})); then
+			IFS="${delim:= }"
+			printf "%s" "${arr_mcache[*]}"
+			IFS="$oIFS"
 			printf "\n"
 		fi
 		if ((show_count)); then
 			if ((glob_search || regex_search)); then
 				printf "Match count: %d\n" $match_count
 			fi
-			printf "Member count: %d\n" $i
+			printf "Member count: %d\n" $member_count
 		fi
 	fi
 done
