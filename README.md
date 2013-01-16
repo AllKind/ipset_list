@@ -28,5 +28,5 @@ Examples:
 - $0 -a -c setA             - show all info of setA and its members sum
 - $0 -c -m -d $'\n' setA    - show members and sum of setA, delim with newline
 - $0 -c -m -r -s setA       - show members resolved and sorted + sum of setA
-- $0 -i -Fr "^210\..*" setA - show only members of setA matching the regex "^210\..*"
+- $0 -i -Fr "^210\\..*" setA - show only members of setA matching the regex "^210\\..*"
 
