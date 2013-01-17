@@ -32,6 +32,7 @@
 # - Supress listing of headers.
 # - List only members of a specified set.
 # - Choose a delimiter character for separating members.
+# - Show only set containing a specific (glob matching) header.
 # - Match entries using a globbing or regex pattern.
 # - Operate on a single, selected, or all sets.
 # -----------------------------------------------------------------
@@ -49,6 +50,9 @@
 # $0 -c -m -d $'\n' setA - show members and sum of setA, delim with newline
 # $0 -c -m -r -s setA    - show members resolved and sorted + sum of setA
 # $0 -i -Fr "^210\..*" setA - show only members of setA matching the regex "^210\..*"
+# $0 -a -c -Fh "Type:hash:ip" -Fr "^210\..*"
+#+ - show all information of sets with type hash:ip,
+#+ matching the regex "^210\..*", show match and members sum
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -80,15 +84,15 @@ set +u
 export LC_ALL=C
 readonly version=1.7
 readonly oIFS="$IFS"
-declare ips_version="" str_search=""
-declare -i show_all=show_count=show_members=headers_only=names_only=isolate=0
+declare ips_version="" str_search="" str_match_hname str_match_hval str_hname str_hval
+declare -i show_all=show_count=show_members=headers_only=names_only=isolate=match_on_header=0
 declare -i in_header=found_set=glob_search=regex_search=member_count=match_count=i=x=idx=0
 declare -a arr_opts arr_par arr_hcache arr_mcache
 
 while (($#)); do # parse cmd-line options
 	case "$1" in
 		-h) printf "ipset set listing wrapper script\n"
-		   	printf "%s [-{a|c|h|i|m|n|r|s|t}] [...] [-{Fg|Fr} pattern] [-d char] [set-name] [...]\n" "${0//*\//}"
+		   	printf "%s [-{a|c|h|i|m|n|r|s|t}] [...] [-Fh header_name:value] [-{Fg|Fr} pattern] [-d char] [set-name] [...]\n" "${0//*\//}"
 			exit 0
 		;;
 		-a) show_all=1 # like `ipset list', but with $delim as delim
@@ -149,6 +153,21 @@ while (($#)); do # parse cmd-line options
 				shift 2
 			fi
 		;;
+		-Fh) match_on_header=1 # show only sets, which contain a matching header entry
+			if [[ -z $2 ]]; then
+				printf "header pattern is missing\n" >&2
+				exit 2
+			else
+				if [[ $2 = *:* ]]; then
+				str_match_hname="${2%%:*}"
+				str_match_hval="${2#*:}"
+				shift 2
+				else
+					printf "invalid format of header descriptor. expecting: \`name:value'.\n" >&2
+					exit 2
+				fi
+			fi
+		;;
 		-\!|-f) printf "unsupported option: \`$1'\n" >&2
 			exit 2
 		;;
@@ -186,8 +205,8 @@ elif ((headers_only)); then
 		exit 2
 	fi
 elif ((names_only)); then
-	if ((show_count || show_members || show_all || isolate)); then
-		printf "options -n and -a|-c|-i|-m are mutually exclusive\n" >&2
+	if ((show_count || show_members || show_all || isolate || match_on_header)); then
+		printf "options -n and -a|-c|-i|-m|-Fh are mutually exclusive\n" >&2
 		exit 2
 	fi
 	# raw ipset output
@@ -241,9 +260,9 @@ for idx in "${!arr_opts[@]}"; do
 					printf "unexpected entry: \`%s' - header not closed?\n" "$REPLY" >&2
 					exit 1
 				fi
-				in_header=1 found_set=1 member_count=0 match_count=0 i=0 x=0 
+				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 i=0 x=0 
 				if ! ((isolate)); then
-					if ! ((headers_only || show_members || show_all || show_count)); then
+					if ! ((headers_only || show_members || show_all || show_count || match_on_header)); then
 						in_header=0 
 						arr_hcache[x++]="$REPLY"
 						break # nothing to show but the names
@@ -258,17 +277,29 @@ for idx in "${!arr_opts[@]}"; do
 					exit 1
 				fi
 				in_header=0
+				if ((match_on_header)); then
+					if ! ((found_header)); then
+						found_set=0
+						break # set does not contain wanted header
+					fi
+				fi
 				if ((show_all)); then
 					arr_hcache[x++]="$REPLY"
 				fi
 			;;
-			*)
+			*) # either in-header, or member entry
 				if ((found_set)); then
-					if ((in_header)); then
+					if ((in_header)); then # we should be in the header
+						if ((match_on_header && found_header == 0)); then # match on an header entry
+							str_hname="${REPLY%%:*}" str_hval="${REPLY#*: }"
+							if [[ $str_hname = $str_match_hname && $str_hval = $str_match_hval ]]; then
+								found_header=1
+							fi
+						fi
 						if ((headers_only || show_all)); then
 							arr_hcache[x++]="$REPLY"
 						fi
-					else
+					else # this should be a member entry
 						if ((headers_only && show_count == 0)); then
 							break # nothing more to do for this set
 						elif ((show_members || show_all || isolate)); then
@@ -292,7 +323,7 @@ for idx in "${!arr_opts[@]}"; do
 				fi
 		esac
 	done < <("$ipset" list "${arr_opts[idx]}" "${arr_par[@]}")
-	if ((found_set)); then
+	if ((found_set)); then # print gathered information
 		if ((${#arr_hcache[@]})); then
 			printf "%s\n" "${arr_hcache[@]}"
 		fi
