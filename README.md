@@ -11,6 +11,7 @@ Features (in addition to the native ipset options):
 - Supress listing of headers.
 - List only members of a specified set.
 - Choose a delimiter character for separating members.
+- Show only set containing a specific (glob matching) header.
 - Match entries using a globbing or regex pattern.
 - Operate on a single, selected, or all sets.
 
@@ -29,4 +30,6 @@ Examples:
 - ipset_list -c -m -d $'\n' setA     - show members and sum of setA, delim with newline
 - ipset_list -c -m -r -s setA        - show members resolved and sorted + sum of setA
 - ipset_list -i -Fr "^210\\..*" setA - show only members of setA matching the regex "^210\\..*"
+- ipset_list -a -c -Fh "Type:hash:ip" -Fr "^210\\..*" - show all information of sets with type hash:ip, 
+matching the regex "^210\\..*", show match and members sum
 
