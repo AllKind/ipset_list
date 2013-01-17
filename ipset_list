@@ -82,7 +82,7 @@ set +u
 
 # variables
 export LC_ALL=C
-readonly version=1.7
+readonly version=1.8
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_match_hname str_match_hval str_hname str_hval
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=match_on_header=0
@@ -159,8 +159,7 @@ while (($#)); do # parse cmd-line options
 				exit 2
 			else
 				if [[ $2 = *:* ]]; then
-				str_match_hname="${2%%:*}"
-				str_match_hval="${2#*:}"
+				str_match_hname="${2%%:*}" str_match_hval="${2#*:}"
 				shift 2
 				else
 					printf "invalid format of header descriptor. expecting: \`name:value'.\n" >&2
@@ -250,8 +249,7 @@ else
 fi
 
 # read sets
-for idx in "${!arr_opts[@]}"; do
-   	found_set=0 arr_hcache=() arr_mcache=()
+for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 	while read -r; do
 		case "$REPLY" in
 			"") : ;;
