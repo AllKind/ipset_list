@@ -11,7 +11,7 @@ Features (in addition to the native ipset options):
 - Supress listing of headers.
 - List only members of a specified set.
 - Choose a delimiter character for separating members.
-- Show only set containing a specific (glob matching) header.
+- Show only sets containing a specific (glob matching) header.
 - Match entries using a globbing or regex pattern.
 - Operate on a single, selected, or all sets.
 
