@@ -85,16 +85,36 @@ set +u
 # variables
 export LC_ALL=C
 readonly version=1.9
+readonly me="${0//*\//}"
 readonly oIFS="$IFS"
-declare ips_version="" str_search="" str_match_hname str_match_hval str_hname str_hval
+declare ips_version="" str_search=""
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=match_on_header=0
 declare -i in_header=found_set=glob_search=regex_search=member_count=match_count=i=x=idx=0
 declare -a arr_opts arr_par arr_hcache arr_mcache arr_hsearch
 
 while (($#)); do # parse cmd-line options
 	case "$1" in
-		-h) printf "ipset set listing wrapper script\n"
-		   	printf "%s [-{a|c|h|i|m|n|r|s|t}] [...] [-Fh header_name:value] [...] [-{Fg|Fr} pattern] [-d char] [set-name] [...]\n" "${0//*\//}"
+		-h) printf "\n ipset set listing wrapper script\n\n"
+			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
+			printf '%s %s\n' "$me" "-h | -n"
+			printf '%s %s\n' "$me" "-t [-c] [-Fh header-glob:value-glob] [...] [set-name] [...]"
+			printf '%s %s\n' "$me" "-i [-r|-s] [-d char] [-Fg|-Fr pattern] set-name"
+			printf '%s %s\n' "$me" "[-a|-c|-m|-r|-s] [-d char] [-Fh header-glob:value-glob] [...] [-Fg|-Fr pattern] [set-name] [...]"
+			printf '\noptions:\n'
+			printf '%s\n' '-a       show all information but with default delim (whitespace).'
+			printf '%s\n' '-c       calculate members and match (-Fg|-Fr) sum.'
+			printf '%s\n' '-d delim   delimiter character for separating member entries.'
+			printf '%s\n' '-h       show this help text.'
+			printf '%s\n' '-i       show only the members of a single set.'
+			printf '%s\n' '-m       show set members.'
+			printf '%s\n' "-n       show set names only (raw \`ipset list -n' output)."
+			printf '%s\n' '-r       try to resolve ip addresses in the output (slow!).'
+			printf '%s\n' '-s       print elements sorted (if supported by the set type).'
+			printf '%s\n' '-t       show set headers only.'
+			printf '%s\n' '-Fg pattern    show only sets and their members matching a glob pattern.'
+			printf '%s\n' '-Fr pattern    show only sets and their members matching a regex (=~ operator) pattern.'
+			printf '%s\n' '-Fh header-glob:value-glob [...]    show only sets containing one or more (glob) matching header entries.'
+			printf '%s\n\n' '-v       version information.'
 			exit 0
 		;;
 		-a) show_all=1 # like `ipset list', but with $delim as delim
@@ -172,7 +192,7 @@ while (($#)); do # parse cmd-line options
 		-\!|-f) printf "unsupported option: \`$1'\n" >&2
 			exit 2
 		;;
-		-v) printf "%s version %s\n" "${0//*\//}" "$version"
+		-v) printf "%s version %s\n" "$me" "$version"
 			exit 0
 		;;
 		*) break
@@ -291,10 +311,8 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				if ((found_set)); then
 					if ((in_header)); then # we should be in the header
 						if ((match_on_header && found_header < match_on_header)); then # match on an header entry
-							str_hname="${REPLY%%:*}" str_hval="${REPLY#*: }"
 							for idx in ${!arr_hsearch[@]}; do
-								str_match_hname="${arr_hsearch[idx]%%:*}" str_match_hval="${arr_hsearch[idx]#*:}"
-								if [[ $str_hname = $str_match_hname && $str_hval = $str_match_hval ]]; then
+								if [[ ${REPLY%%:*} = ${arr_hsearch[idx]%%:*} && ${REPLY#*: } = ${arr_hsearch[idx]#*:} ]]; then
 									let found_header+=1
 								fi
 							done
