@@ -32,5 +32,6 @@ Examples:
 - `ipset_list -i -Fr "^210\..*" setA` - show only members of setA matching the regex "^210\\..*"
 - `ipset_list -a -c -Fh  "Type:hash:ip"  -Fr "^210\..*"` - show all information of sets with type hash:ip, 
 matching the regex "^210\\..*", show match and members sum
+- `ipset_list -Fh Type:hash:ip -Fh "Header:family inet *"` - show all set names, which are of type hash:ip and header of ipv4.
 
 
