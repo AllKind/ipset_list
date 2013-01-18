@@ -53,6 +53,8 @@
 # $0 -a -c -Fh "Type:hash:ip" -Fr "^210\..*"
 #+ - show all information of sets with type hash:ip,
 #+ matching the regex "^210\..*", show match and members sum
+#$0 -Fh Type:hash:ip -Fh "Header:family inet *" - show all set names, which are of
+#+ type hash:ip and header of ipv4.
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -87,12 +89,12 @@ readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_match_hname str_match_hval str_hname str_hval
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=match_on_header=0
 declare -i in_header=found_set=glob_search=regex_search=member_count=match_count=i=x=idx=0
-declare -a arr_opts arr_par arr_hcache arr_mcache
+declare -a arr_opts arr_par arr_hcache arr_mcache arr_hsearch
 
 while (($#)); do # parse cmd-line options
 	case "$1" in
 		-h) printf "ipset set listing wrapper script\n"
-		   	printf "%s [-{a|c|h|i|m|n|r|s|t}] [...] [-Fh header_name:value] [-{Fg|Fr} pattern] [-d char] [set-name] [...]\n" "${0//*\//}"
+		   	printf "%s [-{a|c|h|i|m|n|r|s|t}] [...] [-Fh header_name:value] [...] [-{Fg|Fr} pattern] [-d char] [set-name] [...]\n" "${0//*\//}"
 			exit 0
 		;;
 		-a) show_all=1 # like `ipset list', but with $delim as delim
@@ -153,14 +155,14 @@ while (($#)); do # parse cmd-line options
 				shift 2
 			fi
 		;;
-		-Fh) match_on_header=1 # show only sets, which contain a matching header entry
+		-Fh) let match_on_header+=1 # show only sets, which contain a matching header entry
 			if [[ -z $2 ]]; then
 				printf "header pattern is missing\n" >&2
 				exit 2
 			else
 				if [[ $2 = *:* ]]; then
-				str_match_hname="${2%%:*}" str_match_hval="${2#*:}"
-				shift 2
+					arr_hsearch[x++]="$2"
+					shift 2
 				else
 					printf "invalid format of header descriptor. expecting: \`name:value'.\n" >&2
 					exit 2
@@ -276,7 +278,7 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				fi
 				in_header=0
 				if ((match_on_header)); then
-					if ! ((found_header)); then
+					if ! ((found_header == match_on_header)); then
 						found_set=0
 						break # set does not contain wanted header
 					fi
@@ -288,11 +290,14 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 			*) # either in-header, or member entry
 				if ((found_set)); then
 					if ((in_header)); then # we should be in the header
-						if ((match_on_header && found_header == 0)); then # match on an header entry
+						if ((match_on_header && found_header < match_on_header)); then # match on an header entry
 							str_hname="${REPLY%%:*}" str_hval="${REPLY#*: }"
-							if [[ $str_hname = $str_match_hname && $str_hval = $str_match_hval ]]; then
-								found_header=1
-							fi
+							for idx in ${!arr_hsearch[@]}; do
+								str_match_hname="${arr_hsearch[idx]%%:*}" str_match_hval="${arr_hsearch[idx]#*:}"
+								if [[ $str_hname = $str_match_hname && $str_hval = $str_match_hval ]]; then
+									let found_header+=1
+								fi
+							done
 						fi
 						if ((headers_only || show_all)); then
 							arr_hcache[x++]="$REPLY"
@@ -322,6 +327,9 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		esac
 	done < <("$ipset" list "${arr_opts[idx]}" "${arr_par[@]}")
 	if ((found_set)); then # print gathered information
+		if ((glob_search || regex_search)) && ((match_count == 0)); then
+			continue # glob or regex search didn't match
+		fi
 		if ((${#arr_hcache[@]})); then
 			printf "%s\n" "${arr_hcache[@]}"
 		fi
