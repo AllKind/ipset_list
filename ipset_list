@@ -84,7 +84,7 @@ set +u
 
 # variables
 export LC_ALL=C
-readonly version=1.8
+readonly version=1.9
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_match_hname str_match_hval str_hname str_hval
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=match_on_header=0
