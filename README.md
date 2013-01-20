@@ -12,6 +12,7 @@ Features (in addition to the native ipset options):
 - List only members of a specified set.
 - Choose a delimiter character for separating members.
 - Show only sets containing a specific (glob matching) header.
+- Arithmetic comparison on headers with an integer value.
 - Match entries using a globbing or regex pattern.
 - Operate on a single, selected, or all sets.
 
@@ -33,5 +34,8 @@ Examples:
 - `ipset_list -a -c -Fh  "Type:hash:ip"  -Fr "^210\..*"` - show all information of sets with type hash:ip, 
 matching the regex "^210\\..*", show match and members sum
 - `ipset_list -Fh Type:hash:ip -Fh "Header:family inet *"` - show all set names, which are of type hash:ip and header of ipv4.
+- `ipset_list -Fi References:0`    - show all sets with 0 references
+- `ipset_list -Hr 2 -Hv 0 -Hs \>10000 -Ht hash:ip`    - find sets with 2 references, revision of 0,
+size in memory greater than 10000 and of type hash:ip
 
 
