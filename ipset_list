@@ -53,8 +53,11 @@
 # $0 -a -c -Fh "Type:hash:ip" -Fr "^210\..*"
 #+ - show all information of sets with type hash:ip,
 #+ matching the regex "^210\..*", show match and members sum
-#$0 -Fh Type:hash:ip -Fh "Header:family inet *" - show all set names, which are of
+# $0 -Fh Type:hash:ip -Fh "Header:family inet *" - show all set names, which are of
 #+ type hash:ip and header of ipv4.
+# $0 -Fi References:0    - show all sets with 0 references
+# $0 -Hr 2 -Hv 0 -Hs \>10000 -Ht hash:ip    - find sets with 2 references,
+#+ revision of 0, size in memory greater than 10000 and of type hash:ip
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -87,26 +90,23 @@ export LC_ALL=C
 readonly version=2.0
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
-declare ips_version="" str_search=""
+declare ips_version="" str_search="" str_hval
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=match_on_header=0
 declare -i in_header=found_set=glob_search=regex_search=member_count=match_count=i=x=idx=0
-declare -a arr_opts arr_par arr_hcache arr_mcache arr_hsearch
+declare -a arr_opts arr_par arr_hcache arr_mcache arr_hsearch arr_hsearch_int
 
 while (($#)); do # parse cmd-line options
 	case "$1" in
 		-h) printf "\n ipset set listing wrapper script\n\n"
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
 			printf '%s %s\n' "$me" "-h | -n"
-			printf '%s %s\n' "$me" "-t [-c] [-Fh header-glob:value-glob] [...] [set-name] [...]"
+			printf '%s %s\n\t%s\n\t%s\n' "$me" "-t [-c] [-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...] [-Ht type[-glob]]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [set-name] [...]"
 			printf '%s %s\n' "$me" "-i [-r|-s] [-d char] [-Fg|-Fr pattern] set-name"
-			printf '%s %s\n' "$me" "[-a|-c|-m|-r|-s] [-d char] [-Fh header-glob:value-glob] [...] [-Fg|-Fr pattern] [set-name] [...]"
+			printf '%s %s\n\t%s\n\t%s\n' "$me" "[-a|-c|-m|-r|-s] [-d char] [-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...] [-Fg|-Fr pattern]" "[-Ht type[-glob]] [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [set-name] [...]"
 			printf '\noptions:\n'
 			printf '%s\n' '-a       show all information but with default delim (whitespace).'
 			printf '%s\n' '-c       calculate members and match (-Fg|-Fr) sum.'
 			printf '%s\n' '-d delim       delimiter character for separating member entries.'
-			printf '%s\n' '-Fg pattern    show only sets and their members matching a glob pattern.'
-			printf '%s\n' '-Fr pattern    show only sets and their members matching a regex (=~ operator) pattern.'
-			printf '%s\n' '-Fh header-glob:value-glob [...]    show only sets containing one or more (glob) matching header entries.'
 			printf '%s\n' '-h       show this help text.'
 			printf '%s\n' '-i       show only the members of a single set.'
 			printf '%s\n' '-m       show set members.'
@@ -115,6 +115,14 @@ while (($#)); do # parse cmd-line options
 			printf '%s\n' '-s       print elements sorted (if supported by the set type).'
 			printf '%s\n' '-t       show set headers only.'
 			printf '%s\n\n' '-v       version information.'
+			printf '%s\n' '-Fg pattern    match set members using a [ext]glob pattern.'
+			printf '%s\n' '-Fr pattern    match set members using a regex (=~ operator) pattern.'
+			printf '%s\n\t%s\n' '-Fh header-glob:value-glob [...]' 'show sets containing one or more ([ext]glob) matching headers.'
+			printf '%s\n\t%s\n' '-Fi header-glob:[!|<|>|<=|>=]value [...]' 'compare one or more integer valued header entries.'
+			printf '%s\n' '-Ht set-type[-glob]    match on set type.'
+			printf '%s\n' '-Hr [!|<|>|<=|>=]value    match on number of references (value=int).'
+			printf '%s\n' '-Hs [!|<|>|<=|>=]value    match on size in memory (value=int).'
+			printf '%s\n' '-Hv [!|<|>|<=|>=]value    match on revision number (value=int).'
 			exit 0
 		;;
 		-a) show_all=1 # like `ipset list', but with $delim as delim
@@ -184,7 +192,77 @@ while (($#)); do # parse cmd-line options
 					arr_hsearch[x++]="$2"
 					shift 2
 				else
-					printf "invalid format of header descriptor. expecting: \`name:value'.\n" >&2
+					printf "invalid format of header descriptor. expecting: \`*:*'.\n" >&2
+					exit 2
+				fi
+			fi
+		;;
+		-Fi) let match_on_header+=1 # show only sets, containing a matching (int compare) header entry
+			if [[ -z $2 ]]; then
+				printf "header pattern is missing\n" >&2
+				exit 2
+			else
+				if [[ $2 = *:?(\!|\<|\>|<=|>=)+([[:digit:]]) ]]; then
+					arr_hsearch_int[idx++]="$2"
+					shift 2
+				else
+					printf "invalid format of header descriptor. expecting: \`name:[!|<|>|<=|>=]value'.\n" >&2
+					exit 2
+				fi
+			fi
+		;;
+		-Hr) let match_on_header+=1 # shortcut for -Fi References:...
+			if [[ -z $2 ]]; then
+				printf "header pattern is missing\n" >&2
+				exit 2
+			else
+				if [[ $2 = ?(\!|\<|\>|<=|>=)+([[:digit:]]) ]]; then
+					arr_hsearch_int[idx++]="References:$2"
+					shift 2
+				else
+					printf "invalid format of references header descriptor. expecting: \`[!|<|>|<=|>=]value'.\n" >&2
+					exit 2
+				fi
+			fi
+		;;
+		-Hs) let match_on_header+=1 # shortcut for -Fi "Size in Memory:..."
+			if [[ -z $2 ]]; then
+				printf "header pattern is missing\n" >&2
+				exit 2
+			else
+				if [[ $2 = ?(\!|\<|\>|<=|>=)+([[:digit:]]) ]]; then
+					arr_hsearch_int[idx++]="Size in memory:$2"
+					shift 2
+				else
+					printf "invalid format of memsize header descriptor. expecting: \`[!|<|>|<=|>=]value'.\n" >&2
+					exit 2
+				fi
+			fi
+		;;
+		-Ht) let match_on_header+=1 # shortcut for -Fh Type:x:y
+			if [[ -z $2 ]]; then
+				printf "header pattern is missing\n" >&2
+				exit 2
+			else
+				if [[ $2 = *:* ]]; then
+					arr_hsearch[x++]="Type:$2"
+					shift 2
+				else
+					printf "invalid format of set type descriptor. expecting: \`*:*'.\n" >&2
+					exit 2
+				fi
+			fi
+		;;
+		-Hv) let match_on_header+=1 # shortcut for -Fi Revision:...
+			if [[ -z $2 ]]; then
+				printf "header pattern is missing\n" >&2
+				exit 2
+			else
+				if [[ $2 = ?(\!|\<|\>|<=|>=)+([[:digit:]]) ]]; then
+					arr_hsearch_int[idx++]="Revision:$2"
+					shift 2
+				else
+					printf "invalid format of revision header descriptor. expecting: \`[!|<|>|<=|>=]value'.\n" >&2
 					exit 2
 				fi
 			fi
@@ -198,6 +276,7 @@ while (($#)); do # parse cmd-line options
 		*) break
 	esac
 done
+declare -i i=x=idx=0
 
 # check for ipset program and version
 [[ -x ${ipset:=/sbin/ipset} ]] || {
@@ -298,7 +377,7 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				fi
 				in_header=0
 				if ((match_on_header)); then
-					if ! ((found_header == match_on_header)); then
+					if ((found_header != match_on_header)); then
 						found_set=0
 						break # set does not contain wanted header
 					fi
@@ -311,9 +390,27 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				if ((found_set)); then
 					if ((in_header)); then # we should be in the header
 						if ((match_on_header && found_header < match_on_header)); then # match on an header entry
-							for idx in ${!arr_hsearch[@]}; do
+							for idx in ${!arr_hsearch[@]}; do # string compare
 								if [[ ${REPLY%%:*} = ${arr_hsearch[idx]%%:*} && ${REPLY#*: } = ${arr_hsearch[idx]#*:} ]]; then
 									let found_header+=1
+								fi
+							done
+							for idx in ${!arr_hsearch_int[@]}; do # int compare
+								if [[ ${REPLY%%:*} = ${arr_hsearch_int[idx]%%:*} ]]; then
+									str_hval="${arr_hsearch_int[idx]#*:}"
+									case "${str_hval//[[:digit:]]}" in # select operator
+										"") (( ${REPLY#*: } == $str_hval )) && let found_header+=1
+										;;
+										\!) (( ${REPLY#*: } != ${str_hval#\!} )) && let found_header+=1
+										;;
+										\<) (( ${REPLY#*: } < ${str_hval#\<} )) && let found_header+=1
+										;;
+										\>) (( ${REPLY#*: } > ${str_hval#\>} )) && let found_header+=1
+										;;
+										\<=) (( ${REPLY#*: } <= ${str_hval#\<=} )) && let found_header+=1
+										;;
+										\>=) (( ${REPLY#*: } >= ${str_hval#\>=} )) && let found_header+=1
+									esac
 								fi
 							done
 						fi
@@ -321,9 +418,7 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 							arr_hcache[x++]="$REPLY"
 						fi
 					else # this should be a member entry
-						if ((headers_only && show_count == 0)); then
-							break # nothing more to do for this set
-						elif ((show_members || show_all || isolate)); then
+						if ((show_members || show_all || isolate)); then
 							if ((glob_search)); then
 								if [[ $REPLY = $str_search ]]; then let match_count+=1
 									arr_mcache[i++]="$REPLY"
@@ -334,6 +429,10 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 								fi
 							else
 								arr_mcache[i++]="$REPLY"
+							fi
+						else
+							if ((show_count == 0)); then
+								break # nothing more to do for this set
 							fi
 						fi
 						let member_count+=1
