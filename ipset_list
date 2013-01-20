@@ -28,7 +28,7 @@
 
 # -----------------------------------------------------------------
 # Features (in addition to the native ipset options):
-# - Calculate sum of set members.
+# - Calculate sum of set members (and match on that count).
 # - Supress listing of headers.
 # - List only members of a specified set.
 # - Choose a delimiter character for separating members.
@@ -92,7 +92,7 @@ set +u
 
 # variables
 export LC_ALL=C
-readonly version=2.1
+readonly version=2.2
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_match_on_msum="" str_hval str_op
@@ -105,9 +105,13 @@ while (($#)); do # parse cmd-line options
 		-h) printf "\n ipset set listing wrapper script\n\n"
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
 			printf '%s %s\n' "$me" "-h | -n"
-			printf '%s %s\n\t%s\n\t%s\n' "$me" "-t [-c] [-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...] [-Ht type[-glob]]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [set-name] [...]"
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n' "$me" "-t [-c] [-Mc [!|<|>|<=|>=]value]"\
+			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...] [-Ht type-glob]"\
+			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [set-name] [...]"
 			printf '%s %s\n' "$me" "-i [-r|-s] [-d char] [-Fg|-Fr pattern] set-name"
-			printf '%s %s\n\t%s\n\t%s\n' "$me" "[-a|-c|-m|-r|-s] [-d char] [-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...] [-Fg|-Fr pattern]" "[-Ht type[-glob]] [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [set-name] [...]"
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me" "[-a|-c|-m|-r|-s] [-d char] [-Mc [!|<|>|<=|>=]value]"\
+			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
+			   	"[-Fg|-Fr pattern] [-Ht type-glob]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [set-name] [...]"
 			printf '\noptions:\n'
 			printf '%s\n' '-a       show all information but with default delim (whitespace).'
 			printf '%s\n' '-c       calculate members and match (-Fg|-Fr) sum.'
@@ -124,7 +128,7 @@ while (($#)); do # parse cmd-line options
 			printf '%s\n' '-Fr pattern    match set members using a regex (=~ operator) pattern.'
 			printf '%s\n\t%s\n' '-Fh header-glob:value-glob [...]' 'show sets containing one or more ([ext]glob) matching headers.'
 			printf '%s\n\t%s\n' '-Fi header-glob:[!|<|>|<=|>=]value [...]' 'compare one or more integer valued header entries.'
-			printf '%s\n' '-Ht set-type[-glob]    match on set type.'
+			printf '%s\n' '-Ht set-type-glob         match on set type.'
 			printf '%s\n' '-Hr [!|<|>|<=|>=]value    match on number of references (value=int).'
 			printf '%s\n' '-Hs [!|<|>|<=|>=]value    match on size in memory (value=int).'
 			printf '%s\n' '-Hv [!|<|>|<=|>=]value    match on revision number (value=int).'

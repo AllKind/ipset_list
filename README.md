@@ -8,7 +8,7 @@ Features:
 ==========
 (in addition to the native ipset options)
 
-- Calculate sum of set members.
+- Calculate sum of set members (and match on that count).
 - Supress listing of headers.
 - List only members of a specified set.
 - Choose a delimiter character for separating members.
