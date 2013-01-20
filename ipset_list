@@ -33,6 +33,7 @@
 # - List only members of a specified set.
 # - Choose a delimiter character for separating members.
 # - Show only set containing a specific (glob matching) header.
+# - Arithmetic comparison on headers with an integer value.
 # - Match entries using a globbing or regex pattern.
 # - Operate on a single, selected, or all sets.
 # -----------------------------------------------------------------
@@ -56,8 +57,12 @@
 # $0 -Fh Type:hash:ip -Fh "Header:family inet *" - show all set names, which are of
 #+ type hash:ip and header of ipv4.
 # $0 -Fi References:0    - show all sets with 0 references
+# $0 -Hr 0               - shortcut for -Fi References:0
+# $0 -Ht "!(hash:ip)"    - show sets which are not of type hash:ip
+# $0 -Ht "!(bitmap:*)"   - show sets wich are not of any bitmap type
 # $0 -Hr 2 -Hv 0 -Hs \>10000 -Ht hash:ip    - find sets with 2 references,
 #+ revision of 0, size in memory greater than 10000 and of type hash:ip
+# $0 -Mc '>=100'         - show sets with a member count greater or equal to 100
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -90,9 +95,9 @@ export LC_ALL=C
 readonly version=2.1
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
-declare ips_version="" str_search="" str_hval
+declare ips_version="" str_search="" str_match_on_msum="" str_hval str_op
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=match_on_header=0
-declare -i in_header=found_set=glob_search=regex_search=member_count=match_count=i=x=idx=0
+declare -i in_header=found_set=glob_search=regex_search=member_count=match_count=do_count=i=x=idx=0
 declare -a arr_opts arr_par arr_hcache arr_mcache arr_hsearch arr_hsearch_int
 
 while (($#)); do # parse cmd-line options
@@ -123,6 +128,7 @@ while (($#)); do # parse cmd-line options
 			printf '%s\n' '-Hr [!|<|>|<=|>=]value    match on number of references (value=int).'
 			printf '%s\n' '-Hs [!|<|>|<=|>=]value    match on size in memory (value=int).'
 			printf '%s\n' '-Hv [!|<|>|<=|>=]value    match on revision number (value=int).'
+			printf '%s\n' '-Mc [!|<|>|<=|>=]value    match on member count (value=int).'
 			exit 0
 		;;
 		-a) show_all=1 # like `ipset list', but with $delim as delim
@@ -202,7 +208,7 @@ while (($#)); do # parse cmd-line options
 				printf "header pattern is missing\n" >&2
 				exit 2
 			else
-				if [[ $2 = *:?(\!|\<|\>|<=|>=)+([[:digit:]]) ]]; then
+				if [[ $2 = *:?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
 					arr_hsearch_int[idx++]="$2"
 					shift 2
 				else
@@ -216,7 +222,7 @@ while (($#)); do # parse cmd-line options
 				printf "header pattern is missing\n" >&2
 				exit 2
 			else
-				if [[ $2 = ?(\!|\<|\>|<=|>=)+([[:digit:]]) ]]; then
+				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
 					arr_hsearch_int[idx++]="References:$2"
 					shift 2
 				else
@@ -230,7 +236,7 @@ while (($#)); do # parse cmd-line options
 				printf "header pattern is missing\n" >&2
 				exit 2
 			else
-				if [[ $2 = ?(\!|\<|\>|<=|>=)+([[:digit:]]) ]]; then
+				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
 					arr_hsearch_int[idx++]="Size in memory:$2"
 					shift 2
 				else
@@ -258,11 +264,25 @@ while (($#)); do # parse cmd-line options
 				printf "header pattern is missing\n" >&2
 				exit 2
 			else
-				if [[ $2 = ?(\!|\<|\>|<=|>=)+([[:digit:]]) ]]; then
+				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
 					arr_hsearch_int[idx++]="Revision:$2"
 					shift 2
 				else
 					printf "invalid format of revision header descriptor. expecting: \`[!|<|>|<=|>=]value'.\n" >&2
+					exit 2
+				fi
+			fi
+		;;
+		-Mc) do_count=1 # match on the count of members
+			if [[ -z $2 ]]; then
+				printf "value pattern is missing\n" >&2
+				exit 2
+			else
+				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
+					str_match_on_msum="$2"
+					shift 2
+				else
+					printf "invalid format of match on member count value. expecting: \`[!|<|>|<=|>=]value'.\n" >&2
 					exit 2
 				fi
 			fi
@@ -296,22 +316,21 @@ if ((ips_version < 6)); then
 fi
 
 # option logic
-if ((names_only && headers_only)); then
-	printf "options -n and -t are mutually exclusive\n" >&2
-	exit 2
-elif ((headers_only)); then
-	if ((show_members || show_all || isolate)); then
-		printf "options -t and -a|-i|-m are mutually exclusive\n" >&2
-		exit 2
-	fi
-elif ((names_only)); then
-	if ((show_count || show_members || show_all || isolate || match_on_header)); then
-		printf "options -n and -a|-c|-i|-m|-Fh are mutually exclusive\n" >&2
+if ((names_only)); then
+	if ((headers_only||show_count||show_members||show_all||isolate||match_on_header||do_count||glob_search||regex_search))
+   	then
+		printf "option -n does not allow another option.\n" >&2
 		exit 2
 	fi
 	# raw ipset output
 	"$ipset" list -n
 	exit $?
+fi
+if ((headers_only)); then
+	if ((show_members || show_all || isolate)); then
+		printf "options -t and -a|-i|-m are mutually exclusive\n" >&2
+		exit 2
+	fi
 fi
 if ((isolate)); then
 	if ((show_count || show_all)); then
@@ -322,10 +341,6 @@ fi
 if ((glob_search || regex_search)); then
 	if ((glob_search && regex_search)); then
 		printf "options -Fg and -Fr are mutually exclusive\n" >&2
-		exit 2
-	fi
-	if ! ((show_members || show_all || isolate)); then
-		printf "glob or regex search requires any of: -a|-i|-m\n" >&2
 		exit 2
 	fi
 fi
@@ -360,8 +375,9 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					exit 1
 				fi
 				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 i=0 x=0 
-				if ! ((isolate)); then
-					if ! ((headers_only || show_members || show_all || show_count || match_on_header)); then
+				if ! ((isolate)); then # if showing members only, continue without saving any header data
+					if ! ((headers_only||show_members||show_all||show_count||match_on_header||do_count||glob_search||regex_search))
+				   	then
 						in_header=0 
 						arr_hcache[x++]="$REPLY"
 						break # nothing to show but the names
@@ -387,65 +403,72 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				fi
 			;;
 			*) # either in-header, or member entry
-				if ((found_set)); then
-					if ((in_header)); then # we should be in the header
-						if ((match_on_header && found_header < match_on_header)); then # match on an header entry
-							for idx in ${!arr_hsearch[@]}; do # string compare
-								if [[ ${REPLY%%:*} = ${arr_hsearch[idx]%%:*} && ${REPLY#*: } = ${arr_hsearch[idx]#*:} ]]; then
-									let found_header+=1
-								fi
-							done
-							for idx in ${!arr_hsearch_int[@]}; do # int compare
-								if [[ ${REPLY%%:*} = ${arr_hsearch_int[idx]%%:*} ]]; then
-									str_hval="${arr_hsearch_int[idx]#*:}"
-									case "${str_hval//[[:digit:]]}" in # select operator
-										"") (( ${REPLY#*: } == $str_hval )) && let found_header+=1
-										;;
-										\!) (( ${REPLY#*: } != ${str_hval#\!} )) && let found_header+=1
-										;;
-										\<) (( ${REPLY#*: } < ${str_hval#\<} )) && let found_header+=1
-										;;
-										\>) (( ${REPLY#*: } > ${str_hval#\>} )) && let found_header+=1
-										;;
-										\<=) (( ${REPLY#*: } <= ${str_hval#\<=} )) && let found_header+=1
-										;;
-										\>=) (( ${REPLY#*: } >= ${str_hval#\>=} )) && let found_header+=1
-									esac
-								fi
-							done
-						fi
-						if ((headers_only || show_all)); then
-							arr_hcache[x++]="$REPLY"
-						fi
-					else # this should be a member entry
-						if ((show_members || show_all || isolate)); then
-							if ((glob_search)); then
-								if [[ $REPLY = $str_search ]]; then let match_count+=1
-									arr_mcache[i++]="$REPLY"
-								fi
-							elif ((regex_search)); then
-								if [[ $REPLY =~ $str_search ]]; then let match_count+=1
-									arr_mcache[i++]="$REPLY"
-								fi
-							else
-								arr_mcache[i++]="$REPLY"
-							fi
-						else
-							if ((show_count == 0)); then
-								break # nothing more to do for this set
-							fi
-						fi
-						let member_count+=1
-					fi
-				else
+				if ! ((found_set)); then
 					printf "no set opened by \`Name:'. unexpected entry \`%s'.\n" "$REPLY" >&2
 					exit 1
+				fi
+				if ((in_header)); then # we should be in the header
+					if ((match_on_header && found_header < match_on_header)); then # match on an header entry
+						for idx in ${!arr_hsearch[@]}; do # string compare
+							if [[ ${REPLY%%:*} = ${arr_hsearch[idx]%%:*} && ${REPLY#*: } = ${arr_hsearch[idx]#*:} ]]
+							then
+								let found_header+=1
+							fi
+						done
+						for idx in ${!arr_hsearch_int[@]}; do # int compare
+							if [[ ${REPLY%%:*} = ${arr_hsearch_int[idx]%%:*} ]]; then # header name matches
+								if [[ ${REPLY#*: } != +([[:digit:]]) ]]; then
+									printf "header value \`%s' is not an integer.\n" "${REPLY#*: }" >&2
+									exit 1
+								fi
+								str_hval="${arr_hsearch_int[idx]#*:}"
+								str_op="${str_hval//[[:digit:]]}"
+								[[ ${str_op:===} = \! ]] && str_op='!='
+								if ((${REPLY#*: } $str_op ${str_hval//[[:punct:]]})); then
+									let found_header+=1
+								fi
+							fi
+						done
+					fi
+					if ((headers_only || show_all)); then
+						arr_hcache[x++]="$REPLY"
+					fi
+				else # this should be a member entry
+					if ((show_members || show_all || isolate || glob_search || regex_search)); then
+						if ((glob_search)); then
+							if [[ $REPLY = $str_search ]]; then let match_count+=1
+								if ((show_members || show_all || isolate)); then
+									arr_mcache[i++]="$REPLY"
+								fi
+							fi
+						elif ((regex_search)); then
+							if [[ $REPLY =~ $str_search ]]; then let match_count+=1
+								if ((show_members || show_all || isolate)); then
+									arr_mcache[i++]="$REPLY"
+								fi
+							fi
+						else
+							arr_mcache[i++]="$REPLY"
+						fi
+					else # nothing to show or search for, do we need to count?
+						if ! ((show_count || do_count)); then
+							break # nothing more to do for this set
+						fi
+					fi
+					let member_count+=1
 				fi
 		esac
 	done < <("$ipset" list "${arr_opts[idx]}" "${arr_par[@]}")
 	if ((found_set)); then # print gathered information
 		if ((glob_search || regex_search)) && ((match_count == 0)); then
 			continue # glob or regex search didn't match
+		fi
+		if [[ $str_match_on_msum ]]; then # match on member sum
+			str_op="${str_match_on_msum//[[:digit:]]}"
+			[[ ${str_op:===} = \! ]] && str_op='!='
+			if ! (($member_count $str_op ${str_match_on_msum//[[:punct:]]})); then
+				continue # does not match
+			fi
 		fi
 		if ((${#arr_hcache[@]})); then
 			printf "%s\n" "${arr_hcache[@]}"
