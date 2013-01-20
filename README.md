@@ -36,6 +36,10 @@ Examples:
 matching the regex "^210\\..*", show match and members sum
 - `ipset_list -Fh Type:hash:ip -Fh "Header:family inet *"` - show all set names, which are of type hash:ip and header of ipv4.
 - `ipset_list -Fi References:0`    - show all sets with 0 references
+- `ipset_list -Hr 0`               - shortcut for -Fi References:0
+- `ipset_list -Ht "!(hash:ip)"`    - show sets which are not of type hash:ip
+- `ipset_list -Ht "!(bitmap:*)"`   - show sets wich are not of any bitmap type
+- `ipset_list -Mc '>=100'`         - show sets with a member count greater or equal to 100
 - `ipset_list -Hr 2 -Hv 0 -Hs \>10000 -Ht hash:ip`    - find sets with 2 references, revision of 0,
 size in memory greater than 10000 and of type hash:ip
 
