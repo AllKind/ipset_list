@@ -4,8 +4,9 @@ ipset_list
 ipset set listing wrapper script
 
 
-Features (in addition to the native ipset options):
+Features:
 ==========
+(in addition to the native ipset options)
 
 - Calculate sum of set members.
 - Supress listing of headers.
