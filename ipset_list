@@ -120,12 +120,12 @@ while (($#)); do # parse cmd-line options
 		-\?|-h) printf "\n ipset set listing wrapper script\n\n"
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
 			printf '%s %s\n' "$me" "{-?|-h} | -n"
-			printf '%s %s\n' "$me" "-i [-r|-s] [-d char] [{-Fg|-Fr}|{-Xg|-Xr} pattern] set-name"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me" "[-t] [-c] [-Cs] [-Mc [!|<|>|<=|>=]value]"\
-			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...] [-Ht type-glob]"\
-			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Tm]"\
+			printf '%s %s\n' "$me" "[-i|-r|-s] [-d char] [{-Fg|-Fr}|{-Xg|-Xr} pattern] set-name"
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me" "[-t|-c|-Cs] [-Mc [!|<|>|<=|>=]value]"\
+			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
+			   	"[-Fg|-Fr pattern] [-Ht type-glob]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Tm]"\
 			   	"[-Xh header-glob:value-glob] [...] [set-name] [...]"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me" "[-a|-c|-m|-r|-s] [-d char] [-Cs] [-Mc [!|<|>|<=|>=]value]"\
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me" "[-a|-c|-m|-r|-s|-Cs] [-d char] [-Mc [!|<|>|<=|>=]value]"\
 			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 			   	"[-Fg|-Fr pattern] [-Ht type-glob]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Tm]"\
 				"[-Xh header-glob:value-glob] [...]"\
