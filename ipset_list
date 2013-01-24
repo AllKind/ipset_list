@@ -35,6 +35,8 @@
 # - Show only set containing a specific (glob matching) header.
 # - Arithmetic comparison on headers with an integer value.
 # - Match entries using a globbing or regex pattern.
+# - Supress listing of certain header entries.
+# - Supress listing of members matching a glob or regex pattern.
 # - Operate on a single, selected, or all sets.
 # -----------------------------------------------------------------
 
@@ -63,6 +65,10 @@
 # $0 -Hr 2 -Hv 0 -Hs \>10000 -Ht hash:ip    - find sets with 2 references,
 #+ revision of 0, size in memory greater than 10000 and of type hash:ip
 # $0 -Mc '>=100'         - show sets with a member count greater or equal to 100
+# $0 -t -Xh Revision:* -Xh "References:*"
+#+ - show all sets headers, but exclude Revision and References entries.
+# $0 -c -m -Xg "210.*" setA - show members of setA, but supress listing of entries
+#+ matching the glob pattern "210.*", show count of excluded and total members.
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -95,44 +101,52 @@ export LC_ALL=C
 readonly version=2.2
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
-declare ips_version="" str_search="" str_match_on_msum="" str_hval str_op
-declare -i show_all=show_count=show_members=headers_only=names_only=isolate=match_on_header=0
-declare -i in_header=found_set=glob_search=regex_search=member_count=match_count=do_count=i=x=idx=0
-declare -a arr_opts arr_par arr_hcache arr_mcache arr_hsearch arr_hsearch_int
+declare ips_version="" str_search="" str_match_on_msum="" str_xclude="" str_hval str_op
+declare -i show_all=show_count=show_members=headers_only=names_only=isolate=0
+declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=0
+declare -i exclude_header=glob_xclude_element=glob_xclude_element=0
+declare -i in_header=found_set=found_hxclude=xclude_count=i=x=idx=0
+declare -a arr_opts arr_par arr_hcache arr_mcache arr_hsearch arr_hsearch_int arr_hxclude
 
 while (($#)); do # parse cmd-line options
 	case "$1" in
-		-h) printf "\n ipset set listing wrapper script\n\n"
+		-\?|-h) printf "\n ipset set listing wrapper script\n\n"
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
-			printf '%s %s\n' "$me" "-h | -n"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n' "$me" "-t [-c] [-Mc [!|<|>|<=|>=]value]"\
+			printf '%s %s\n' "$me" "[-?|-h] | -n"
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me" "-t [-c] [-Mc [!|<|>|<=|>=]value]"\
 			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...] [-Ht type-glob]"\
-			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [set-name] [...]"
+			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
+			   	"[-Xh header-glob:value-glob] [...] [set-name] [...]"
 			printf '%s %s\n' "$me" "-i [-r|-s] [-d char] [-Fg|-Fr pattern] set-name"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me" "[-a|-c|-m|-r|-s] [-d char] [-Mc [!|<|>|<=|>=]value]"\
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me" "[-a|-c|-m|-r|-s] [-d char] [-Mc [!|<|>|<=|>=]value]"\
 			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
-			   	"[-Fg|-Fr pattern] [-Ht type-glob]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [set-name] [...]"
+			   	"[-Fg|-Fr pattern] [-Ht type-glob]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
+				"[-Xh header-glob:value-glob] [...]"\
+			   	"[-Xg|-Xr pattern] [set-name] [...]"
 			printf '\noptions:\n'
 			printf '%s\n' '-a       show all information but with default delim (whitespace).'
 			printf '%s\n' '-c       calculate members and match (-Fg|-Fr) sum.'
 			printf '%s\n' '-d delim       delimiter character for separating member entries.'
-			printf '%s\n' '-h       show this help text.'
+			printf '%s\n' '-h|-?    show this help text.'
 			printf '%s\n' '-i       show only the members of a single set.'
 			printf '%s\n' '-m       show set members.'
 			printf '%s\n' "-n       show set names only (raw \`ipset list -n' output)."
 			printf '%s\n' '-r       try to resolve ip addresses in the output (slow!).'
 			printf '%s\n' '-s       print elements sorted (if supported by the set type).'
 			printf '%s\n' '-t       show set headers only.'
-			printf '%s\n\n' '-v       version information.'
-			printf '%s\n' '-Fg pattern    match set members using a [ext]glob pattern.'
-			printf '%s\n' '-Fr pattern    match set members using a regex (=~ operator) pattern.'
-			printf '%s\n\t%s\n' '-Fh header-glob:value-glob [...]' 'show sets containing one or more ([ext]glob) matching headers.'
-			printf '%s\n\t%s\n' '-Fi header-glob:[!|<|>|<=|>=]value [...]' 'compare one or more integer valued header entries.'
+			printf '%s\n' '-v       version information.'
+			printf '%s\n' '-Fg pattern    match on members using a [ext]glob pattern.'
+			printf '%s\n' '-Fr pattern    match on members using a regex (=~ operator) pattern.'
+			printf '%s\n\t%s\n' '-Fh header-glob:value-glob [...]' 'show sets containing one or more [ext]glob matching headers.'
+			printf '%s\n\t%s\n' '-Fi header-glob:[!|<|>|<=|>=]value [...]' 'show sets matching one or more integer valued header entries.'
 			printf '%s\n' '-Ht set-type-glob         match on set type.'
 			printf '%s\n' '-Hr [!|<|>|<=|>=]value    match on number of references (value=int).'
 			printf '%s\n' '-Hs [!|<|>|<=|>=]value    match on size in memory (value=int).'
 			printf '%s\n' '-Hv [!|<|>|<=|>=]value    match on revision number (value=int).'
 			printf '%s\n' '-Mc [!|<|>|<=|>=]value    match on member count (value=int).'
+			printf '%s\n\t%s\n' '-Xh header-glob:value-glob [...]' 'exclude one or more [ext]glob matching header entries.'
+			printf '%s\n' '-Xg pattern    exclude members matching a [ext]glob pattern.'
+			printf '%s\n' '-Xr pattern    exclude members matching a regex pattern.'
 			exit 0
 		;;
 		-a) show_all=1 # like `ipset list', but with $delim as delim
@@ -291,6 +305,38 @@ while (($#)); do # parse cmd-line options
 				fi
 			fi
 		;;
+		-Xh) exclude_header=1 # don't show certain headers
+			if [[ -z $2 ]]; then
+				printf "header pattern is missing\n" >&2
+				exit 2
+			else
+				if [[ $2 = *:* ]]; then
+					arr_hxclude[${#arr_hxclude[@]}]="$2"
+					shift 2
+				else
+					printf "invalid format of header descriptor. expecting: \`*:*'.\n" >&2
+					exit 2
+				fi
+			fi
+		;;
+		-Xg) glob_xclude_element=1 # supress printing of mathing members using a globbing pattern
+			if [[ -z $2 ]]; then
+				printf "glob pattern is missing\n" >&2
+				exit 2
+			else
+				str_xclude="$2"
+				shift 2
+			fi
+		;;
+		-Xr) regex_xclude_element=1 # supress printing of mathing members using a regex pattern
+			if [[ -z $2 ]]; then
+				printf "regex pattern is missing\n" >&2
+				exit 2
+			else
+				str_xclude="$2"
+				shift 2
+			fi
+		;;
 		-\!|-f) printf "unsupported option: \`$1'\n" >&2
 			exit 2
 		;;
@@ -345,6 +391,22 @@ fi
 if ((glob_search || regex_search)); then
 	if ((glob_search && regex_search)); then
 		printf "options -Fg and -Fr are mutually exclusive\n" >&2
+		exit 2
+	fi
+	if ((glob_xclude_element || regex_xclude_element)); then
+		printf "options -Fg|-Fr and -Xg|-Xr are mutually exclusive\n" >&2
+		exit 2
+	fi
+fi
+if ((exclude_header)); then
+	if ! ((headers_only || show_all)); then
+		printf "option -Xh requires -a or -t\n" >&2
+		exit 2
+	fi
+fi
+if ((glob_xclude_element || regex_xclude_element)); then
+	if ! ((show_members || show_all || isolate)); then
+		printf "options -Fg|-Fr require any of -a|-i|-m\n" >&2
 		exit 2
 	fi
 fi
@@ -434,25 +496,48 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 							fi
 						done
 					fi
-					if ((headers_only || show_all)); then
-						arr_hcache[x++]="$REPLY"
+					if ((headers_only || show_all)); then found_hxclude=0
+						if ((exclude_header)); then # don't show certain headers
+							for idx in ${!arr_hxclude[@]}; do
+								if [[ ${REPLY%%:*} = ${arr_hxclude[idx]%%:*} && ${REPLY#*: } = ${arr_hxclude[idx]#*:} ]]
+								then
+									found_hxclude=1
+									break
+								fi
+							done
+						fi
+						if ! ((found_hxclude)); then
+							arr_hcache[x++]="$REPLY"
+						fi
 					fi
 				else # this should be a member entry
 					if ((show_members || show_all || isolate || glob_search || regex_search)); then
-						if ((glob_search)); then
+						if ((glob_search)); then # show sets with matching members
 							if [[ $REPLY = $str_search ]]; then let match_count+=1
 								if ((show_members || show_all || isolate)); then
 									arr_mcache[i++]="$REPLY"
 								fi
 							fi
-						elif ((regex_search)); then
+						elif ((regex_search)); then # show sets with matching members
 							if [[ $REPLY =~ $str_search ]]; then let match_count+=1
 								if ((show_members || show_all || isolate)); then
 									arr_mcache[i++]="$REPLY"
 								fi
 							fi
 						else
-							arr_mcache[i++]="$REPLY"
+							if ((glob_xclude_element)); then # exclude matching members
+								if ! [[ $REPLY = $str_xclude ]]; then
+									arr_mcache[i++]="$REPLY"
+								else let xclude_count+=1
+								fi
+							elif ((regex_xclude_element)); then # exclude matching members
+								if ! [[ $REPLY =~ $str_xclude ]]; then
+									arr_mcache[i++]="$REPLY"
+								else let xclude_count+=1
+								fi
+							else
+								arr_mcache[i++]="$REPLY"
+							fi
 						fi
 					else # nothing to show or search for, do we need to count?
 						if ! ((show_count || do_count)); then
@@ -486,6 +571,9 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		if ((show_count)); then
 			if ((glob_search || regex_search)); then
 				printf "Match count: %d\n" $match_count
+			fi
+			if ((glob_xclude_element || regex_xclude_element)); then
+				printf "Exclude count: %d\n" $xclude_count
 			fi
 			printf "Member count: %d\n" $member_count
 		fi
