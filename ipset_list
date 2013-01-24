@@ -117,7 +117,7 @@ while (($#)); do # parse cmd-line options
 			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...] [-Ht type-glob]"\
 			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
 			   	"[-Xh header-glob:value-glob] [...] [set-name] [...]"
-			printf '%s %s\n' "$me" "-i [-r|-s] [-d char] [-Fg|-Fr pattern] set-name"
+			printf '%s %s\n' "$me" "-i [-r|-s] [-d char] [{-Fg|-Fr}|{-Xg|-Xr} pattern] set-name"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me" "[-a|-c|-m|-r|-s] [-d char] [-Mc [!|<|>|<=|>=]value]"\
 			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 			   	"[-Fg|-Fr pattern] [-Ht type-glob]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
@@ -171,7 +171,7 @@ while (($#)); do # parse cmd-line options
 			shift
 		;;
 		-d) if [[ -z $2 ]]; then # delimiter char for separating member entries
-				printf "delim character is missing\n" >&2
+				printf "delim character of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				if ((${#2} > 1)); then
@@ -191,7 +191,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Fg) glob_search=1 # find entry with globbing pattern
 			if [[ -z $2 ]]; then
-				printf "glob pattern is missing\n" >&2
+				printf "glob pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				str_search="$2"
@@ -200,7 +200,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Fr) regex_search=1 # find entry with regex pattern
 			if [[ -z $2 ]]; then
-				printf "regex pattern is missing\n" >&2
+				printf "regex pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				str_search="$2"
@@ -209,7 +209,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Fh) let match_on_header+=1 # show only sets, which contain a matching header entry
 			if [[ -z $2 ]]; then
-				printf "header pattern is missing\n" >&2
+				printf "header pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				if [[ $2 = *:* ]]; then
@@ -223,7 +223,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Fi) let match_on_header+=1 # show only sets, containing a matching (int compare) header entry
 			if [[ -z $2 ]]; then
-				printf "header pattern is missing\n" >&2
+				printf "header pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				if [[ $2 = *:?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
@@ -237,7 +237,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Hr) let match_on_header+=1 # shortcut for -Fi References:...
 			if [[ -z $2 ]]; then
-				printf "header pattern is missing\n" >&2
+				printf "header pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
@@ -251,7 +251,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Hs) let match_on_header+=1 # shortcut for -Fi "Size in Memory:..."
 			if [[ -z $2 ]]; then
-				printf "header pattern is missing\n" >&2
+				printf "header pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
@@ -265,7 +265,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Ht) let match_on_header+=1 # shortcut for -Fh Type:x:y
 			if [[ -z $2 ]]; then
-				printf "header pattern is missing\n" >&2
+				printf "header pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				if [[ $2 = *:* ]]; then
@@ -279,7 +279,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Hv) let match_on_header+=1 # shortcut for -Fi Revision:...
 			if [[ -z $2 ]]; then
-				printf "header pattern is missing\n" >&2
+				printf "header pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
@@ -293,7 +293,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Mc) do_count=1 # match on the count of members
 			if [[ -z $2 ]]; then
-				printf "value pattern is missing\n" >&2
+				printf "value pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
@@ -307,7 +307,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Xh) exclude_header=1 # don't show certain headers
 			if [[ -z $2 ]]; then
-				printf "header pattern is missing\n" >&2
+				printf "header pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				if [[ $2 = *:* ]]; then
@@ -321,7 +321,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Xg) glob_xclude_element=1 # supress printing of mathing members using a globbing pattern
 			if [[ -z $2 ]]; then
-				printf "glob pattern is missing\n" >&2
+				printf "glob pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				str_xclude="$2"
@@ -330,7 +330,7 @@ while (($#)); do # parse cmd-line options
 		;;
 		-Xr) regex_xclude_element=1 # supress printing of mathing members using a regex pattern
 			if [[ -z $2 ]]; then
-				printf "regex pattern is missing\n" >&2
+				printf "regex pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
 			else
 				str_xclude="$2"
