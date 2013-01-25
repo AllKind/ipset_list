@@ -67,7 +67,7 @@
 # $0 -Hr 2 -Hv 0 -Hs \>10000 -Ht hash:ip    - find sets with 2 references,
 #+ revision of 0, size in memory greater than 10000 and of type hash:ip
 # $0 -Mc '>=100'         - show sets with a member count greater or equal to 100
-# $0 -t -Xh Revision:* -Xh "References:*"
+# $0 -t -Xh "Revision:*" -Xh "References:*"
 #+ - show all sets headers, but exclude Revision and References entries.
 # $0 -c -m -Xg "210.*" setA - show members of setA, but supress listing of entries
 #+ matching the glob pattern "210.*", show count of excluded and total members.
@@ -382,7 +382,7 @@ fi
 
 # option logic
 if ((names_only)); then
-	if ((headers_only||show_count||show_members||show_all||isolate||match_on_header||do_count||glob_search||regex_search))
+	if ((headers_only||show_count||show_members||show_all||isolate||match_on_header||do_count||glob_search||regex_search||calc_mem||glob_xclude_element||regex_xclude_element||count_sets))
    	then
 		printf "option -n does not allow another option.\n" >&2
 		exit 2
@@ -455,7 +455,6 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					printf "unexpected entry: \`%s' - header not closed?\n" "$REPLY" >&2
 					exit 1
 				fi
-				let set_count+=1
 				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 mem_tmp=0 i=0 x=0 
 				if ! ((isolate)); then # if showing members only, continue without saving any header data
 					if ! ((headers_only||show_members||show_all||show_count||match_on_header||do_count||calc_mem||glob_search||regex_search))
@@ -493,8 +492,7 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					if ((match_on_header && found_header < match_on_header)); then # match on an header entry
 						for idx in ${!arr_hsearch[@]}; do # string compare
 							if [[ ${REPLY%%:*} = ${arr_hsearch[idx]%%:*} && ${REPLY#*: } = ${arr_hsearch[idx]#*:} ]]
-							then
-								let found_header+=1
+							then let found_header+=1
 							fi
 						done
 						for idx in ${!arr_hsearch_int[@]}; do # int compare
@@ -526,8 +524,7 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 						if ((exclude_header)); then # don't show certain headers
 							for idx in ${!arr_hxclude[@]}; do
 								if [[ ${REPLY%%:*} = ${arr_hxclude[idx]%%:*} && ${REPLY#*: } = ${arr_hxclude[idx]#*:} ]]
-								then
-									found_hxclude=1
+								then found_hxclude=1
 									break
 								fi
 							done
@@ -585,6 +582,10 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				continue # does not match
 			fi
 		fi
+		let set_count+=1 # count amount of matching sets
+		if ((calc_mem)); then
+			let mem_total+=$mem_tmp
+		fi
 		if ((${#arr_hcache[@]})); then
 			printf "%s\n" "${arr_hcache[@]}"
 		fi
@@ -593,9 +594,6 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 			printf "%s" "${arr_mcache[*]}"
 			IFS="$oIFS"
 			printf "\n"
-		fi
-		if ((calc_mem)); then
-			let mem_total+=$mem_tmp
 		fi
 		if ((show_count)); then
 			if ((glob_search || regex_search)); then
@@ -608,7 +606,7 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		fi
 	fi
 done
-if ((count_sets ||calc_mem)); then
+if ((count_sets || calc_mem)); then
 	printf "\n"
 	if ((count_sets)); then
 		printf "Set count: %d\n" $set_count
