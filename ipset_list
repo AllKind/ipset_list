@@ -29,13 +29,12 @@
 # -----------------------------------------------------------------
 # Features (in addition to the native ipset options):
 # - Calculate sum of set members (and match on that count).
-# - Supress listing of headers.
+# - Supress listing of (selected) headers.
 # - List only members of a specified set.
 # - Choose a delimiter character for separating members.
-# - Show only set containing a specific (glob matching) header.
+# - Show only sets containing a specific (glob matching) header.
 # - Arithmetic comparison on headers with an integer value.
-# - Match entries using a globbing or regex pattern.
-# - Supress listing of certain header entries.
+# - Match members using a globbing or regex pattern.
 # - Supress listing of members matching a glob or regex pattern.
 # - Calculate the total size in memory of all matching sets.
 # - Calculate the total amount of all matching sets.
@@ -93,7 +92,7 @@ TMOUT=30
 
 # bash check
 if [ -z "$BASH" ]; then
-	printf "\`BASH' variable is not available. Not running bash?\n"
+	printf "\`BASH' variable is not available. Not running bash?\n" >&2
 	exit 1
 fi
 
@@ -117,7 +116,7 @@ declare -a arr_opts arr_par arr_hcache arr_mcache arr_hsearch arr_hsearch_int ar
 
 while (($#)); do # parse cmd-line options
 	case "$1" in
-		-\?|-h) printf "\n ipset set listing wrapper script\n\n"
+		-\?|-h) printf "\n\tipset set listing wrapper script\n\n"
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
 			printf '%s %s\n' "$me" "{-?|-h} | -n"
 			printf '%s %s\n' "$me" "[-i|-r|-s] [-d char] [{-Fg|-Fr}|{-Xg|-Xr} pattern] set-name"
@@ -125,12 +124,13 @@ while (($#)); do # parse cmd-line options
 			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 			   	"[-Fg|-Fr pattern] [-Ht type-glob]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Tm]"\
 			   	"[-Xh header-glob:value-glob] [...] [set-name] [...]"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me" "[-a|-c|-m|-r|-s|-Cs] [-d char] [-Mc [!|<|>|<=|>=]value]"\
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
+			   	"[-a|-c|-m|-r|-s|-Cs] [-d char] [-Mc [!|<|>|<=|>=]value]"\
 			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 			   	"[-Fg|-Fr pattern] [-Ht type-glob]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Tm]"\
 				"[-Xh header-glob:value-glob] [...]"\
 			   	"[-Xg|-Xr pattern] [set-name] [...]"
-			printf '\noptions:\n'
+			printf 'options:\n'
 			printf '%s\n' '-a       show all information but with default delim (whitespace).'
 			printf '%s\n' '-c       calculate members and match (-Fg|-Fr) sum.'
 			printf '%s\n' '-d delim       delimiter character for separating member entries.'
@@ -145,15 +145,18 @@ while (($#)); do # parse cmd-line options
 			printf '%s\n' '-Cs      count amount of matching sets.'
 			printf '%s\n' '-Fg pattern    match on members using a [ext]glob pattern.'
 			printf '%s\n' '-Fr pattern    match on members using a regex (=~ operator) pattern.'
-			printf '%s\n\t%s\n' '-Fh header-glob:value-glob [...]' 'show sets containing one or more [ext]glob matching headers.'
-			printf '%s\n\t%s\n' '-Fi header-glob:[!|<|>|<=|>=]value [...]' 'show sets matching one or more integer valued header entries.'
+			printf '%s\n\t%s\n' '-Fh header-glob:value-glob [...]'\
+				'show sets containing one or more [ext]glob matching headers.'
+			printf '%s\n\t%s\n' '-Fi header-glob:[!|<|>|<=|>=]value [...]'\
+				'show sets matching one or more integer valued header entries.'
 			printf '%s\n' '-Ht set-type-glob         match on set type.'
 			printf '%s\n' '-Hr [!|<|>|<=|>=]value    match on number of references (value=int).'
 			printf '%s\n' '-Hs [!|<|>|<=|>=]value    match on size in memory (value=int).'
 			printf '%s\n' '-Hv [!|<|>|<=|>=]value    match on revision number (value=int).'
 			printf '%s\n' '-Mc [!|<|>|<=|>=]value    match on member count (value=int).'
 			printf '%s\n' '-Tm      calculate total memory usage of all matching sets.'
-			printf '%s\n\t%s\n' '-Xh header-glob:value-glob [...]' 'exclude one or more [ext]glob matching header entries.'
+			printf '%s\n\t%s\n' '-Xh header-glob:value-glob [...]'\
+				'exclude one or more [ext]glob matching header entries.'
 			printf '%s\n' '-Xg pattern    exclude members matching a [ext]glob pattern.'
 			printf '%s\n' '-Xr pattern    exclude members matching a regex pattern.'
 			exit 0
@@ -334,7 +337,7 @@ while (($#)); do # parse cmd-line options
 				fi
 			fi
 		;;
-		-Xg) glob_xclude_element=1 # supress printing of mathing members using a globbing pattern
+		-Xg) glob_xclude_element=1 # supress printing of matching members using a globbing pattern
 			if [[ -z $2 ]]; then
 				printf "glob pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
@@ -343,7 +346,7 @@ while (($#)); do # parse cmd-line options
 				shift 2
 			fi
 		;;
-		-Xr) regex_xclude_element=1 # supress printing of mathing members using a regex pattern
+		-Xr) regex_xclude_element=1 # supress printing of matching members using a regex pattern
 			if [[ -z $2 ]]; then
 				printf "regex pattern of option \`%s' is missing\n" "$1" >&2
 				exit 2
@@ -382,7 +385,9 @@ fi
 
 # option logic
 if ((names_only)); then
-	if ((headers_only||show_count||show_members||show_all||isolate||match_on_header||do_count||glob_search||regex_search||calc_mem||glob_xclude_element||regex_xclude_element||count_sets))
+	if ((headers_only||show_count||show_members||show_all||isolate||match_on_header||\
+		do_count||glob_search||regex_search||calc_mem||\
+		glob_xclude_element||regex_xclude_element||count_sets))
    	then
 		printf "option -n does not allow another option.\n" >&2
 		exit 2
