@@ -29,15 +29,15 @@
 # -----------------------------------------------------------------
 # Features (in addition to the native ipset options):
 # - Calculate sum of set members (and match on that count).
-# - Supress listing of (selected) headers.
 # - List only members of a specified set.
 # - Choose a delimiter character for separating members.
 # - Show only sets containing a specific (glob matching) header.
 # - Arithmetic comparison on headers with an integer value.
 # - Match members using a globbing or regex pattern.
+# - Supress listing of (glob matching) headers.
 # - Supress listing of members matching a glob or regex pattern.
 # - Calculate the total size in memory of all matching sets.
-# - Calculate the total amount of all matching sets.
+# - Calculate the total amount of all matching and traversed sets.
 # - Operate on a single, selected, or all sets.
 # -----------------------------------------------------------------
 
@@ -65,7 +65,8 @@
 # $0 -Ht "!(bitmap:*)"   - show sets wich are not of any bitmap type
 # $0 -Hr 2 -Hv 0 -Hs \>10000 -Ht hash:ip    - find sets with 2 references,
 #+ revision of 0, size in memory greater than 10000 and of type hash:ip
-# $0 -Mc '>=100'         - show sets with a member count greater or equal to 100
+# $0 -Mc 0           - show sets with zero members 
+# $0 -Mc '>=100'     - show sets with a member count greater or equal to 100
 # $0 -t -Xh "Revision:*" -Xh "References:*"
 #+ - show all sets headers, but exclude Revision and References entries.
 # $0 -c -m -Xg "210.*" setA - show members of setA, but supress listing of entries
@@ -74,7 +75,12 @@
 # $0 -t -Tm -Xh "@(Type|Re*|Header):*" 
 #+ show all sets headers, but supress all but name and memsize entry,
 #+ calculate the total memory size of all sets.
-# $0 -Cs             - list set names and total count of sets.
+# $0 -Cs -Ht "hash:*"    - find sets of any hash type, calculate their sum.
+# $0 -Ts             - show all set names and total count of sets.
+# $0 -c -t -Cs -Ts -Xh "@(Size*|Re*|Header):*" -Ht "!(bitmap:*)"
+#+ find all sets not of any bitmap type, count their members sum,
+#+ display only the 'Type' header,
+#+ count amount of matching and traversed sets.
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -108,10 +114,10 @@ readonly version=2.2
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_match_on_msum="" str_xclude="" str_hval str_op
-declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=0
+declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
 declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=0
 declare -i exclude_header=glob_xclude_element=glob_xclude_element=0
-declare -i in_header=found_set=found_hxclude=xclude_count=mem_total=mem_tmp=set_count=i=x=idx=0
+declare -i in_header=found_set=found_hxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=idx=0
 declare -a arr_opts arr_par arr_hcache arr_mcache arr_hsearch arr_hsearch_int arr_hxclude
 
 while (($#)); do # parse cmd-line options
@@ -120,14 +126,20 @@ while (($#)); do # parse cmd-line options
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
 			printf '%s %s\n' "$me" "{-?|-h} | -n"
 			printf '%s %s\n' "$me" "[-i|-r|-s] [-d char] [{-Fg|-Fr}|{-Xg|-Xr} pattern] set-name"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me" "[-t|-c|-Cs] [-Mc [!|<|>|<=|>=]value]"\
-			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
-			   	"[-Fg|-Fr pattern] [-Ht type-glob]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Tm]"\
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
+			   	"[-t|-c|-Cs|-Tm|-Ts] [-Fh header-glob:value-glob] [...]"\
+			   	"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
+			   	"[-Fg|-Fr pattern] [-Ht type-glob]"\
+			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
+			   	"[-Mc [!|<|>|<=|>=]value]"\
 			   	"[-Xh header-glob:value-glob] [...] [set-name] [...]"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
-			   	"[-a|-c|-m|-r|-s|-Cs] [-d char] [-Mc [!|<|>|<=|>=]value]"\
-			   	"[-Fh header-glob:value-glob] [...]" "[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
-			   	"[-Fg|-Fr pattern] [-Ht type-glob]" "[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Tm]"\
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
+			   	"[-a|-c|-m|-r|-s|-Cs|-Tm|-Ts] [-d char]"\
+			   	"[-Fh header-glob:value-glob] [...]"\
+			   	"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
+			   	"[-Fg|-Fr pattern] [-Ht type-glob]"\
+			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
+			   	"[-Mc [!|<|>|<=|>=]value]"\
 				"[-Xh header-glob:value-glob] [...]"\
 			   	"[-Xg|-Xr pattern] [set-name] [...]"
 			printf 'options:\n'
@@ -155,6 +167,7 @@ while (($#)); do # parse cmd-line options
 			printf '%s\n' '-Hv [!|<|>|<=|>=]value    match on revision number (value=int).'
 			printf '%s\n' '-Mc [!|<|>|<=|>=]value    match on member count (value=int).'
 			printf '%s\n' '-Tm      calculate total memory usage of all matching sets.'
+			printf '%s\n' '-Ts      count amount of traversed sets.'
 			printf '%s\n\t%s\n' '-Xh header-glob:value-glob [...]'\
 				'exclude one or more [ext]glob matching header entries.'
 			printf '%s\n' '-Xg pattern    exclude members matching a [ext]glob pattern.'
@@ -323,6 +336,9 @@ while (($#)); do # parse cmd-line options
 		-Tm) calc_mem=1 # caculate total memory usage of all matching sets
 			shift
 		;;
+		-Ts) sets_total=1 # caculate sum of all traversed sets
+			shift
+		;;
 		-Xh) exclude_header=1 # don't show certain headers
 			if [[ -z $2 ]]; then
 				printf "header pattern of option \`%s' is missing\n" "$1" >&2
@@ -385,9 +401,9 @@ fi
 
 # option logic
 if ((names_only)); then
-	if ((headers_only||show_count||show_members||show_all||isolate||match_on_header||\
-		do_count||glob_search||regex_search||calc_mem||\
-		glob_xclude_element||regex_xclude_element||count_sets))
+	if ((headers_only||show_count||show_members||show_all||isolate||\
+		match_on_header||do_count||glob_search||regex_search||calc_mem||\
+		glob_xclude_element||regex_xclude_element||count_sets||sets_total))
    	then
 		printf "option -n does not allow another option.\n" >&2
 		exit 2
@@ -460,6 +476,7 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					printf "unexpected entry: \`%s' - header not closed?\n" "$REPLY" >&2
 					exit 1
 				fi
+				let sets_sum+=1
 				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 mem_tmp=0 i=0 x=0 
 				if ! ((isolate)); then # if showing members only, continue without saving any header data
 					if ! ((headers_only||show_members||show_all||show_count||match_on_header||do_count||calc_mem||glob_search||regex_search))
@@ -507,7 +524,7 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 									exit 1
 								fi
 								str_hval="${arr_hsearch_int[idx]#*:}"
-								str_op="${str_hval//[[:digit:]]}"
+								str_op="${str_hval//[[:digit:]]}" # compare operator defaults to `=='
 								[[ ${str_op:===} = \! ]] && str_op='!='
 								if ((${REPLY#*: } $str_op ${str_hval//[[:punct:]]})); then
 									let found_header+=1
@@ -611,10 +628,13 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		fi
 	fi
 done
-if ((count_sets || calc_mem)); then
+if ((count_sets || calc_mem || sets_total)); then
 	printf "\n"
 	if ((count_sets)); then
-		printf "Set count: %d\n" $set_count
+		printf "Count of all matched sets: %d\n" $set_count
+	fi
+	if ((sets_total)); then
+		printf "Count of all traversed sets: %d\n" $sets_sum
 	fi
 	if ((calc_mem)); then
 		printf "Total memory size of all matched sets: %d\n" $mem_total
