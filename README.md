@@ -9,12 +9,15 @@ Features:
 (in addition to the native ipset options)
 
 - Calculate sum of set members (and match on that count).
-- Supress listing of headers.
 - List only members of a specified set.
 - Choose a delimiter character for separating members.
 - Show only sets containing a specific (glob matching) header.
 - Arithmetic comparison on headers with an integer value.
-- Match entries using a globbing or regex pattern.
+- Match members using a globbing or regex pattern.
+- Supress listing of (glob matching) headers.
+- Supress listing of members matching a glob or regex pattern.
+- Calculate the total size in memory of all matching sets.
+- Calculate the total amount of all matching and traversed sets.
 - Operate on a single, selected, or all sets.
 
 
@@ -39,8 +42,18 @@ matching the regex "^210\\..*", show match and members sum
 - `ipset_list -Hr 0`               - shortcut for -Fi References:0
 - `ipset_list -Ht "!(hash:ip)"`    - show sets which are not of type hash:ip
 - `ipset_list -Ht "!(bitmap:*)"`   - show sets wich are not of any bitmap type
+- `ipset_list -Mc 0`               - show sets with zero members 
 - `ipset_list -Mc '>=100'`         - show sets with a member count greater or equal to 100
 - `ipset_list -Hr 2 -Hv 0 -Hs \>10000 -Ht hash:ip`    - find sets with 2 references, revision of 0,
 size in memory greater than 10000 and of type hash:ip
+- `ipset_list -t -Xh "Revision:*" -Xh "References:*"` - show all sets headers, but exclude Revision and References entries.
+- `ipset_list -c -m -Xg "210.*" setA` - show members of setA, but supress listing of entries matching the glob pattern "210.*",
+ show count of excluded and total members.
+- `ipset_list -Tm`                 - calculate total size in memory of all sets.
+- `ipset_list -t -Tm -Xh "@(Type|Re*|Header):*"` - show all sets headers, but supress all but name and memsize entry,
+ calculate the total memory size of all sets.
+- `ipset_list -Cs -Ht "hash:*"`    - find sets of any hash type, calculate their sum.
+- `ipset_list-Ts`             - show all set names and total count of sets.
+- `ipset_list-c -t -Cs -Ts -Xh "@(Size*|Re*|Header):*" -Ht "!(bitmap:*)"` - find all sets not of any bitmap type, count their members sum, display only the 'Type' header, count amount of matching and traversed sets.
 
 
