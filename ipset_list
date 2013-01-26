@@ -477,7 +477,7 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					exit 1
 				fi
 				let sets_sum+=1
-				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 mem_tmp=0 i=0 x=0 
+				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 xclude_count=0 mem_tmp=0 i=0 x=0 
 				if ! ((isolate)); then # if showing members only, continue without saving any header data
 					if ! ((headers_only||show_members||show_all||show_count||match_on_header||do_count||calc_mem||glob_search||regex_search))
 				   	then
