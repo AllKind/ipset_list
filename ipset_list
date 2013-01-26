@@ -110,7 +110,7 @@ set +u
 
 # variables
 export LC_ALL=C
-readonly version=2.3
+readonly version=2.4
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_match_on_msum="" str_xclude="" str_hval str_op
@@ -496,8 +496,7 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				fi
 				in_header=0
 				if ((match_on_header)); then
-					if ((found_header != match_on_header)); then
-						found_set=0
+					if ((found_header != match_on_header)); then found_set=0
 						break # set does not contain wanted header
 					fi
 				fi
