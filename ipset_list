@@ -125,13 +125,14 @@ while (($#)); do # parse cmd-line options
 		-\?|-h) printf "\n\tipset set listing wrapper script\n\n"
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
 			printf '%s %s\n' "$me" "{-?|-h} | -n"
-			printf '%s %s\n' "$me" "[-i|-r|-s] [-d char] [{-Fg|-Fr}|{-Xg|-Xr} pattern] set-name"
+			printf '%s %s\n\t%s\n' "$me" "[-i|-r|-s] [-d char] [-To value]"\
+				"[{-Fg|-Fr}|{-Xg|-Xr} pattern] set-name"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
 			   	"[-t|-c|-Cs|-Tm|-Ts] [-Fh header-glob:value-glob] [...]"\
 			   	"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 			   	"[-Fg|-Fr pattern] [-Ht type-glob]"\
 			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
-			   	"[-Mc [!|<|>|<=|>=]value]"\
+			   	"[-Mc [!|<|>|<=|>=]value] [-To value]"\
 			   	"[-Xh header-glob:value-glob] [...] [set-name] [...]"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
 			   	"[-a|-c|-m|-r|-s|-Cs|-Tm|-Ts] [-d char]"\
@@ -139,7 +140,7 @@ while (($#)); do # parse cmd-line options
 			   	"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 			   	"[-Fg|-Fr pattern] [-Ht type-glob]"\
 			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
-			   	"[-Mc [!|<|>|<=|>=]value]"\
+			   	"[-Mc [!|<|>|<=|>=]value] [-To value]"\
 				"[-Xh header-glob:value-glob] [...]"\
 			   	"[-Xg|-Xr pattern] [set-name] [...]"
 			printf 'options:\n'
@@ -167,6 +168,7 @@ while (($#)); do # parse cmd-line options
 			printf '%s\n' '-Hv [!|<|>|<=|>=]value    match on revision number (value=int).'
 			printf '%s\n' '-Mc [!|<|>|<=|>=]value    match on member count (value=int).'
 			printf '%s\n' '-Tm      calculate total memory usage of all matching sets.'
+			printf '%s\n' '-To      set timeout value (int) for read (listing sets).'
 			printf '%s\n' '-Ts      count amount of traversed sets.'
 			printf '%s\n\t%s\n' '-Xh header-glob:value-glob [...]'\
 				'exclude one or more [ext]glob matching header entries.'
@@ -333,6 +335,19 @@ while (($#)); do # parse cmd-line options
 				fi
 			fi
 		;;
+		-To) # set the timeout for read
+			if [[ -z $2 ]]; then
+				printf "value of option \`%s' is missing\n" "$1" >&2
+				exit 2
+			else
+				if [[ $2 != +([[:digit:]]) ]]; then
+					printf "timeout value \`%s' is not an integer.\n" "$2" >&2
+					exit 2
+				fi
+				TMOUT=$2
+				shift 2
+			fi
+		;;
 		-Tm) calc_mem=1 # caculate total memory usage of all matching sets
 			shift
 		;;
@@ -468,7 +483,11 @@ fi
 
 # read sets
 for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
-	while read -r; do
+	while read -r || { 
+		(($? > 128)) && \
+			printf "timeout reached or signal received, while reading set \`%s'.\n" \
+			"${arr_opts[idx]}" >&2 && continue 2;
+   	}; do
 		case "$REPLY" in
 			"") : ;;
 			Name:*) # header opened (set found)
