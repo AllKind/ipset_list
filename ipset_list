@@ -120,7 +120,19 @@ declare -i exclude_header=glob_xclude_element=glob_xclude_element=0
 declare -i in_header=found_set=found_hxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=idx=0
 declare -a arr_opts arr_par arr_hcache arr_mcache arr_hsearch arr_hsearch_int arr_hxclude
 
-while (($#)); do # parse cmd-line options
+# functions
+ex_miss_optarg() {
+printf "%s of option \`%s' is missing\n" "$2" "$1" >&2
+exit 2
+}
+
+ex_invalid_usage() {
+printf "%s\n" "$*" >&2
+exit 2
+}
+
+# parse cmd-line options
+while (($#)); do
 	case "$1" in
 		-\?|-h) printf "\n\tipset set listing wrapper script\n\n"
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
@@ -197,21 +209,16 @@ while (($#)); do # parse cmd-line options
 		-s|-r) arr_par[i++]="$1" # ipset sort & resolve options are passed on
 			shift
 		;;
-		-d) if [[ -z $2 ]]; then # delimiter char for separating member entries
-				printf "delim character of option \`%s' is missing\n" "$1" >&2
-				exit 2
-			else
-				if ((${#2} > 1)); then
-					printf "only one character is allowed as delim\n" >&2
-					exit 2
-				fi
-				delim="$2"
-				shift 2
+		-d) # delimiter char for separating member entries
+			[[ $2 ]] || ex_miss_optarg $1 "delim character"
+			if ((${#2} > 1)); then
+				ex_invalid_usage "only one character is allowed as delim"
 			fi
+			delim="$2"
+			shift 2
 		;;
 		-o) if [[ $2 != plain ]]; then
-				printf "only plain output is supported\n" >&2
-				exit 2
+				ex_invalid_usage "only plain output is supported"
 			else
 				shift 2
 			fi
@@ -220,133 +227,85 @@ while (($#)); do # parse cmd-line options
 			shift
 		;;
 		-Fg) glob_search=1 # find entry with globbing pattern
-			if [[ -z $2 ]]; then
-				printf "glob pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
-			else
-				str_search="$2"
-				shift 2
-			fi
+			[[ $2 ]] || ex_miss_optarg $1 "glob pattern"
+			str_search="$2"
+			shift 2
 		;;
 		-Fr) regex_search=1 # find entry with regex pattern
-			if [[ -z $2 ]]; then
-				printf "regex pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
-			else
-				str_search="$2"
-				shift 2
-			fi
+			[[ $2 ]] || ex_miss_optarg $1 "regex pattern"
+			str_search="$2"
+			shift 2
 		;;
 		-Fh) let match_on_header+=1 # show only sets, which contain a matching header entry
-			if [[ -z $2 ]]; then
-				printf "header pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
+			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
+			if [[ $2 = *:* ]]; then
+				arr_hsearch[x++]="$2"
+				shift 2
 			else
-				if [[ $2 = *:* ]]; then
-					arr_hsearch[x++]="$2"
-					shift 2
-				else
-					printf "invalid format of header descriptor. expecting: \`*:*'.\n" >&2
-					exit 2
-				fi
+				ex_invalid_usage "invalid format of header descriptor. expecting: \`*:*'"
 			fi
 		;;
 		-Fi) let match_on_header+=1 # show only sets, containing a matching (int compare) header entry
-			if [[ -z $2 ]]; then
-				printf "header pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
+			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
+			if [[ $2 = *:?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
+				arr_hsearch_int[idx++]="$2"
+				shift 2
 			else
-				if [[ $2 = *:?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
-					arr_hsearch_int[idx++]="$2"
-					shift 2
-				else
-					printf "invalid format of header descriptor. expecting: \`name:[!|<|>|<=|>=]value'.\n" >&2
-					exit 2
-				fi
+				ex_invalid_usage "invalid format of header descriptor. expecting: \`name:[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Hr) let match_on_header+=1 # shortcut for -Fi References:...
-			if [[ -z $2 ]]; then
-				printf "header pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
+			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
+			if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
+				arr_hsearch_int[idx++]="References:$2"
+				shift 2
 			else
-				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
-					arr_hsearch_int[idx++]="References:$2"
-					shift 2
-				else
-					printf "invalid format of references header descriptor. expecting: \`[!|<|>|<=|>=]value'.\n" >&2
-					exit 2
-				fi
+				ex_invalid_usage "invalid format of references header descriptor. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Hs) let match_on_header+=1 # shortcut for -Fi "Size in Memory:..."
-			if [[ -z $2 ]]; then
-				printf "header pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
+			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
+			if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
+				arr_hsearch_int[idx++]="Size in memory:$2"
+				shift 2
 			else
-				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
-					arr_hsearch_int[idx++]="Size in memory:$2"
-					shift 2
-				else
-					printf "invalid format of memsize header descriptor. expecting: \`[!|<|>|<=|>=]value'.\n" >&2
-					exit 2
-				fi
+				ex_invalid_usage "invalid format of memsize header descriptor. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Ht) let match_on_header+=1 # shortcut for -Fh Type:x:y
-			if [[ -z $2 ]]; then
-				printf "header pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
+			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
+			if [[ $2 = *:* ]]; then
+				arr_hsearch[x++]="Type:$2"
+				shift 2
 			else
-				if [[ $2 = *:* ]]; then
-					arr_hsearch[x++]="Type:$2"
-					shift 2
-				else
-					printf "invalid format of set type descriptor. expecting: \`*:*'.\n" >&2
-					exit 2
-				fi
+				ex_invalid_usage "invalid format of set type descriptor. expecting: \`*:*'."
 			fi
 		;;
 		-Hv) let match_on_header+=1 # shortcut for -Fi Revision:...
-			if [[ -z $2 ]]; then
-				printf "header pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
+			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
+			if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
+				arr_hsearch_int[idx++]="Revision:$2"
+				shift 2
 			else
-				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
-					arr_hsearch_int[idx++]="Revision:$2"
-					shift 2
-				else
-					printf "invalid format of revision header descriptor. expecting: \`[!|<|>|<=|>=]value'.\n" >&2
-					exit 2
-				fi
+				ex_invalid_usage "invalid format of revision header descriptor. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Mc) do_count=1 # match on the count of members
-			if [[ -z $2 ]]; then
-				printf "value pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
+			[[ $2 ]] || ex_miss_optarg $1 "value pattern"
+			if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
+				str_match_on_msum="$2"
+				shift 2
 			else
-				if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
-					str_match_on_msum="$2"
-					shift 2
-				else
-					printf "invalid format of match on member count value. expecting: \`[!|<|>|<=|>=]value'.\n" >&2
-					exit 2
-				fi
+				ex_invalid_usage "invalid format of match on member count value. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
-		-To) # set the timeout for read
-			if [[ -z $2 ]]; then
-				printf "value of option \`%s' is missing\n" "$1" >&2
-				exit 2
-			else
-				if [[ $2 != +([[:digit:]]) ]]; then
-					printf "timeout value \`%s' is not an integer.\n" "$2" >&2
-					exit 2
-				fi
-				TMOUT=$2
-				shift 2
+		-To) # set the timeout for read (limited to integer)
+			[[ $2 ]] || ex_miss_optarg $1 "value"
+			if [[ $2 != +([[:digit:]]) ]]; then
+				ex_invalid_usage "timeout value \`$2' is not an integer"
 			fi
+			TMOUT=$2
+			shift 2
 		;;
 		-Tm) calc_mem=1 # caculate total memory usage of all matching sets
 			shift
@@ -355,39 +314,25 @@ while (($#)); do # parse cmd-line options
 			shift
 		;;
 		-Xh) exclude_header=1 # don't show certain headers
-			if [[ -z $2 ]]; then
-				printf "header pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
+			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
+			if [[ $2 = *:* ]]; then
+				arr_hxclude[${#arr_hxclude[@]}]="$2"
+				shift 2
 			else
-				if [[ $2 = *:* ]]; then
-					arr_hxclude[${#arr_hxclude[@]}]="$2"
-					shift 2
-				else
-					printf "invalid format of header descriptor. expecting: \`*:*'.\n" >&2
-					exit 2
-				fi
+				ex_invalid_usage "invalid format of header descriptor. expecting: \`*:*'"
 			fi
 		;;
 		-Xg) glob_xclude_element=1 # supress printing of matching members using a globbing pattern
-			if [[ -z $2 ]]; then
-				printf "glob pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
-			else
-				str_xclude="$2"
-				shift 2
-			fi
+			[[ $2 ]] || ex_miss_optarg $1 "glob pattern"
+			str_xclude="$2"
+			shift 2
 		;;
 		-Xr) regex_xclude_element=1 # supress printing of matching members using a regex pattern
-			if [[ -z $2 ]]; then
-				printf "regex pattern of option \`%s' is missing\n" "$1" >&2
-				exit 2
-			else
-				str_xclude="$2"
-				shift 2
-			fi
+			[[ $2 ]] || ex_miss_optarg $1 "regex pattern"
+			str_xclude="$2"
+			shift 2
 		;;
-		-\!|-f) printf "unsupported option: \`$1'\n" >&2
-			exit 2
+		-\!|-f) ex_invalid_usage "unsupported option: \`$1'"
 		;;
 		-v) printf "%s version %s\n" "$me" "$version"
 			exit 0
@@ -399,14 +344,14 @@ declare -i i=x=idx=0
 
 # check for ipset program and version
 [[ -x ${ipset:=/sbin/ipset} ]] || {
-	printf "ipset binary \`%s' does not exist, or is not executable. check \`ipset' variable.\n" "$ipset" >&2
+	printf "ipset binary \`%s' does not exist, or is not executable. check \`ipset' variable\n" "$ipset" >&2
 	exit 1
 }
 ips_version="$("$ipset" --version)"
 ips_version="${ips_version#ipset v}"
 ips_version="${ips_version%%.*}"
 if [[ $ips_version != +([[:digit:]]) ]]; then
-	printf "failed retrieving ipset version. expected digits, got: \`%s'.\n" "$ips_version" >&2
+	printf "failed retrieving ipset version. expected digits, got: \`%s'\n" "$ips_version" >&2
 	exit 1
 fi
 if ((ips_version < 6)); then
@@ -420,8 +365,7 @@ if ((names_only)); then
 		match_on_header||do_count||glob_search||regex_search||calc_mem||\
 		glob_xclude_element||regex_xclude_element||count_sets||sets_total))
    	then
-		printf "option -n does not allow another option.\n" >&2
-		exit 2
+		ex_invalid_usage "option -n does not allow another option"
 	fi
 	# raw ipset output
 	"$ipset" list -n
@@ -429,36 +373,30 @@ if ((names_only)); then
 fi
 if ((headers_only)); then
 	if ((show_members || show_all || isolate)); then
-		printf "options -t and -a|-i|-m are mutually exclusive\n" >&2
-		exit 2
+		ex_invalid_usage "options -t and -a|-i|-m are mutually exclusive"
 	fi
 fi
 if ((isolate)); then
 	if ((show_count || show_all || calc_mem || count_sets)); then
-		printf "options -i and -a|-c|-Cs|-Tm are mutually exclusive\n" >&2
-		exit 2
+		ex_invalid_usage "options -i and -a|-c|-Cs|-Tm are mutually exclusive"
 	fi
 fi
 if ((glob_search || regex_search)); then
 	if ((glob_search && regex_search)); then
-		printf "options -Fg and -Fr are mutually exclusive\n" >&2
-		exit 2
+		ex_invalid_usage "options -Fg and -Fr are mutually exclusive"
 	fi
 	if ((glob_xclude_element || regex_xclude_element)); then
-		printf "options -Fg|-Fr and -Xg|-Xr are mutually exclusive\n" >&2
-		exit 2
+		ex_invalid_usage "options -Fg|-Fr and -Xg|-Xr are mutually exclusive"
 	fi
 fi
 if ((exclude_header)); then
 	if ! ((headers_only || show_all)); then
-		printf "option -Xh requires -a or -t\n" >&2
-		exit 2
+		ex_invalid_usage "option -Xh requires -a or -t"
 	fi
 fi
 if ((glob_xclude_element || regex_xclude_element)); then
 	if ! ((show_members || show_all || isolate)); then
-		printf "options -Fg|-Fr require any of -a|-i|-m\n" >&2
-		exit 2
+		ex_invalid_usage "options -Fg|-Fr require any of -a|-i|-m"
 	fi
 fi
 
@@ -466,15 +404,13 @@ fi
 if [[ $1 ]]; then
 	if ((isolate)); then
 		if (($# != 1)); then
-			printf "option -i is only valid for a single set\n" >&2
-			exit 2
+			ex_invalid_usage "option -i is only valid for a single set"
 		fi
 	fi
 	arr_opts=("$@")
 else
 	if ((isolate)); then
-		printf "option -i is only valid for a single set\n" >&2
-		exit 2
+		ex_invalid_usage "option -i is only valid for a single set"
 	fi
 	while IFS=$'\n' read -r; do
 		arr_opts[idx++]="$REPLY"
