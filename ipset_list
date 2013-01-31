@@ -34,8 +34,8 @@
 # - Show only sets containing a specific (glob matching) header.
 # - Arithmetic comparison on headers with an integer value.
 # - Match members using a globbing or regex pattern.
-# - Supress listing of (glob matching) headers.
-# - Supress listing of members matching a glob or regex pattern.
+# - Suppress listing of (glob matching) headers.
+# - Suppress listing of members matching a glob or regex pattern.
 # - Calculate the total size in memory of all matching sets.
 # - Calculate the total amount of all matching and traversed sets.
 # - Colorize the output.
@@ -70,11 +70,11 @@
 # $0 -Mc '>=100'     - show sets with a member count greater or equal to 100
 # $0 -t -Xh "Revision:*" -Xh "References:*"
 #+ - show all sets headers, but exclude Revision and References entries.
-# $0 -c -m -Xg "210.*" setA - show members of setA, but supress listing of entries
+# $0 -c -m -Xg "210.*" setA - show members of setA, but suppress listing of entries
 #+ matching the glob pattern "210.*", show count of excluded and total members.
 # $0 -Tm             - calculate total size in memory of all sets.
 # $0 -t -Tm -Xh "@(Type|Re*|Header):*" 
-#+ show all sets headers, but supress all but name and memsize entry,
+#+ show all sets headers, but suppress all but name and memsize entry,
 #+ calculate the total memory size of all sets.
 # $0 -Cs -Ht "hash:*"    - find sets of any hash type, calculate their sum.
 # $0 -Ts             - show all set names and total count of sets.
@@ -346,12 +346,12 @@ while (($#)); do
 				ex_invalid_usage "invalid format of header descriptor. expecting: \`*:*'"
 			fi
 		;;
-		-Xg) glob_xclude_element=1 # supress printing of matching members using a globbing pattern
+		-Xg) glob_xclude_element=1 # suppress printing of matching members using a globbing pattern
 			[[ $2 ]] || ex_miss_optarg $1 "glob pattern"
 			str_xclude="$2"
 			shift 2
 		;;
-		-Xr) regex_xclude_element=1 # supress printing of matching members using a regex pattern
+		-Xr) regex_xclude_element=1 # suppress printing of matching members using a regex pattern
 			[[ $2 ]] || ex_miss_optarg $1 "regex pattern"
 			str_xclude="$2"
 			shift 2
