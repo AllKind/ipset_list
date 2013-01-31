@@ -143,10 +143,8 @@ exit 2
 }
 
 # validate value of colorize
-if [[ $colorize ]]; then
-	if [[ ${colorize:=0} != [01] ]]; then
-		ex_invalid_usage "value of variable \`colorize' \`$colorize' is not 0 or 1."
-	fi
+if [[ ${colorize:=0} != [01] ]]; then
+	ex_invalid_usage "value of variable \`colorize' \`$colorize' is not 0 or 1."
 fi
 
 # parse cmd-line options
