@@ -81,6 +81,9 @@
 #+ find all sets not of any bitmap type, count their members sum,
 #+ display only the 'Type' header,
 #+ count amount of matching and traversed sets.
+# $0 -Co -c -Ts -Tm    - show all set names, count their members,
+# + count total amount of sets, show total memory usage of all sets,
+# + colorize the output
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -88,6 +91,14 @@
 # -----------------------------------------------------------------
 # path to ipset. defaults to `/sbin/ipset' if unset.
 ipset="/sbin/ipset"
+
+# colorize the output (bool 0/1).
+colorize=0
+
+# path to cl (to colorize the output).
+# https://github.com/AllKind/cl
+# defaults to `/usr/local/bin/cl' if unset.
+cl="/usr/local/bin/cl"
 
 # default delimiter character. defaults to whitespace if unset.
 delim=" "
@@ -131,23 +142,30 @@ printf "%s\n" "$*" >&2
 exit 2
 }
 
+# validate value of colorize
+if [[ $colorize ]]; then
+	if [[ ${colorize:=0} != [01] ]]; then
+		ex_invalid_usage "value of variable \`colorize' \`$colorize' is not 0 or 1."
+	fi
+fi
+
 # parse cmd-line options
 while (($#)); do
 	case "$1" in
 		-\?|-h) printf "\n\tipset set listing wrapper script\n\n"
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
 			printf '%s %s\n' "$me" "{-?|-h} | -n"
-			printf '%s %s\n\t%s\n' "$me" "[-i|-r|-s] [-d char] [-To value]"\
+			printf '%s %s\n\t%s\n' "$me" "[-i|-r|-s|-Co] [-d char] [-To value]"\
 				"[{-Fg|-Fr}|{-Xg|-Xr} pattern] set-name"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
-			   	"[-t|-c|-Cs|-Tm|-Ts] [-Fh header-glob:value-glob] [...]"\
+			   	"[-t|-c|-Co|-Cs|-Tm|-Ts] [-Fh header-glob:value-glob] [...]"\
 			   	"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 			   	"[-Fg|-Fr pattern] [-Ht type-glob]"\
 			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
 			   	"[-Mc [!|<|>|<=|>=]value] [-To value]"\
 			   	"[-Xh header-glob:value-glob] [...] [set-name] [...]"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
-			   	"[-a|-c|-m|-r|-s|-Cs|-Tm|-Ts] [-d char]"\
+			   	"[-a|-c|-m|-r|-s|-Co|-Cs|-Tm|-Ts] [-d char]"\
 			   	"[-Fh header-glob:value-glob] [...]"\
 			   	"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 			   	"[-Fg|-Fr pattern] [-Ht type-glob]"\
@@ -167,6 +185,7 @@ while (($#)); do
 				'-s' 'print elements sorted (if supported by the set type).'\
 				'-t' 'show set headers only.'\
 				'-v' 'version information.'\
+				'-Co' "colorize output (requires \`cl')."\
 				'-Cs' 'count amount of matching sets.'\
 				'-Fg pattern' 'match on members using a [ext]glob pattern.'\
 				'-Fr pattern' 'match on members using a regex (=~ operator) pattern.'
@@ -224,6 +243,9 @@ while (($#)); do
 			fi
 		;;
 		-Cs) count_sets=1 # calculate total count of matching sets
+			shift
+		;;
+		-Co) colorize=1 # colorize the output (requires cl)
 			shift
 		;;
 		-Fg) glob_search=1 # find entry with globbing pattern
@@ -399,6 +421,13 @@ if ((glob_xclude_element || regex_xclude_element)); then
 		ex_invalid_usage "options -Fg|-Fr require any of -a|-i|-m"
 	fi
 fi
+if ((colorize)); then
+	if ! [[ -x ${cl:=/usr/local/bin/cl} ]]; then
+		printf "cl program \`%s' does not exist, or is not executable. check \`cl' variable\n" "$cl" >&2
+		exit 1
+	fi
+	[[ -t 1 ]] || colorize=0 # output is not a terminal
+fi
 
 # sets to work on (no arg means all sets)
 if [[ $1 ]]; then
@@ -437,10 +466,18 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					if ! ((headers_only||show_members||show_all||show_count||match_on_header||do_count||calc_mem||glob_search||regex_search))
 				   	then
 						in_header=0 
-						arr_hcache[x++]="$REPLY"
+						if ((colorize)); then
+							arr_hcache[x++]="$($cl bold cyan)${REPLY}$($cl)"
+						else
+							arr_hcache[x++]="$REPLY"
+						fi
 						break # nothing to show but the names
 					else
-						arr_hcache[x++]=$'\n'"$REPLY"
+						if ((colorize)); then
+							arr_hcache[x++]=$'\n'"$($cl bold cyan)${REPLY}$($cl)"
+						else
+							arr_hcache[x++]=$'\n'"$REPLY"
+						fi
 					fi
 				fi
 			;;
@@ -449,14 +486,26 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					printf "unexpected entry: \`%s' - header not opened?\n" "$REPLY" >&2
 					exit 1
 				fi
-				in_header=0
+				in_header=0 found_hxclude=0
 				if ((match_on_header)); then
 					if ((found_header != match_on_header)); then found_set=0
 						break # set does not contain wanted header
 					fi
 				fi
-				if ((show_all)); then
-					arr_hcache[x++]="$REPLY"
+				if ((exclude_header)); then # don't show certain headers
+					for idx in ${!arr_hxclude[@]}; do
+						if [[ ${REPLY%%:*} = ${arr_hxclude[idx]%%:*} && ${REPLY#*: } = ${arr_hxclude[idx]#*:} ]]
+						then found_hxclude=1
+							break
+						fi
+					done
+				fi
+				if ((show_all && ! found_hxclude)); then
+					if ((colorize)); then
+						arr_hcache[x++]="$($cl bold cyan)${REPLY}$($cl)"
+					else
+						arr_hcache[x++]="$REPLY"
+					fi
 				fi
 			;;
 			*) # either in-header, or member entry
@@ -563,34 +612,66 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 			let mem_total+=$mem_tmp
 		fi
 		if ((${#arr_hcache[@]})); then
-			printf "%s\n" "${arr_hcache[@]}"
+			if ((colorize)); then
+				printf "$($cl cyan)%b$($cl)\n" "${arr_hcache[@]}"
+			else
+				printf "%s\n" "${arr_hcache[@]}"
+			fi
 		fi
 		if ((${#arr_mcache[@]})); then
 			IFS="${delim:= }"
-			printf "%s" "${arr_mcache[*]}"
+			if ((colorize)); then
+				printf "$($cl yellow)%s$($cl)" "${arr_mcache[*]}"
+			else
+				printf "%s" "${arr_mcache[*]}"
+			fi
 			IFS="$oIFS"
 			printf "\n"
 		fi
 		if ((show_count)); then
 			if ((glob_search || regex_search)); then
-				printf "Match count: %d\n" $match_count
+				if ((colorize)); then
+					printf "$($cl red)Match count$($cl): $($cl bold red)%d$($cl)\n" $match_count
+				else
+					printf "Match count: %d\n" $match_count
+				fi
 			fi
 			if ((glob_xclude_element || regex_xclude_element)); then
-				printf "Exclude count: %d\n" $xclude_count
+				if ((colorize)); then
+					printf "$($cl red)Exclude count$($cl): $($cl bold red)%d$($cl)\n" $xclude_count
+				else
+					printf "Exclude count: %d\n" $xclude_count
+				fi
 			fi
-			printf "Member count: %d\n" $member_count
+			if ((colorize)); then
+				printf "$($cl bold white)Member count$($cl): $($cl bold yellow)%d$($cl)\n" $member_count
+			else
+				printf "Member count: %d\n" $member_count
+			fi
 		fi
 	fi
 done
 if ((count_sets || calc_mem || sets_total)); then
 	printf "\n"
 	if ((count_sets)); then
-		printf "Count of all matched sets: %d\n" $set_count
+		if ((colorize)); then
+			printf "$($cl bold white)Count$($cl) of all $($cl bold magenta)matched sets$($cl): $($cl bold magenta)%d$($cl)\n" $set_count
+		else
+			printf "Count of all matched sets: %d\n" $set_count
+		fi
 	fi
 	if ((sets_total)); then
-		printf "Count of all traversed sets: %d\n" $sets_sum
+		if ((colorize)); then
+			printf "$($cl bold white)Count$($cl) of all $($cl bold blue)traversed sets$($cl): $($cl bold blue)%d$($cl)\n" $sets_sum
+		else
+			printf "Count of all traversed sets: %d\n" $sets_sum
+		fi
 	fi
 	if ((calc_mem)); then
-		printf "Total memory size of all matched sets: %d\n" $mem_total
+		if ((colorize)); then
+			printf "$($cl bold green)Total memory size$($cl) of all matched sets: $($cl bold green)%d$($cl)\n" $mem_total
+		else
+			printf "Total memory size of all matched sets: %d\n" $mem_total
+		fi
 	fi
 fi
