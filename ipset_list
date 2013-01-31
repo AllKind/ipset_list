@@ -38,6 +38,7 @@
 # - Supress listing of members matching a glob or regex pattern.
 # - Calculate the total size in memory of all matching sets.
 # - Calculate the total amount of all matching and traversed sets.
+# - Colorize the output.
 # - Operate on a single, selected, or all sets.
 # -----------------------------------------------------------------
 
@@ -84,6 +85,8 @@
 # $0 -Co -c -Ts -Tm    - show all set names, count their members,
 # + count total amount of sets, show total memory usage of all sets,
 # + colorize the output
+# $0 -m -r -To 0     - show members of all sets, try to resolve hosts,
+# set the timeout to 0 (effectivly disabling it).
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -121,7 +124,7 @@ set +u
 
 # variables
 export LC_ALL=C
-readonly version=2.4
+readonly version=2.5
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_match_on_msum="" str_xclude="" str_hval str_op
@@ -141,6 +144,7 @@ ex_invalid_usage() {
 printf "%s\n" "$*" >&2
 exit 2
 }
+# -----------------------------------------------------------------
 
 # validate value of colorize
 if [[ ${colorize:=0} != [01] ]]; then
