@@ -18,6 +18,7 @@ Features:
 - Supress listing of members matching a glob or regex pattern.
 - Calculate the total size in memory of all matching sets.
 - Calculate the total amount of all matching and traversed sets.
+- Colorize the output.
 - Operate on a single, selected, or all sets.
 
 
@@ -55,5 +56,7 @@ size in memory greater than 10000 and of type hash:ip
 - `ipset_list -Cs -Ht "hash:*"`    - find sets of any hash type, calculate their sum.
 - `ipset_list -Ts`             - show all set names and total count of sets.
 - `ipset_list -c -t -Cs -Ts -Xh "@(Size*|Re*|Header):*" -Ht "!(bitmap:*)"` - find all sets not of any bitmap type, count their members sum, display only the 'Type' header, count amount of matching and traversed sets.
+- `ipset_list -Co -c -Ts -Tm`  - show all set names, count their members, count total amount of sets, show total memory usage of all sets, colorize the output
+- `ipset_list -m -r -To 0`     - show members of all sets, try to resolve hosts, set the timeout to 0 (effectivly disabling it).
 
 
