@@ -139,12 +139,12 @@ export LC_ALL=C
 readonly version=2.5
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
-declare ips_version="" str_search="" str_match_on_msum="" str_xclude="" str_hval str_op
+declare ips_version="" str_search="" str_match_on_msum="" str_xclude="" opt str_hval str_op
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
 declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=0
 declare -i exclude_header=glob_xclude_element=glob_xclude_element=0
 declare -i in_header=found_set=found_hxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=idx=0
-declare -a arr_opts arr_par arr_hcache arr_mcache arr_hsearch arr_hsearch_int arr_hxclude
+declare -a arr_sets arr_par arr_hcache arr_mcache arr_hsearch arr_hsearch_int arr_hxclude
 
 # functions
 ex_miss_optarg() {
@@ -447,28 +447,42 @@ if ((colorize)); then
 fi
 
 # sets to work on (no arg means all sets)
-if [[ $1 ]]; then
+while IFS=$'\n' read -r; do
+	arr_sets[idx++]="$REPLY"
+done < <("$ipset" list -n)
+if ! ((${#arr_sets[@]})); then
+	printf "Cannot find any sets\n" >&2
+	exit 1
+fi
+if [[ $1 ]]; then # there are remaining arg(s)
+	for opt in "$@"; do found_set=0 # check if the sets exist
+		for idx in ${!arr_sets[@]}; do
+			if [[ $opt = ${arr_sets[idx]} ]]; then found_set=1
+				break
+			fi
+		done
+		if ! ((found_set)); then
+			ex_invalid_usage "\`$opt' is not a valid option nor an existing set name"
+		fi
+	done
 	if ((isolate)); then
 		if (($# != 1)); then
 			ex_invalid_usage "option -i is only valid for a single set"
 		fi
 	fi
-	arr_opts=("$@")
+	arr_sets=("$@") # reassign remaining args
 else
 	if ((isolate)); then
 		ex_invalid_usage "option -i is only valid for a single set"
 	fi
-	while IFS=$'\n' read -r; do
-		arr_opts[idx++]="$REPLY"
-	done < <("$ipset" list -n)
 fi
 
 # read sets
-for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
+for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 	while read -r || { 
 		(($? > 128)) && \
 			printf "timeout reached or signal received, while reading set \`%s'.\n" \
-			"${arr_opts[idx]}" >&2 && continue 2;
+			"${arr_sets[idx]}" >&2 && continue 2;
    	}; do
 		case "$REPLY" in
 			"") : ;;
@@ -612,7 +626,7 @@ for idx in "${!arr_opts[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					let member_count+=1
 				fi
 		esac
-	done < <("$ipset" list "${arr_opts[idx]}" "${arr_par[@]}")
+	done < <("$ipset" list "${arr_sets[idx]}" "${arr_par[@]}")
 	if ((found_set)); then # print gathered information
 		if ((glob_search || regex_search)) && ((match_count == 0)); then
 			continue # glob or regex search didn't match
