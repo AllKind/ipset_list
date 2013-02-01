@@ -416,6 +416,9 @@ if ((isolate)); then
 	if ((show_count || show_all || calc_mem || count_sets)); then
 		ex_invalid_usage "options -i and -a|-c|-Cs|-Tm are mutually exclusive"
 	fi
+	if ((match_on_header)); then
+		ex_invalid_usage "option -i does not allow matching on header entries"
+	fi
 fi
 if ((glob_search || regex_search)); then
 	if ((glob_search && regex_search)); then
