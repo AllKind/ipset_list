@@ -113,7 +113,8 @@ cl="/usr/local/bin/cl"
 # use delim=$'\n' to use the ipset default newline as delimiter.
 delim=" "
 
-# default read timeout
+# default read timeout (for reading sets - esp. with the -r switch).
+# the command line option -To overrides this.
 TMOUT=30
 
 # -----------------------------------------------------------------
