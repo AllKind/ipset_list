@@ -61,24 +61,27 @@
 #+ matching the regex "^210\..*", show match and members sum
 # $0 -Fh Type:hash:ip -Fh "Header:family inet *" - show all set names, which are of
 #+ type hash:ip and header of ipv4.
-# $0 -Fi References:0    - show all sets with 0 references
-# $0 -Hr 0               - shortcut for -Fi References:0
-# $0 -Ht "!(hash:ip)"    - show sets which are not of type hash:ip
-# $0 -Ht "!(bitmap:*)"   - show sets wich are not of any bitmap type
+# $0 -Fi References:0  - show all sets with 0 references
+# $0 -Hr 0             - shortcut for -Fi References:0
+# $0 -Ht "!(hash:ip)"  - show sets which are not of type hash:ip
+# $0 -Ht "!(bitmap:*)" - show sets wich are not of any bitmap type
 # $0 -Hr 2 -Hv 0 -Hs \>10000 -Ht hash:ip    - find sets with 2 references,
 #+ revision of 0, size in memory greater than 10000 and of type hash:ip
-# $0 -Mc 0           - show sets with zero members 
-# $0 -Mc '>=100'     - show sets with a member count greater or equal to 100
+# $0 -Mc 0             - show sets with zero members 
+# $0 -Mc '>=100'       - show sets with a member count greater or equal to 100
 # $0 -t -Xh "Revision:*" -Xh "References:*"
 #+ - show all sets headers, but exclude Revision and References entries.
 # $0 -c -m -Xg "210.*" setA - show members of setA, but suppress listing of entries
 #+ matching the glob pattern "210.*", show count of excluded and total members.
-# $0 -Tm             - calculate total size in memory of all sets.
+# $0 -Tm               - calculate total size in memory of all sets.
 # $0 -t -Tm -Xh "@(Type|Re*|Header):*" 
 #+ show all sets headers, but suppress all but name and memsize entry,
 #+ calculate the total memory size of all sets.
-# $0 -Cs -Ht "hash:*"    - find sets of any hash type, calculate their sum.
-# $0 -Ts             - show all set names and total count of sets.
+# $0 -t -Tm -Xh "!(Size*):*" -Ts -Co
+# + List all sets headers, but suppress all but name and memsize entry,
+# + count amount of sets, calculate total memory usage, colorize the output.
+# $0 -Cs -Ht "hash:*"  - find sets of any hash type, count their amount.
+# $0 -Ts               - show all set names and total count of sets.
 # $0 -c -t -Cs -Ts -Xh "@(Size*|Re*|Header):*" -Ht "!(bitmap:*)"
 #+ find all sets not of any bitmap type, count their members sum,
 #+ display only the 'Type' header,
@@ -86,7 +89,7 @@
 # $0 -Co -c -Ts -Tm    - show all set names, count their members,
 # + count total amount of sets, show total memory usage of all sets,
 # + colorize the output
-# $0 -m -r -To 0     - show members of all sets, try to resolve hosts,
+# $0 -m -r -To 0       - show members of all sets, try to resolve hosts,
 # set the timeout to 0 (effectivly disabling it).
 # -----------------------------------------------------------------
 

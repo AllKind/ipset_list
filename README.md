@@ -53,6 +53,8 @@ size in memory greater than 10000 and of type hash:ip
 - `ipset_list -Tm`                 - calculate total size in memory of all sets.
 - `ipset_list -t -Tm -Xh "@(Type|Re*|Header):*"` - show all sets headers, but suppress all but name and memsize entry,
  calculate the total memory size of all sets.
+- `ipset_list -t -Tm -Xh "!(Size*):*" -Ts -Co` List all sets headers, but suppress all but name and memsize entry,
+ count amount of sets, calculate total memory usage, colorize the output.
 - `ipset_list -Cs -Ht "hash:*"`    - find sets of any hash type, calculate their sum.
 - `ipset_list -Ts`             - show all set names and total count of sets.
 - `ipset_list -c -t -Cs -Ts -Xh "@(Size*|Re*|Header):*" -Ht "!(bitmap:*)"` - find all sets not of any bitmap type, count their members sum, display only the 'Type' header, count amount of matching and traversed sets.
