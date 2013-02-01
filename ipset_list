@@ -96,6 +96,7 @@
 # -----------------------------------------------------------------
 # Modify here
 # -----------------------------------------------------------------
+
 # path to ipset. defaults to `/sbin/ipset' if unset.
 ipset="/sbin/ipset"
 
@@ -107,12 +108,18 @@ colorize=0
 # defaults to `/usr/local/bin/cl' if unset.
 cl="/usr/local/bin/cl"
 
-# default delimiter character. defaults to whitespace if unset.
+# default delimiter character for set members (elements).
+# defaults to whitespace if unset.
+# use delim=$'\n' to use the ipset default newline as delimiter.
 delim=" "
 
 # default read timeout
 TMOUT=30
+
 # -----------------------------------------------------------------
+# DO NOT MODIFY ANYTHING BEYOND THIS LINE!
+# -----------------------------------------------------------------
+
 
 # bash check
 if [ -z "$BASH" ]; then
