@@ -100,14 +100,6 @@
 # path to ipset. defaults to `/sbin/ipset' if unset.
 ipset="/sbin/ipset"
 
-# colorize the output (bool 0/1).
-colorize=0
-
-# path to cl (to colorize the output).
-# https://github.com/AllKind/cl
-# defaults to `/usr/local/bin/cl' if unset.
-cl="/usr/local/bin/cl"
-
 # default delimiter character for set members (elements).
 # defaults to whitespace if unset.
 # use delim=$'\n' to use the ipset default newline as delimiter.
@@ -116,6 +108,34 @@ delim=" "
 # default read timeout (for reading sets - esp. with the -r switch).
 # the command line option -To overrides this.
 TMOUT=30
+
+# colorize the output (bool 0/1).
+colorize=0
+
+# path to cl (to colorize the output).
+# https://github.com/AllKind/cl
+# defaults to `/usr/local/bin/cl' if unset.
+cl="/usr/local/bin/cl"
+
+# define colors
+# default foreground color
+col_fg="white"
+# default background color
+col_bg="black"
+# color for headers
+col_headers="cyan"
+# color for members
+col_members="yellow"
+# color for matches
+col_match="red"
+# color for display of memsize
+col_memsize="green"
+# color for count of matched sets
+col_set_count="magenta"
+# color for count of traversed sets
+col_set_total="blue"
+# general higlightning color
+col_highlight="white"
 
 # -----------------------------------------------------------------
 # DO NOT MODIFY ANYTHING BEYOND THIS LINE!
@@ -443,6 +463,23 @@ if ((colorize)); then
 		printf "cl program \`%s' does not exist, or is not executable. check \`cl' variable\n" "$cl" >&2
 		exit 1
 	fi
+	# set color defaults if unset
+	: ${col_fg:=white}
+	: ${col_bg:=black}
+	: ${col_headers:=cyan}
+	: ${col_members:=yellow}
+	: ${col_match:=red}
+	: ${col_memsize:=green}
+	: ${col_set_count:=magenta}
+	: ${col_set_total:=blue}
+	: ${col_highlight:=white}
+
+	# check if color defines are valid
+	for opt in col_fg col_bg col_headers col_members col_match col_memsize \
+	   	col_set_count col_set_total col_highlight
+	do
+		($cl ${!opt}) || ex_invalid_usage "variable \`$opt' has an invalid color value: \`${!opt}'"
+	done
 	[[ -t 1 ]] || colorize=0 # output is not a terminal
 fi
 
@@ -498,14 +535,14 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				   	then
 						in_header=0 
 						if ((colorize)); then
-							arr_hcache[x++]="$($cl bold cyan)${REPLY}$($cl)"
+							arr_hcache[x++]="$($cl bold $col_headers)${REPLY}$($cl normal $col_fg $col_bg)"
 						else
 							arr_hcache[x++]="$REPLY"
 						fi
 						break # nothing to show but the names
 					else
 						if ((colorize)); then
-							arr_hcache[x++]=$'\n'"$($cl bold cyan)${REPLY}$($cl)"
+							arr_hcache[x++]=$'\n'"$($cl bold $col_headers)${REPLY}$($cl normal $col_fg $col_bg)"
 						else
 							arr_hcache[x++]=$'\n'"$REPLY"
 						fi
@@ -533,7 +570,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				fi
 				if ((show_all && ! found_hxclude)); then
 					if ((colorize)); then
-						arr_hcache[x++]="$($cl bold cyan)${REPLY}$($cl)"
+						arr_hcache[x++]="$($cl bold $col_headers)${REPLY}$($cl normal $col_fg $col_bg)"
 					else
 						arr_hcache[x++]="$REPLY"
 					fi
@@ -644,7 +681,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		fi
 		if ((${#arr_hcache[@]})); then
 			if ((colorize)); then
-				printf "$($cl cyan)%b$($cl)\n" "${arr_hcache[@]}"
+				printf "$($cl $col_headers)%b$($cl normal $col_fg $col_bg)\n" "${arr_hcache[@]}"
 			else
 				printf "%s\n" "${arr_hcache[@]}"
 			fi
@@ -652,7 +689,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		if ((${#arr_mcache[@]})); then
 			IFS="${delim:= }"
 			if ((colorize)); then
-				printf "$($cl yellow)%s$($cl)" "${arr_mcache[*]}"
+				printf "$($cl $col_members)%s$($cl normal $col_fg $col_bg)" "${arr_mcache[*]}"
 			else
 				printf "%s" "${arr_mcache[*]}"
 			fi
@@ -662,20 +699,23 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		if ((show_count)); then
 			if ((glob_search || regex_search)); then
 				if ((colorize)); then
-					printf "$($cl red)Match count$($cl): $($cl bold red)%d$($cl)\n" $match_count
+					printf "$($cl $col_match)Match count$($cl normal $col_fg $col_bg):\
+ $($cl bold $col_match)%d$($cl normal $col_fg $col_bg)\n" $match_count
 				else
 					printf "Match count: %d\n" $match_count
 				fi
 			fi
 			if ((glob_xclude_element || regex_xclude_element)); then
 				if ((colorize)); then
-					printf "$($cl red)Exclude count$($cl): $($cl bold red)%d$($cl)\n" $xclude_count
+					printf "$($cl $col_match)Exclude count$($cl normal $col_fg $col_bg):\
+ $($cl bold $col_match)%d$($cl normal $col_fg $col_bg)\n" $xclude_count
 				else
 					printf "Exclude count: %d\n" $xclude_count
 				fi
 			fi
 			if ((colorize)); then
-				printf "$($cl bold white)Member count$($cl): $($cl bold yellow)%d$($cl)\n" $member_count
+				printf "$($cl bold $col_highlight)Member count$($cl normal $col_fg $col_bg):\
+ $($cl bold $col_members)%d$($cl normal $col_fg $col_bg)\n" $member_count
 			else
 				printf "Member count: %d\n" $member_count
 			fi
@@ -686,21 +726,26 @@ if ((count_sets || calc_mem || sets_total)); then
 	printf "\n"
 	if ((count_sets)); then
 		if ((colorize)); then
-			printf "$($cl bold white)Count$($cl) of all $($cl bold magenta)matched sets$($cl): $($cl bold magenta)%d$($cl)\n" $set_count
+			printf "$($cl bold $col_highlight)Count$($cl normal $col_fg $col_bg) of all\
+ $($cl bold $col_set_count)matched sets$($cl normal $col_fg $col_bg):\
+ $($cl bold $col_set_count)%d$($cl normal $col_fg $col_bg)\n" $set_count
 		else
 			printf "Count of all matched sets: %d\n" $set_count
 		fi
 	fi
 	if ((sets_total)); then
 		if ((colorize)); then
-			printf "$($cl bold white)Count$($cl) of all $($cl bold blue)traversed sets$($cl): $($cl bold blue)%d$($cl)\n" $sets_sum
+			printf "$($cl bold $col_highlight)Count$($cl normal $col_fg $col_bg) of all\
+ $($cl bold $col_set_total)traversed sets$($cl normal $col_fg $col_bg):\
+ $($cl bold $col_set_total)%d$($cl normal $col_fg $col_bg)\n" $sets_sum
 		else
 			printf "Count of all traversed sets: %d\n" $sets_sum
 		fi
 	fi
 	if ((calc_mem)); then
 		if ((colorize)); then
-			printf "$($cl bold green)Total memory size$($cl) of all matched sets: $($cl bold green)%d$($cl)\n" $mem_total
+			printf "$($cl bold $col_memsize)Total memory size$($cl normal $col_fg $col_bg)\
+ of all matched sets: $($cl bold $col_memsize)%d$($cl normal $col_fg $col_bg)\n" $mem_total
 		else
 			printf "Total memory size of all matched sets: %d\n" $mem_total
 		fi
