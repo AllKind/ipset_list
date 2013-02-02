@@ -118,23 +118,42 @@ colorize=0
 cl="/usr/local/bin/cl"
 
 # define colors
+# run `cl --list' to retrieve the valid color names
+#
 # default foreground color
+# defaults to: white
 col_fg="white"
+
 # default background color
+# defaults to: black
 col_bg="black"
+
 # color for headers
+# defaults to: cyan
 col_headers="cyan"
+
 # color for members
+# defaults to: yellow
 col_members="yellow"
+
 # color for matches
+# defaults to: red
 col_match="red"
-# color for display of memsize
+
+# color for displaying of memsize
+# defaults to: green
 col_memsize="green"
-# color for count of matched sets
+
+# color for counting of matched sets
+# defaults to: magenta
 col_set_count="magenta"
-# color for count of traversed sets
+
+# color for counting of traversed sets
+# defaults to: blue
 col_set_total="blue"
+
 # general higlightning color
+# defaults to: white
 col_highlight="white"
 
 # -----------------------------------------------------------------
