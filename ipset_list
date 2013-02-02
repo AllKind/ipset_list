@@ -45,50 +45,69 @@
 
 # -----------------------------------------------------------------
 # Examples:
-# $0                 - no args, just list set names
-# $0 -c              - show all set names and their member sum
-# $0 -t              - show all sets, but headers only
-# $0 -c -t setA      - show headers and member sum of setA
-# $0 -i setA         - show only members entries of setA
-# $0 -c -m setA setB - show members and sum of setA & setB
-# $0 -a -c -d :      - show all sets members, sum and use `:' as entry delimiter
-# $0 -a -c setA      - show all info of setA and its members sum
+# $0                   - no args, just list set names
+# $0 -c                - show all set names and their member sum
+# $0 -t                - show all sets, but headers only
+# $0 -c -t setA        - show headers and member sum of setA
+# $0 -i setA           - show only members entries of setA
+# $0 -c -m setA setB   - show members and sum of setA & setB
+# $0 -a -c -d :        - show all sets members, sum and use `:' as entry delimiter
+# $0 -a -c setA        - show all info of setA and its members sum
 # $0 -c -m -d $'\n' setA - show members and sum of setA, delim with newline
-# $0 -c -m -r -s setA    - show members resolved and sorted + sum of setA
+# $0 -m -r -s setA     - show members of setA resolved and sorted
+# $0 -Ts               - show all set names and total count of sets.
+# $0 -Tm               - calculate total size in memory of all sets.
+# $0 -Mc 0             - show sets with zero members 
+# $0 -Mc '>=100'       - show sets with a member count greater or equal to 100
+# $0 -Fi References:0  - show all sets with 0 references
+# $0 -Hr 0             - shortcut for `-Fi References:0'
+# $0 -Cs -Ht "hash:*"  - find sets of any hash type, count their amount.
+# $0 -Ht "!(hash:ip)"  - show sets which are not of type hash:ip
+# $0 -Ht "!(bitmap:*)" - show sets wich are not of any bitmap type
 # $0 -i -Fr "^210\..*" setA - show only members of setA matching the regex "^210\..*"
 # $0 -a -c -Fh "Type:hash:ip" -Fr "^210\..*"
 #+ - show all information of sets with type hash:ip,
-#+ matching the regex "^210\..*", show match and members sum
-# $0 -Fh Type:hash:ip -Fh "Header:family inet *" - show all set names, which are of
-#+ type hash:ip and header of ipv4.
-# $0 -Fi References:0  - show all sets with 0 references
-# $0 -Hr 0             - shortcut for -Fi References:0
-# $0 -Ht "!(hash:ip)"  - show sets which are not of type hash:ip
-# $0 -Ht "!(bitmap:*)" - show sets wich are not of any bitmap type
-# $0 -Hr 2 -Hv 0 -Hs \>10000 -Ht hash:ip    - find sets with 2 references,
-#+ revision of 0, size in memory greater than 10000 and of type hash:ip
-# $0 -Mc 0             - show sets with zero members 
-# $0 -Mc '>=100'       - show sets with a member count greater or equal to 100
+#+ matching the regex "^210\..*", show match and members sum.
+#
+# $0 -m -Fg "!(210.*)" setA
+#+ show members of setA excluding the elements matching the negated glob.
+#
+# $0 -Hr \>=1 -Hv 0 -Hs \>10000   - find sets with at least one reference,
+#+ revision of 0 and size in memory greater than 10000
+#
+# $0 -Fh Type:hash:ip -Fh "Header:family inet *"
+#+ - show all set names, which are of type hash:ip and header of ipv4.
+#
 # $0 -t -Xh "Revision:*" -Xh "References:*"
 #+ - show all sets headers, but exclude Revision and References entries.
+#
+# $0 -t -Ht "!(@(bit|port)map):*" -Xh "!(Type):*"   - show all sets that are
+#+ neither of type bitmap or portmap, suppress all but the type header.
+#
 # $0 -c -m -Xg "210.*" setA - show members of setA, but suppress listing of entries
 #+ matching the glob pattern "210.*", show count of excluded and total members.
-# $0 -Tm               - calculate total size in memory of all sets.
+#
 # $0 -t -Tm -Xh "@(Type|Re*|Header):*" 
 #+ show all sets headers, but suppress all but name and memsize entry,
 #+ calculate the total memory size of all sets.
-# $0 -t -Tm -Xh "!(Size*):*" -Ts -Co
-# + List all sets headers, but suppress all but name and memsize entry,
+#
+# $0 -t -Tm -Xh "!(Size*|Type):*" -Ts -Co
+# + List all sets headers, but suppress all but name, type and memsize entry,
 # + count amount of sets, calculate total memory usage, colorize the output.
-# $0 -Cs -Ht "hash:*"  - find sets of any hash type, count their amount.
-# $0 -Ts               - show all set names and total count of sets.
+#
 # $0 -c -t -Cs -Ts -Xh "@(Size*|Re*|Header):*" -Ht "!(bitmap:*)"
 #+ find all sets not of any bitmap type, count their members sum,
 #+ display only the 'Type' header,
 #+ count amount of matching and traversed sets.
+#
+# $0 -a -Xh "@(@(H|R|M)e*):*"  - show all info of all sets,
+#+ but suppress Header, References, Revision and Member header entries.
+#+ (headers existing as per ipset 6.x -> tested version).
+#
 # $0 -Co -c -Ts -Tm    - show all set names, count their members,
 # + count total amount of sets, show total memory usage of all sets,
 # + colorize the output
+#
 # $0 -m -r -To 0       - show members of all sets, try to resolve hosts,
 # set the timeout to 0 (effectivly disabling it).
 # -----------------------------------------------------------------
@@ -194,6 +213,14 @@ exit 2
 ex_invalid_usage() {
 printf "%s\n" "$*" >&2
 exit 2
+}
+
+is_int() {
+[[ $1 = +([[:digit:]]) ]]
+}
+
+is_compare_str() {
+[[ $1 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]
 }
 # -----------------------------------------------------------------
 
@@ -322,7 +349,7 @@ while (($#)); do
 		;;
 		-Fi) let match_on_header+=1 # show only sets, containing a matching (int compare) header entry
 			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
-			if [[ $2 = *:?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
+			if is_compare_str "$2"; then
 				arr_hsearch_int[idx++]="$2"
 				shift 2
 			else
@@ -331,7 +358,7 @@ while (($#)); do
 		;;
 		-Hr) let match_on_header+=1 # shortcut for -Fi References:...
 			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
-			if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
+			if is_compare_str "$2"; then
 				arr_hsearch_int[idx++]="References:$2"
 				shift 2
 			else
@@ -340,7 +367,7 @@ while (($#)); do
 		;;
 		-Hs) let match_on_header+=1 # shortcut for -Fi "Size in Memory:..."
 			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
-			if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
+			if is_compare_str "$2"; then
 				arr_hsearch_int[idx++]="Size in memory:$2"
 				shift 2
 			else
@@ -358,7 +385,7 @@ while (($#)); do
 		;;
 		-Hv) let match_on_header+=1 # shortcut for -Fi Revision:...
 			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
-			if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
+			if is_compare_str "$2"; then
 				arr_hsearch_int[idx++]="Revision:$2"
 				shift 2
 			else
@@ -367,7 +394,7 @@ while (($#)); do
 		;;
 		-Mc) do_count=1 # match on the count of members
 			[[ $2 ]] || ex_miss_optarg $1 "value pattern"
-			if [[ $2 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]; then
+			if is_compare_str "$2"; then
 				str_match_on_msum="$2"
 				shift 2
 			else
@@ -422,7 +449,7 @@ declare -i i=x=idx=0
 ips_version="$("$ipset" --version)"
 ips_version="${ips_version#ipset v}"
 ips_version="${ips_version%%.*}"
-if [[ $ips_version != +([[:digit:]]) ]]; then
+if ! is_int "$ips_version"; then
 	printf "failed retrieving ipset version. expected digits, got: \`%s'\n" "$ips_version" >&2
 	exit 1
 fi
@@ -432,7 +459,7 @@ if ((ips_version < 6)); then
 fi
 
 # validate TMOUT variable
-if [[ $TMOUT && $TMOUT != +([[:digit:]]) ]]; then
+if [[ $TMOUT ]] && ! is_int "$TMOUT"; then
 	ex_invalid_usage "timeout value \`$TMOUT' is not an integer"
 fi
 
@@ -611,7 +638,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 						done
 						for idx in ${!arr_hsearch_int[@]}; do # int compare
 							if [[ ${REPLY%%:*} = ${arr_hsearch_int[idx]%%:*} ]]; then # header name matches
-								if [[ ${REPLY#*: } != +([[:digit:]]) ]]; then
+								if ! is_int "${REPLY#*: }"; then
 									printf "header value \`%s' is not an integer.\n" "${REPLY#*: }" >&2
 									exit 1
 								fi
@@ -626,7 +653,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					fi
 					if ((calc_mem)); then
 						if [[ ${REPLY%%:*} = "Size in memory" ]]; then
-							if [[ ${REPLY#*: } != +([[:digit:]]) ]]; then
+							if ! is_int "${REPLY#*: }"; then
 								printf "header value \`%s' is not an integer.\n" "${REPLY#*: }" >&2
 								exit 1
 							fi
