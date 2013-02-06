@@ -42,11 +42,14 @@ shopt -s extglob
 
 _remove_reply_entry() {
 local -i x
-for x in ${!COMPREPLY[@]}; do
-	if [[ ${COMPREPLY[x]} = $1 ]]; then
-		unset COMPREPLY[x]
-		break
-	fi
+while (($#)); do
+	for x in ${!COMPREPLY[@]}; do
+		if [[ ${COMPREPLY[x]} = $1 ]]; then
+			unset COMPREPLY[x]
+			break
+		fi
+	done
+	shift
 done
 }
 
@@ -54,12 +57,14 @@ _ipset_list_complete() {
 local -i i x
 local cur prev
 local sets=( $("$ipset_list" -n ) )
-local opts=(-a -c -d -h -i -m -n -r -s -t)
+local opts=(-? -a -c -d -h -i -m -n -r -s -t -v)
 local Copts=(-Cs -Co)
 local Fopts=(-Fh -Fi -Fg -Fr)
 local Hopts=(-Hr -Hs -Ht -Hv)
 local Topts=(-Tm -To -Ts)
 local Xopts=(-Xh -Xg -Xr)
+
+: ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
 
 COMPREPLY=( "${sets[@]}" )
 _get_comp_words_by_ref cur || return
@@ -74,45 +79,44 @@ fi
 
 case "$cur" in
 	-C) COMPREPLY=( ${Copts[@]} $cur )
-		for i in ${!COMP_WORDS[@]}; do
-			case "${COMP_WORDS[i]}" in
-				-i) COMPREPLY=( -Co $cur )
-					break
-				;;
-			esac
+		for ((i=1; i <= ${#COMP_WORDS[@]}; i++)); do # no set counting on -i
+			if [[ ${COMP_WORDS[i]} = -i ]]; then COMPREPLY=( -Co $cur )
+				break
+			fi
 		done
 	;;
 	-F) COMPREPLY=( ${Fopts[@]} $cur ) ;;
 	-H) COMPREPLY=( ${Hopts[@]} $cur ) ;;
+	-M) COMPREPLY=( -Mc $cur ) ;;
 	-T) COMPREPLY=( ${Topts[@]} $cur ) ;;
 	-X) COMPREPLY=( ${Xopts[@]} $cur ) ;;
-	-*) 
+	-*) # any option is requested
 		if ((${#COMP_WORDS[@]} > 2)); then # these options don't allow any other
 			opts=("${opts[@]/@(-n|-h)/}")
 		fi
-		COMPREPLY=( ${opts[@]} ${Copts[@]} ${Fopts[@]} ${Hopts[@]} ${Topts[@]} ${Xopts[@]} )
-		# some options don't allow others
+		COMPREPLY=( ${opts[@]} ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]} $cur )
+		# some options allow only a subset of other options
 		for i in ${!COMP_WORDS[@]}; do
 			case "${COMP_WORDS[i]}" in
-				-a) COMPREPLY=( -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} ${Topts[@]} ${Xopts[@]} $cur )
+				-a) COMPREPLY=( -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]} $cur )
 					break
 				;;
 				-i) COMPREPLY=( -Co -d -r -s $cur )
 					break
 				;;
-				-m) COMPREPLY=( -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} ${Topts[@]} $cur )
+				-m) COMPREPLY=( -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} $cur )
 					break
 				;;
-				-t) COMPREPLY=( -c ${Copts[@]} ${Fopts[@]} ${Hopts[@]} ${Topts[@]} ${Xopts[@]} $cur )
+				-t) COMPREPLY=( -c ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]} $cur )
 					break
 				;;
-				-h|-n) COMPREPLY=()
+				-\?|-h|-n|-v) COMPREPLY=()
 					break
 				;;
 			esac
 		done
-		case "$prev" in # options that need a value we can't predict
-			@(-@(d|h|n|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr))) COMPREPLY=() ;;
+		case "$prev" in # options that exclude any other option, or need a value we can't predict
+			@(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr))) COMPREPLY=() ;;
 		esac
 	;;
 	*) # not an option was requested
@@ -128,36 +132,24 @@ case "$cur" in
 				IFS=$'\n'
 				COMPREPLY=( $( compgen -P '"' -S ':*"' -W '${COMPREPLY[@]}' $cur ) )
 			;;
-			@(-@(d|h|n|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr))) COMPREPLY=() ;;
+			@(-@(Ht|Hr|Hs|Hv|Mc))) # options making use of arithmetic comparison
+				compopt -o nospace
+				COMPREPLY=( '\!' '\<' '\>' '\<=' '\>=' $cur )
+		   	;;
+			@(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|To|Xg|Xr))) COMPREPLY=() ;;
 		esac
 esac
 if ((${#COMPREPLY[@]})); then # post process the reply
-	for i in ${!COMP_WORDS[@]}; do # mutual exclusive options
+	for ((i=1; i <= ${#COMP_WORDS[@]}; i++)); do # mutual exclusive options
 		case "${COMP_WORDS[i]}" in
-			-Fg)
-			   	_remove_reply_entry "-Fr"
-			   	_remove_reply_entry "-Xg"
-			   	_remove_reply_entry "-Xr"
-		   	;;
-			-Fr)
-			   	_remove_reply_entry "-Fg"
-			   	_remove_reply_entry "-Xg"
-			   	_remove_reply_entry "-Xr"
-			;;
-			-Xg)
-			   	_remove_reply_entry "-Fg"
-			   	_remove_reply_entry "-Fr"
-			   	_remove_reply_entry "-Xr"
-			;;
-			-Xr)
-			   	_remove_reply_entry "-Fg"
-			   	_remove_reply_entry "-Fr"
-			   	_remove_reply_entry "-Xg"
-			;;
+			-Fg) _remove_reply_entry "-Fr" "-Xg" "-Xr" ;;
+			-Fr) _remove_reply_entry "-Fg" "-Xg" "-Xr" ;;
+			-Xg) _remove_reply_entry "-Fg" "-Fr" "-Xr" ;;
+			-Xr) _remove_reply_entry "-Fg" "-Fr" "-Xg" ;;
 		esac
 	done
-	for i in ${!COMP_WORDS[@]}; do # remove options that can only be used once
-		if [[ ${COMP_WORDS[i]} = @(-|-@(Fh|Fi|Xh)) ]]; then
+	for ((i=1; i <= ${#COMP_WORDS[@]}; i++)); do # remove options that can only be used once
+		if [[ ${COMP_WORDS[i]} = @(""|-|-@(Fh|Fi|Xh)) ]]; then
 			continue
 		else
 			for x in ${!COMPREPLY[@]}; do
