@@ -132,11 +132,11 @@ case "$cur" in
 				IFS=$'\n'
 				COMPREPLY=( $( compgen -P '"' -S ':*"' -W '${COMPREPLY[@]}' $cur ) )
 			;;
-			@(-@(Ht|Hr|Hs|Hv|Mc))) # options making use of arithmetic comparison
+			@(-@(Hr|Hs|Hv|Mc))) # options making use of arithmetic comparison
 				compopt -o nospace
 				COMPREPLY=( '\!' '\<' '\>' '\<=' '\>=' $cur )
 		   	;;
-			@(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|To|Xg|Xr))) COMPREPLY=() ;;
+			@(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|Ht|To|Xg|Xr))) COMPREPLY=() ;;
 		esac
 esac
 if ((${#COMPREPLY[@]})); then # post process the reply
