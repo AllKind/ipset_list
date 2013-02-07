@@ -14,6 +14,7 @@ Features:
 - Show only sets containing a specific (glob matching) header.
 - Arithmetic comparison on headers with an integer value.
 - Match members using a globbing or regex pattern.
+- Suppress listing of (glob matching) sets.
 - Suppress listing of (glob matching) headers.
 - Suppress listing of members matching a glob or regex pattern.
 - Calculate the total size in memory of all matching sets.
@@ -42,6 +43,7 @@ Examples:
 - `ipset_list -Cs -Ht "hash:*"`    - find sets of any hash type, count their amount.
 - `ipset_list -Ts`                 - show all set names and total count of sets.
 - `ipset_list -Tm`                 - calculate total size in memory of all sets.
+- `ipset_list -Xs setA -Xs setB`   - show all set names, but exclude setA and setB.
 - `ipset_list -Mc 0`               - show sets with zero members 
 - `ipset_list -Mc '>=100'`         - show sets with a member count greater or equal to 100
 - `ipset_list -Hr \>=1 -Hv 0 -Hs \>10000`   - find sets with at least one reference, revision of 0 and size in memory greater than 10000
