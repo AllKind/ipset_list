@@ -56,7 +56,7 @@ done
 _ipset_list_complete() {
 local -i i x
 local cur prev
-local sets=( $("$ipset_list" -n ) )
+local sets=()
 local opts=(-? -a -c -d -h -i -m -n -r -s -t -v)
 local Copts=(-Cs -Co)
 local Fopts=(-Fh -Fi -Fg -Fr)
@@ -66,7 +66,7 @@ local Xopts=(-Xh -Xg -Xr -Xs)
 
 : ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
 
-COMPREPLY=( "${sets[@]}" )
+COMPREPLY=()
 _get_comp_words_by_ref cur || return
 _get_comp_words_by_ref prev || return
 
@@ -120,7 +120,8 @@ case "$cur" in
 		esac
 	;;
 	*) # not an option was requested
-		COMPREPLY=( $( compgen -W '${COMPREPLY[@]}' $cur ) )
+		sets=( $("$ipset_list" -n ) )
+		COMPREPLY=( $( compgen -W '${sets[@]}' $cur ) )
 		case "$prev" in
 			-Xh) # retrieve list of headers
 			   	COMPREPLY=()
