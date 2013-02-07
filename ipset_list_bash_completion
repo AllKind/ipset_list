@@ -62,7 +62,7 @@ local Copts=(-Cs -Co)
 local Fopts=(-Fh -Fi -Fg -Fr)
 local Hopts=(-Hr -Hs -Ht -Hv)
 local Topts=(-Tm -To -Ts)
-local Xopts=(-Xh -Xg -Xr)
+local Xopts=(-Xh -Xg -Xr -Xs)
 
 : ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
 
@@ -149,7 +149,7 @@ if ((${#COMPREPLY[@]})); then # post process the reply
 		esac
 	done
 	for ((i=1; i <= ${#COMP_WORDS[@]}; i++)); do # remove options that can only be used once
-		if [[ ${COMP_WORDS[i]} = @(""|-|-@(Fh|Fi|Xh)) ]]; then
+		if [[ ${COMP_WORDS[i]} = @(""|-|-@(Fh|Fi|Xh|Xs)) ]]; then
 			continue
 		else
 			for x in ${!COMPREPLY[@]}; do
