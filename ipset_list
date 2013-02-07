@@ -797,14 +797,14 @@ if ((count_sets || calc_mem || sets_total || exclude_set)); then
 		else
 			printf "Count of all matched sets: %d\n" $set_count
 		fi
-	fi
-	if ((exclude_set)); then
-		if ((colorize)); then
-			printf "$($cl bold $col_highlight)Count$($cl normal $col_fg $col_bg) of all\
+		if ((exclude_set)); then
+			if ((colorize)); then
+				printf "$($cl bold $col_highlight)Count$($cl normal $col_fg $col_bg) of all\
  $($cl bold $col_match)excluded sets$($cl normal $col_fg $col_bg):\
  $($cl bold $col_match)%d$($cl normal $col_fg $col_bg)\n" $found_sxclude
-		else
-			printf "Count of all excluded sets: %d\n" $found_sxclude
+			else
+				printf "Count of all excluded sets: %d\n" $found_sxclude
+			fi
 		fi
 	fi
 	if ((sets_total)); then
