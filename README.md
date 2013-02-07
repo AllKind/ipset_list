@@ -44,6 +44,7 @@ Examples:
 - `ipset_list -Ts`                 - show all set names and total count of sets.
 - `ipset_list -Tm`                 - calculate total size in memory of all sets.
 - `ipset_list -Xs setA -Xs setB`   - show all set names, but exclude setA and setB.
+- `ipset_list -Xs "set[AB]"`       - show all set names, but exclude setA and setB.
 - `ipset_list -Mc 0`               - show sets with zero members 
 - `ipset_list -Mc '>=100'`         - show sets with a member count greater or equal to 100
 - `ipset_list -Hr \>=1 -Hv 0 -Hs \>10000`   - find sets with at least one reference, revision of 0 and size in memory greater than 10000

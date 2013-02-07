@@ -63,6 +63,7 @@
 # $0 -Fi References:0  - show all sets with 0 references
 # $0 -Hr 0             - shortcut for `-Fi References:0'
 # $0 -Xs setA -Xs setB - show all set names, but exclude setA and setB.
+# $0 -Xs "set[AB]"     - show all set names, but exclude setA and setB.
 # $0 -Cs -Ht "hash:*"  - find sets of any hash type, count their amount.
 # $0 -Ht "!(hash:ip)"  - show sets which are not of type hash:ip
 # $0 -Ht "!(bitmap:*)" - show sets wich are not of any bitmap type
