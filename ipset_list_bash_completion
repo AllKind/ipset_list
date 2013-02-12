@@ -199,5 +199,5 @@ if [[ $DEBUG ]]; then
 	printf "<%s>\n" "${COMPREPLY[@]}"
 fi
 }
-complete -F _ipset_list_complete "$ipset_list"
+complete -F _ipset_list_complete "${ipset_list:-ipset_list}"
 
