@@ -59,7 +59,7 @@ local cur prev
 local sets=()
 sets=( $("$ipset_list" -n ) )
 local opts=(-? -a -c -d -h -i -m -n -r -s -t -v)
-local Copts=(-Cs -Co)
+local Copts=(-Ca -Cs -Co)
 local Fopts=(-Fh -Fi -Fg -Fr)
 local Hopts=(-Hr -Hs -Ht -Hv)
 local Topts=(-Tm -To -Ts)
@@ -68,14 +68,13 @@ local Xopts=(-Xh -Xg -Xr -Xs)
 : ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
 
 COMPREPLY=()
-_get_comp_words_by_ref cur || return
-_get_comp_words_by_ref prev || return
+_get_comp_words_by_ref -n : cur prev cword words || return
 
 #DEBUG=Y
 if [[ $DEBUG ]]; then
 	printf "\ncur: <%s> prev: <%s>\n" "$cur" "$prev"
-	printf "COMP_WORDS:\n"
-	printf "<%s>\n" "${COMP_WORDS[@]}"
+	printf "words:\n"
+	printf "<%s>\n" "${words[@]}"
 fi
 
 # dont' allow an option after the set name(s)
@@ -85,8 +84,8 @@ if [[ $cur = -* ]]; then
 	done
 fi
 # some options allow only a subset of other options
-for ((i=1; i <= ${#COMP_WORDS[@]}; i++)); do
-	case "${COMP_WORDS[i]}" in
+for ((i=1; i <= ${#words[@]}; i++)); do
+	case "${words[i]}" in
 		-a) show_all=1 ;;
 		-i) isolate=1 ;;
 		-m) show_members=1 ;;
@@ -108,8 +107,8 @@ fi
 
 case "$cur" in
 	-C) COMPREPLY=( ${Copts[@]} $cur )
-		for ((i=1; i <= ${#COMP_WORDS[@]}; i++)); do # no set counting on -i
-			if [[ ${COMP_WORDS[i]} = -i ]]; then
+		for ((i=1; i <= ${#words[@]}; i++)); do # no set counting on -i
+			if [[ ${words[i]} = -i ]]; then
 				COMPREPLY=( -Co )
 				break
 			fi
@@ -126,7 +125,7 @@ case "$cur" in
 				return 0
 			;;
 		esac
-		if ((${#COMP_WORDS[@]} > 2)); then # these options don't allow any other
+		if ((${#words[@]} > 2)); then # these options don't allow any other
 			opts=("${opts[@]/@(-n|-h|-\?)/}")
 		fi
 		# some options allow only a subset of other options
@@ -146,6 +145,9 @@ case "$cur" in
 	;;
 	*) # not an option was requested
 		COMPREPLY=( $( compgen -W '${sets[@]}' -- $cur ) )
+		if [[ $COMP_WORDBREAKS = *:* ]]; then
+			__ltrim_colon_completions "$cur"
+		fi
 		case "$prev" in
 			-Xh) # retrieve list of headers
 			   	COMPREPLY=()
@@ -173,20 +175,20 @@ case "$cur" in
 		fi
 esac
 if ((${#COMPREPLY[@]})); then # post process the reply
-	for ((i=1; i <= ${#COMP_WORDS[@]}; i++)); do # mutual exclusive options
-		case "${COMP_WORDS[i]}" in
+	for ((i=1; i <= ${#words[@]}; i++)); do # mutual exclusive options
+		case "${words[i]}" in
 			-Fg) _remove_reply_entry "-Fr" "-Xg" "-Xr" ;;
 			-Fr) _remove_reply_entry "-Fg" "-Xg" "-Xr" ;;
 			-Xg) _remove_reply_entry "-Fg" "-Fr" "-Xr" ;;
 			-Xr) _remove_reply_entry "-Fg" "-Fr" "-Xg" ;;
 		esac
 	done
-	for ((i=1; i <= ${#COMP_WORDS[@]}; i++)); do # remove options that can only be used once
-		if [[ ${COMP_WORDS[i]} = @(""|-|-@(Fh|Fi|Xh|Xs)) ]]; then
+	for ((i=1; i <= ${#words[@]}; i++)); do # remove options that can only be used once
+		if [[ ${words[i]} = @(""|-|-@(Fh|Fi|Mc|Xh|Xs)) ]]; then
 			continue
 		else
 			for x in ${!COMPREPLY[@]}; do
-				if [[ ${COMP_WORDS[i]} = ${COMPREPLY[x]} ]]; then
+				if [[ ${words[i]} = ${COMPREPLY[x]} ]]; then
 					unset COMPREPLY[$x]
 					break
 				fi
