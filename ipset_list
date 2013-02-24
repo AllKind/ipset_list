@@ -241,15 +241,16 @@ while (($#)); do
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
 			printf '%s %s\n' "$me" "{-?|-h} | -n"
 			printf '%s %s\n\t%s\n' "$me" "[-i|-r|-s|-Co] [-d char] [-To value]"\
-				"[{-Fg|-Fr}|{-Xg|-Xr} pattern] set-name"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
-			   	"[-t|-c|-Ca|-Co|-Cs|-Tm|-Ts] [-Fh header-glob:value-glob] [...]"\
+				"[{-Fg|-Fr}|{-Xg|-Xr} pattern] -- set-name"
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
+			   	"[-t|-c|-Ca|-Co|-Cs|-Tm|-Ts]"\
+			   	"[-Fh header-glob:value-glob] [...]"\
 			   	"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 			   	"[-Fg|-Fr pattern] [-Ht type-glob]"\
 			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
 			   	"[-Mc [!|<|>|<=|>=]value] [...] [-To value]"\
 			   	"[-Xh header-glob:value-glob] [...]"\
-				"[-Xs setname-glob] [...] [set-name] [...]"
+				"[-Xs setname-glob] [...] -- [set-name] [...]"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
 			   	"[-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-Tm|-Ts] [-d char]"\
 			   	"[-Fh header-glob:value-glob] [...]"\
@@ -258,7 +259,7 @@ while (($#)); do
 			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
 			   	"[-Mc [!|<|>|<=|>=]value] [...] [-To value]"\
 				"[-Xh header-glob:value-glob] [...]"\
-			   	"[-Xg|-Xr pattern] [-Xs setname-glob] [...] [set-name] [...]"
+			   	"[-Xg|-Xr pattern] [-Xs setname-glob] [...] -- [set-name] [...]"
 			printf 'options:\n'
 			printf '%-13s%s\n' '-a' 'show all information but with default delim (whitespace).'\
 				'-c' 'calculate members and match (-Fg|-Fr) sum.'\
@@ -293,6 +294,7 @@ while (($#)); do
 			printf '%-13s%s\n' '-Xg pattern' 'exclude members matching a [ext]glob pattern.'\
 				'-Xr pattern' 'exclude members matching a regex pattern.'\
 				'-Xs pattern' 'exclude sets matching a [ext]glob pattern.'
+			printf '%-13s%s\n' '--' 'stop further option processing.'
 			exit 0
 		;;
 		-a) show_all=1 # like `ipset list', but with $delim as delim
@@ -452,6 +454,8 @@ while (($#)); do
 		;;
 		-v) printf "%s version %s\n" "$me" "$version"
 			exit 0
+		;;
+		--) shift; break
 		;;
 		*) break
 	esac

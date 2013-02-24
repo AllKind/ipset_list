@@ -55,10 +55,11 @@ done
 
 _ipset_list_complete() {
 local -i i=x=show_all=isolate=show_members=resolve=headers_only=0
+local -i end_of_opt=99999
 local cur prev
 local sets=()
 sets=( $("$ipset_list" -n ) )
-local opts=(-? -a -c -d -h -i -m -n -r -s -t -v)
+local opts=(-- -? -a -c -d -h -i -m -n -r -s -t -v)
 local Copts=(-Ca -Cs -Co)
 local Fopts=(-Fh -Fi -Fg -Fr)
 local Hopts=(-Hr -Hs -Ht -Hv)
@@ -70,27 +71,22 @@ local Xopts=(-Xh -Xg -Xr -Xs)
 COMPREPLY=()
 _get_comp_words_by_ref -n : cur prev cword words || return
 
-#DEBUG=Y
-if [[ $DEBUG ]]; then
+#_DEBUG_IPSET_LIST_COMPL=Y
+if [[ $_DEBUG_IPSET_LIST_COMPL ]]; then
 	printf "\ncur: <%s> prev: <%s>\n" "$cur" "$prev"
 	printf "words:\n"
 	printf "<%s>\n" "${words[@]}"
 fi
 
-# dont' allow an option after the set name(s)
-if [[ $cur = -* ]]; then
-	for i in ${!sets[@]}; do
-		[[ ${sets[i]} = $prev ]] && return 0
-	done
-fi
 # some options allow only a subset of other options
-for ((i=1; i <= ${#words[@]}; i++)); do
+for ((i=1; i < ${#words[@]}; i++)); do
 	case "${words[i]}" in
 		-a) show_all=1 ;;
 		-i) isolate=1 ;;
 		-m) show_members=1 ;;
 		-r) resolve=1 ;;
 		-t) headers_only=1 ;;
+		--) end_of_opt=$i ;;
 		-\?|-h|-n|-v)
 			return 0
 		;;
@@ -105,9 +101,19 @@ elif ((isolate && show_all)); then
 	return 0
 fi
 
+# dont' allow an option after the set name(s)
+# allows to list sets wich start with an hyphen
+if ((end_of_opt < cword)); then
+	COMPREPLY=( $( compgen -W '${sets[@]}' -- $cur ) )
+	if [[ $COMP_WORDBREAKS = *:* ]]; then
+		__ltrim_colon_completions "$cur"
+	fi
+	return 0
+fi
+
 case "$cur" in
 	-C) COMPREPLY=( ${Copts[@]} $cur )
-		for ((i=1; i <= ${#words[@]}; i++)); do # no set counting on -i
+		for ((i=1; i < ${#words[@]}; i++)); do # no set counting on -i
 			if [[ ${words[i]} = -i ]]; then
 				COMPREPLY=( -Co )
 				break
@@ -130,15 +136,15 @@ case "$cur" in
 		fi
 		# some options allow only a subset of other options
 		if ((isolate)); then
-			COMPREPLY=( -Co -d -r -s $cur )
+			COMPREPLY=( -- -Co -d -r -s $cur )
 		elif ((headers_only)); then
-			COMPREPLY=( -c ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]} )
+			COMPREPLY=( -- -c ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]} )
 		elif ((show_members)); then
-			COMPREPLY=( -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} )
+			COMPREPLY=( -- -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} )
 		elif ((show_all)); then
-			COMPREPLY=( -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]} )
+			COMPREPLY=( -- -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]} )
 		elif ((resolve)); then
-			COMPREPLY=( -a -c -d -s -m ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]} )
+			COMPREPLY=( -- -a -c -d -s -m ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]} )
 		else
 			COMPREPLY=( ${opts[@]} ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]} )
 		fi
@@ -182,21 +188,16 @@ if ((${#COMPREPLY[@]})); then # post process the reply
 			-Xg) _remove_reply_entry "-Fg" "-Fr" "-Xr" ;;
 			-Xr) _remove_reply_entry "-Fg" "-Fr" "-Xg" ;;
 		esac
-	done
-	for ((i=1; i <= ${#words[@]}; i++)); do # remove options that can only be used once
 		if [[ ${words[i]} = @(""|-|-@(Fh|Fi|Mc|Xh|Xs)) ]]; then
 			continue
 		else
-			for x in ${!COMPREPLY[@]}; do
-				if [[ ${words[i]} = ${COMPREPLY[x]} ]]; then
-					unset COMPREPLY[$x]
-					break
-				fi
-			done
+			# problem: if a set with the name of an option exists
+			# that is pruned from the reply
+			_remove_reply_entry "${words[i]}"
 		fi
 	done
 fi
-if [[ $DEBUG ]]; then
+if [[ $_DEBUG_IPSET_LIST_COMPL ]]; then
 	printf "COMPREPLY:\n"
 	printf "<%s>\n" "${COMPREPLY[@]}"
 fi
