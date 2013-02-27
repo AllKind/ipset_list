@@ -719,6 +719,11 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 								if ((show_members || show_all || isolate)); then
 									arr_mcache[i++]="$REPLY"
 								fi
+							else
+								if (($? == 2)); then
+									printf "Invalid regex pattern \`%s'.\n" "$str_search"
+									exit 1
+								fi
 							fi
 						else
 							if ((glob_xclude_element)); then # exclude matching members
@@ -727,9 +732,14 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 								else let xclude_count+=1
 								fi
 							elif ((regex_xclude_element)); then # exclude matching members
-								if ! [[ $REPLY =~ $str_xclude ]]; then
+								if [[ $REPLY =~ $str_xclude ]]; then
+									let xclude_count+=1
+								else
+									if (($? == 2)); then
+										printf "Invalid regex pattern \`%s'.\n" "$str_xclude"
+										exit 1
+									fi
 									arr_mcache[i++]="$REPLY"
-								else let xclude_count+=1
 								fi
 							else
 								arr_mcache[i++]="$REPLY"
