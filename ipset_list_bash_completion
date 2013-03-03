@@ -40,6 +40,15 @@ ipset_list=ipset_list
 
 shopt -s extglob
 
+_ipset_list_show_sets() {
+COMPREPLY=( $( compgen -W '${sets[@]}' -- $cur ) )
+# dedupe sets listing
+for ((i=set_index; i < ${#words[@]}-1; i++)); do
+	_ipset_list_remove_reply_entry "${words[i]}"
+done
+((got_bashcompl)) && __ltrim_colon_completions "$cur"
+}
+
 _ipset_list_remove_reply_entry() {
 local -i x
 while (($#)); do
@@ -134,17 +143,15 @@ if ((isolate && set_index && cword > set_index)); then
 elif ((end_of_opt < cword)); then
     # dont' allow an option after the set name(s)
     # allows to list sets wich start with an hyphen
-    COMPREPLY=( $( compgen -W '${sets[@]}' -- $cur ) )
-    for ((i=set_index; i < ${#words[@]}-1; i++)); do
-        _ipset_list_remove_reply_entry "${words[i]}"
-    done
-    ((got_bashcompl)) && __ltrim_colon_completions "$cur"
+	_ipset_list_show_sets
+elif [[ $prev = -Xs ]]; then
+	_ipset_list_show_sets
 elif [[ $cur = -* ]] && ((! set_index)); then
     # any option is requested
     case "$prev" in
         # options that exclude any other option,
         # or need a value we can't predict
-        @(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr|Xs)))
+        @(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr)))
             return 0
         ;;
     esac
@@ -223,12 +230,7 @@ elif [[ $cur = * ]]; then
     fi
     if ! ((${#COMPREPLY[*]})); then
         # default to listing sets
-        COMPREPLY=( $( compgen -W '${sets[@]}' -- $cur ) )
-        # dedupe sets listing
-        for ((i=set_index; i < ${#words[@]}-1; i++)); do
-            _ipset_list_remove_reply_entry "${words[i]}"
-        done
-        ((got_bashcompl)) && __ltrim_colon_completions "$cur"
+		_ipset_list_show_sets
     fi
 fi
 if [[ $_DEBUG_IPSET_LIST_COMPL ]]; then
