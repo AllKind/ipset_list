@@ -165,7 +165,7 @@ elif ((end_of_opt < cword)); then
 elif [[ $prev = -Xs ]]; then
     # list sets if user does not want to enter a glob
     _ipset_list_show_sets
-elif [[ $prev = -Ht ]]; then
+elif [[ $prev = -Ht ]]; then i=0
     # show supported set types
     while read -r; do
         [[ $REPLY = "Supported set types:"* ]] && ((!i)) && i=1 && continue
