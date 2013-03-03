@@ -88,7 +88,7 @@ if [[ $_DEBUG_IPSET_LIST_COMPL ]]; then
     printf "<%s>\n" "${words[@]}"
 fi
 
-# some options allow only a subset of other options
+# collect info of cmdline
 for ((i=1; i < ${#words[@]}-1; i++)); do
     case "${words[i]}" in
         -a) show_all=1 ;;
@@ -96,21 +96,17 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
         -m) show_members=1 ;;
         -r) resolve=1 ;;
         -t) headers_only=1 ;;
-        --) end_of_opt=$i ;;
+        --) end_of_opt=$i set_index=$((i+1)) ;;
         -\?|-h|-n|-v)
             return 0
         ;;
-        @(-@(Fh|Fi|Xh))) header_operation=1 ;;
+        @(-Fh|-Fi|-Xh)) header_operation=1 ;;
         *)
-            if [[ $prev = @(-@(d|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr)) ]]
+            if [[ ${words[i-1]} = @(-@(d|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr)) ]]
             then continue
-            elif [[ $prev = -- ]]; then
-                if ! ((set_index)); then
-                    set_index=$((i+2))
-                fi
             fi
             if ! ((set_index)); then
-                if [[ ${words[i]} != @(--|-a|-c|-i|-m|-s|-t|-Ca|-Cs|-Co|-Tm|-Ts) ]]
+                if [[ ${words[i]} != @(-@(c|d|s|Ca|Cs|Co|Fg|Fr|Ht|Hr|Hs|Hv|Mc|To|Tm|Ts|Xg|Xr)) ]]
                 then
                     for x in ${!sets[@]}; do
                         if [[ ${sets[x]} = ${words[i]} ]]; then
@@ -134,7 +130,7 @@ elif ((isolate)); then
 fi
 
 if ((isolate && set_index && cword > set_index)); then
-    : # allow only one set with isolate
+    return 0 # allow only one set with isolate
 elif ((end_of_opt < cword)); then
     # dont' allow an option after the set name(s)
     # allows to list sets wich start with an hyphen
@@ -198,7 +194,7 @@ elif [[ $cur = -* ]] && ((! set_index)); then
             # options allowed multiple times
             if [[ ${words[i]} = @(""|-|-@(Fh|Fi|Mc|Xh|Xs)) ]]; then
                 continue
-            else
+            else # remove dupe
                 _ipset_list_remove_reply_entry "${words[i]}"
             fi
         done
@@ -221,12 +217,14 @@ elif [[ $cur = * ]]; then
             # options making use of arithmetic comparison
             compopt -o nospace
             COMPREPLY=( '\!' '\<' '\>' '\<=' '\>=' )
-#        elif [[ $prev = @(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|Ht|To|Xg|Xr)) ]]; then
-#            :
+        elif [[ $prev = @(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|Ht|To|Xg|Xr)) ]]; then
+            return 0
         fi
     fi
     if ! ((${#COMPREPLY[*]})); then
+        # default to listing sets
         COMPREPLY=( $( compgen -W '${sets[@]}' -- $cur ) )
+        # dedupe sets listing
         for ((i=set_index; i < ${#words[@]}-1; i++)); do
             _ipset_list_remove_reply_entry "${words[i]}"
         done
