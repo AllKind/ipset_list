@@ -40,13 +40,16 @@ ipset_list=ipset_list
 
 shopt -s extglob
 
+# -----------------------------------------------------------------
+# Functions
+# -----------------------------------------------------------------
+
 _ipset_list_show_sets() {
 COMPREPLY=( $( compgen -W '${sets[@]}' -- $cur ) )
 # dedupe sets listing
 for ((i=set_index; i < ${#words[@]}-1; i++)); do
-	_ipset_list_remove_reply_entry "${words[i]}"
+    _ipset_list_remove_reply_entry "${words[i]}"
 done
-((got_bashcompl)) && __ltrim_colon_completions "$cur"
 }
 
 _ipset_list_remove_reply_entry() {
@@ -62,9 +65,12 @@ while (($#)); do
 done
 }
 
+# -----------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------
+
 _ipset_list_complete() {
-local -i i=x=0
-local -i got_bashcompl=0
+local -i i=x=got_bashcompl=0
 local -i show_all=isolate=show_members=resolve=headers_only=set_index=0
 local -i end_of_opt=99999
 local cur prev cword words
@@ -75,10 +81,12 @@ local Fopts=(-Fh -Fi -Fg -Fr)
 local Hopts=(-Hr -Hs -Ht -Hv)
 local Topts=(-Tm -To -Ts)
 local Xopts=(-Xh -Xg -Xr -Xs)
+local arr_types=()
 
 : ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
 
 COMPREPLY=()
+
 # expecting _get_comp_words_by_ref() to exist from bash_completion
 if declare -f _get_comp_words_by_ref &>/dev/null; then got_bashcompl=1
     _get_comp_words_by_ref -n : cur prev cword words || return
@@ -143,9 +151,28 @@ if ((isolate && set_index && cword > set_index)); then
 elif ((end_of_opt < cword)); then
     # dont' allow an option after the set name(s)
     # allows to list sets wich start with an hyphen
-	_ipset_list_show_sets
+    _ipset_list_show_sets
 elif [[ $prev = -Xs ]]; then
-	_ipset_list_show_sets
+    # list sets if user does not want to enter a glob
+    _ipset_list_show_sets
+elif [[ $prev = -Ht ]]; then
+    # show supported set types
+    while read -r; do
+        [[ $REPLY = "Supported set types:"* ]] && ((!i)) && i=1 && continue
+        ((i)) || continue
+        if [[ $REPLY = *:* ]]; then
+            set -- $REPLY
+            arr_types[${#arr_types[@]}]="$1"
+        fi
+    done < <(ipset help)
+    for i in ${!arr_types[@]}; do # remove dupe entries
+        for ((x=i+1; x < ${#arr_types[@]}; x++)); do
+            if [[ ${arr_types[i]} = ${arr_types[x]} ]]; then
+                unset arr_types[x]
+            fi
+        done
+    done
+    COMPREPLY=( $( compgen -W '${arr_types[@]}' -- "$cur" ) )
 elif [[ $cur = -* ]] && ((! set_index)); then
     # any option is requested
     case "$prev" in
@@ -230,9 +257,12 @@ elif [[ $cur = * ]]; then
     fi
     if ! ((${#COMPREPLY[*]})); then
         # default to listing sets
-		_ipset_list_show_sets
+        _ipset_list_show_sets
     fi
 fi
+
+((got_bashcompl)) && __ltrim_colon_completions "$cur"
+
 if [[ $_DEBUG_IPSET_LIST_COMPL ]]; then
     printf "COMPREPLY:\n"
     printf "<%s>\n" "${COMPREPLY[@]}"
