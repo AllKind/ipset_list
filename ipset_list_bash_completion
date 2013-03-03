@@ -57,7 +57,7 @@ local -i x
 while (($#)); do
     for x in ${!COMPREPLY[@]}; do
         if [[ ${COMPREPLY[x]} = $1 ]]; then
-            if [[ $_DEBUG_IPSET_LIST_COMPL ]]; then
+            if [[ $_DEBUG_NF_COMPLETION ]]; then
                 printf "removing dupe entry COMPREPLY[$x]: %s\n" \
                     "${COMPREPLY[x]}"
             fi
@@ -101,8 +101,8 @@ else got_bashcompl=0 # not so neat, but a workaround
     for i in ${!COMP_WORDS[@]}; do words[i]="${COMP_WORDS[i]}"; done
 fi
 
-#_DEBUG_IPSET_LIST_COMPL=Y
-if [[ $_DEBUG_IPSET_LIST_COMPL ]]; then
+#_DEBUG_NF_COMPLETION=Y
+if [[ $_DEBUG_NF_COMPLETION ]]; then
     printf "\nCOMP_WORDBREAKS: <%s>\n" "$COMP_WORDBREAKS"
     printf "COMP_LINE: <%s>\n" "$COMP_LINE"
     printf "COMP_TYPE: <%s>\n" "$COMP_TYPE"
@@ -281,7 +281,7 @@ fi
 
 ((got_bashcompl)) && __ltrim_colon_completions "$cur"
 
-if [[ $_DEBUG_IPSET_LIST_COMPL ]]; then
+if [[ $_DEBUG_NF_COMPLETION ]]; then
     printf "COMPREPLY:\n"
     printf "<%s>\n" "${COMPREPLY[@]}"
 fi
