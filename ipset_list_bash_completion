@@ -102,7 +102,7 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
         ;;
         @(-Fh|-Fi|-Xh)) header_operation=1 ;;
         *)
-            if [[ ${words[i-1]} = @(-@(d|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr)) ]]
+            if [[ ${words[i-1]} = @(-@(d|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr|Xs)) ]]
             then continue
             fi
             if ! ((set_index)); then
@@ -144,7 +144,7 @@ elif [[ $cur = -* ]] && ((! set_index)); then
     case "$prev" in
         # options that exclude any other option,
         # or need a value we can't predict
-        @(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr)))
+        @(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr|Xs)))
             return 0
         ;;
     esac
