@@ -57,6 +57,10 @@ local -i x
 while (($#)); do
     for x in ${!COMPREPLY[@]}; do
         if [[ ${COMPREPLY[x]} = $1 ]]; then
+            if [[ $_DEBUG_IPSET_LIST_COMPL ]]; then
+                printf "removing dupe entry COMPREPLY[$x]: %s\n" \
+                    "${COMPREPLY[x]}"
+            fi
             unset COMPREPLY[x]
             break
         fi
@@ -100,6 +104,12 @@ fi
 
 #_DEBUG_IPSET_LIST_COMPL=Y
 if [[ $_DEBUG_IPSET_LIST_COMPL ]]; then
+    printf "\nCOMP_WORDBREAKS: <%s>\n" "$COMP_WORDBREAKS"
+    printf "COMP_LINE: <%s>\n" "$COMP_LINE"
+    printf "COMP_TYPE: <%s>\n" "$COMP_TYPE"
+    printf "COMP_POINT: <%s>\n" "$COMP_POINT"
+    printf "COMP_KEY: <%s>\n" "$COMP_KEY"
+    printf "COMP_CWORD: <%s>\n" "$COMP_CWORD"
     printf "\ncur: <%s> prev: <%s>\n" "$cur" "$prev"
     printf "words:\n"
     printf "<%s>\n" "${words[@]}"
