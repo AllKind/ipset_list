@@ -45,7 +45,7 @@ shopt -s extglob
 # -----------------------------------------------------------------
 
 _ipset_list_show_sets() {
-COMPREPLY=( $( compgen -W '${sets[@]}' -- $cur ) )
+COMPREPLY=( $( compgen -W '${sets[@]}' -- "$cur" ) )
 # dedupe sets listing
 for ((i=set_index; i < ${#words[@]}-1; i++)); do
     _ipset_list_remove_reply_entry "${words[i]}"
@@ -255,12 +255,12 @@ elif [[ $cur = * ]]; then
                 done < <("$ipset_list" -t "${sets[0]}"|command awk -F: '{print $1}')
                 compopt -o nospace
                 local IFS=$'\n'
-                COMPREPLY=( $( compgen -P '"' -S ':*"' -W '${COMPREPLY[@]}' -- $cur ) )
+                COMPREPLY=( $( compgen -P '"' -S ':*"' -W '${COMPREPLY[@]}' -- "$cur" ) )
             fi
         elif [[ $prev = @(-@(Hr|Hs|Hv|Mc)) ]]; then
             # options making use of arithmetic comparison
             compopt -o nospace
-            COMPREPLY=( '\!' '\<' '\>' '\<=' '\>=' )
+			COMPREPLY=( $( compgen -P '\' -W '\! \< \> \<= \>=' -- "$cur" ) )
         elif [[ $prev = @(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|Ht|To|Xg|Xr)) ]]; then
             return 0
         fi
