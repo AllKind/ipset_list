@@ -129,10 +129,12 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
         @(-Fh|-Fi|-Xh)) ((set_index)) && break || header_operation=1 ;;
         *)
         ((set_index)) && break
+        # options expecting an opt arg
         str_tmp="@(-@(d|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr|Xs))"
         if [[ ${words[i-1]} = $str_tmp ]]; then
             continue
         fi
+        # if not an option, register set index
         str_tmp="@(-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Tm|Ts|Xg|Xh|Xr))"
         if [[ ${words[i]} != $str_tmp ]]; then
             for x in ${!sets[@]}; do

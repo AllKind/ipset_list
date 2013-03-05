@@ -198,7 +198,7 @@ set +u
 
 # variables
 export LC_ALL=C
-readonly version=2.6
+readonly version=2.7
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_xclude="" opt str_hval str_op
@@ -467,7 +467,7 @@ declare -i i=x=idx=0
 	printf "ipset binary \`%s' does not exist, or is not executable. check \`ipset' variable\n" "$ipset" >&2
 	exit 1
 }
-ips_version="$("$ipset" --version)"
+ips_version="$("$ipset" version)"
 ips_version="${ips_version#ipset v}"
 ips_version="${ips_version%%.*}"
 if ! is_int "$ips_version"; then

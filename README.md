@@ -6,7 +6,6 @@ ipset set listing wrapper script
 
 Features:
 ==========
-(in addition to the native ipset options)
 
 - Calculate sum of set members (and match on that count).
 - List only members of a specified set.
@@ -21,6 +20,7 @@ Features:
 - Calculate the amount of matching, excluded and traversed sets.
 - Colorize the output.
 - Operate on a single, selected, or all sets.
+- Programmable completion is included to make usage easier and faster.
 
 
 Examples:
