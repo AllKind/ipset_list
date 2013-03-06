@@ -240,7 +240,7 @@ while (($#)); do
 		-\?|-h) printf "\n\tipset set listing wrapper script\n\n"
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
 			printf '%s %s\n' "$me" "{-?|-h} | -n"
-			printf '%s %s\n\t%s\n' "$me" "[-i|-r|-s|-Co] [-d char] [-To value]"\
+			printf '%s %s\n\t%s\n' "$me" "[-i|-r|-s|-Co|-Xo] [-d char] [-To value]"\
 				"[{-Fg|-Fr}|{-Xg|-Xr} pattern] -- set-name"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
 			   	"[-t|-c|-Ca|-Co|-Cs|-Tm|-Ts]"\
@@ -252,7 +252,7 @@ while (($#)); do
 			   	"[-Xh header-glob:value-glob] [...]"\
 				"[-Xs setname-glob] [...] -- [set-name] [...]"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
-			   	"[-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-Tm|-Ts] [-d char]"\
+			   	"[-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-Tm|-Ts|-Xo] [-d char]"\
 			   	"[-Fh header-glob:value-glob] [...]"\
 			   	"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 			   	"[-Fg|-Fr pattern] [-Ht type-glob]"\
@@ -288,7 +288,8 @@ while (($#)); do
 			printf '%-30s%s\n' '-Mc [!|<|>|<=|>=]value [...]' 'match on member count (value=int).'
 			printf '%-13s%s\n' '-Tm' 'calculate total memory usage of all matching sets.'\
 				'-To' 'set timeout value (int) for read (listing sets).'\
-				'-Ts' 'count amount of traversed sets.'
+				'-Ts' 'count amount of traversed sets.'\
+				'-Xo' 'suppress display of member options.'
 			printf '%s\n\t%s\n' '-Xh header-glob:value-glob [...]'\
 				'exclude one or more [ext]glob matching header entries.'
 			printf '%-13s%s\n' '-Xg pattern' 'exclude members matching a [ext]glob pattern.'\
@@ -444,6 +445,9 @@ while (($#)); do
 			[[ $2 ]] || ex_miss_optarg $1 "regex pattern"
 			str_xclude="$2"
 			shift 2
+		;;
+		-Xo) xclude_member_opts=1 # don't show elements options
+			shift
 		;;
 		-Xs) exclude_set=1 # don't show certain sets
 			[[ $2 ]] || ex_miss_optarg $1 "set name ([ext]glob pattern)"
@@ -779,6 +783,9 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 			fi
 		fi
 		if ((${#arr_mcache[@]})); then
+			if ((xclude_member_opts)); then
+				arr_mcache=( "${arr_mcache[@]%% *}" )
+			fi
 			IFS="${delim:= }"
 			if ((colorize)); then
 				printf "$($cl $col_members)%s$($cl normal $col_fg $col_bg)" "${arr_mcache[*]}"
