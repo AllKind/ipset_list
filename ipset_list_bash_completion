@@ -83,7 +83,7 @@ local Copts=(-Ca -Cs -Co)
 local Fopts=(-Fh -Fi -Fg -Fr)
 local Hopts=(-Hr -Hs -Ht -Hv)
 local Topts=(-Tm -To -Ts)
-local Xopts=(-Xh -Xg -Xr -Xs)
+local Xopts=(-Xh -Xg -Xr -Xs -Xo)
 local arr_types=()
 
 : ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
@@ -121,7 +121,7 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
         -i) ((set_index)) && break || isolate=1 Copts=(-Co) ;;
         -m) ((set_index)) && break || show_members=1 ;;
         -r) ((set_index)) && break || resolve=1 ;;
-        -t) ((set_index)) && break || headers_only=1 ;;
+        -t) ((set_index)) && break || headers_only=1 Xopts=(${Xopts[*]/-Xo/}) ;;
         --) ((set_index)) && break || set_index=$((i+1)) ;;
         -\?|-h|-n|-v)
             ((set_index)) || return 0
@@ -135,7 +135,7 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
             continue
         fi
         # if not an option, register set index
-        str_tmp="@(-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Tm|Ts|Xg|Xh|Xr))"
+        str_tmp="@(-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Tm|Ts|Xg|Xh|Xo|Xr))"
         if [[ ${words[i]} != $str_tmp ]]; then
             for x in ${!sets[@]}; do
                 if [[ ${sets[x]} = ${words[i]} ]]; then
@@ -229,14 +229,14 @@ elif [[ $cur = -* ]]; then
     fi
     # some options allow only a subset of other options
     if ((isolate)); then
-        COMPREPLY=( $(compgen -W '-- -Co -d -r -s' -- $cur ) )
+        COMPREPLY=( $(compgen -W '-- -Co -d -r -s -Xo' -- $cur ) )
     elif ((headers_only)); then
         COMPREPLY=( $(compgen -W \
             '-- -c ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]}' \
             -- $cur ) )
     elif ((show_members)); then
         COMPREPLY=( $(compgen -W \
-            '-- -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]}' \
+            '-- -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} -Xo' \
             -- $cur ) )
     elif ((show_all)); then
         COMPREPLY=( $(compgen -W \
