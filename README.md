@@ -16,6 +16,7 @@ Features:
 - Suppress listing of (glob matching) sets.
 - Suppress listing of (glob matching) headers.
 - Suppress listing of members matching a glob or regex pattern.
+- Suppress listing of members options.
 - Calculate the total size in memory of all matching sets.
 - Calculate the amount of matching, excluded and traversed sets.
 - Colorize the output.
