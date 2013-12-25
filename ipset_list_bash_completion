@@ -265,7 +265,7 @@ elif [[ $cur = -* ]]; then
                 -Fr) _ipset_list_remove_reply_entry "-Fg" "-Xg" "-Xr" ;;
                 -Xg) _ipset_list_remove_reply_entry "-Fg" "-Fr" "-Xr" ;;
                 -Xr) _ipset_list_remove_reply_entry "-Fg" "-Fr" "-Xg" ;;
-                -Oi) _ipset_list_remove_reply_entry "-Fg" "-Fr" "-Xg" "-Xr" ;;
+                -Oi) _ipset_list_remove_reply_entry "-Xg" "-Xr" ;;
             esac
             # options allowed multiple times
             if [[ ${words[i]} = @(""|-|-@(Fh|Fi|Mc|Oi|Xh|Xs)) ]]; then

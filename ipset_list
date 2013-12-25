@@ -216,7 +216,7 @@ declare ips_version="" str_search="" str_xclude="" opt str_hval str_op
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
 declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
 declare -i exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
-declare -i in_header=found_set=found_member_opt=found_hxclude=found_sxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=idx=0
+declare -i in_header=found_set=found_member_opt=found_hxclude=found_sxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=y=idx=0
 declare -a arr_sets=() arr_par=() arr_hcache=() arr_mcache=() arr_hsearch=()
 declare -a arr_hsearch_int=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 
@@ -238,6 +238,29 @@ is_int() {
 is_compare_str() {
 [[ $1 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]
 }
+
+arith_elem_opt_search() {
+found_member_opt=0
+for idx in ${!arr_opt_int_search[@]}; do
+	str_hval="${arr_opt_int_search[idx]#*:}"
+	str_op="${str_hval//[[:digit:]]}" # compare operator defaults to `=='
+	[[ ${str_op:===} = \! ]] && str_op='!='
+	set -- $REPLY
+	shift
+	while (($# > 1)); do
+		if [[ $1 = ${arr_opt_int_search[idx]%:*} ]]; then
+			if is_int "${str_hval//[[:punct:]]}"; then
+				if (($2 $str_op ${str_hval//[[:punct:]]})); then
+					let found_member_opt+=1
+					shift
+				fi
+			fi
+		fi
+		shift
+	done
+done
+}
+
 # -----------------------------------------------------------------
 
 # validate value of colorize
@@ -369,7 +392,7 @@ while (($#)); do
 		-Oi) let opt_int_search+=1
 			[[ $2 ]] || ex_miss_optarg $1 "pattern"
 			if [[ $2 = *:* ]] && is_compare_str "${2#*:}"; then
-				arr_opt_int_search[x++]="$2"
+				arr_opt_int_search[y++]="$2"
 				shift 2
 			else
 				ex_invalid_usage "invalid format of header descriptor. expecting: \`glob:[!|<|>|<=|>=]value'"
@@ -544,9 +567,6 @@ if ((glob_search || regex_search)); then
 	fi
 fi
 if ((opt_int_search)); then
-	if ((glob_search || regex_search)); then
-		ex_invalid_usage "option -Oi and -Fg|-Fr are mutually exclusive"
-	fi
 	if ((glob_xclude_element || regex_xclude_element)); then
 		ex_invalid_usage "option -Oi and -Xg|-Xr are mutually exclusive"
 	fi
@@ -743,15 +763,37 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				else # this should be a member entry
 					if ((show_members || show_all || isolate || glob_search || regex_search || opt_int_search)); then
 						if ((glob_search)); then # show sets with glob pattern matching members
-							if [[ $REPLY = $str_search ]]; then let match_count+=1
-								if ((show_members || show_all || isolate)); then
-									arr_mcache[i++]="$REPLY"
+							if [[ $REPLY = $str_search ]]; then
+								if ((opt_int_search)); then
+									arith_elem_opt_search
+									if (($opt_int_search == $found_member_opt)); then
+										let match_count+=1
+										if ((show_members || show_all || isolate)); then
+											arr_mcache[i++]="$REPLY"
+										fi
+									fi
+								else
+									let match_count+=1
+									if ((show_members || show_all || isolate)); then
+										arr_mcache[i++]="$REPLY"
+									fi
 								fi
 							fi
 						elif ((regex_search)); then # show sets with regex pattern matching members
-							if [[ $REPLY =~ $str_search ]]; then let match_count+=1
-								if ((show_members || show_all || isolate)); then
-									arr_mcache[i++]="$REPLY"
+							if [[ $REPLY =~ $str_search ]]; then
+								if ((opt_int_search)); then
+									arith_elem_opt_search
+									if (($opt_int_search == $found_member_opt)); then
+										let match_count+=1
+										if ((show_members || show_all || isolate)); then
+											arr_mcache[i++]="$REPLY"
+										fi
+									fi
+								else
+									let match_count+=1
+									if ((show_members || show_all || isolate)); then
+										arr_mcache[i++]="$REPLY"
+									fi
 								fi
 							else
 								if (($? == 2)); then
@@ -760,25 +802,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 								fi
 							fi
 						elif ((opt_int_search)); then # show sets with matching member options
-							found_member_opt=0
-							for idx in ${!arr_opt_int_search[@]}; do
-								str_hval="${arr_opt_int_search[idx]#*:}"
-								str_op="${str_hval//[[:digit:]]}" # compare operator defaults to `=='
-								[[ ${str_op:===} = \! ]] && str_op='!='
-								set -- $REPLY
-								shift
-								while (($# > 1)); do
-									if [[ $1 = ${arr_opt_int_search[idx]%:*} ]]; then
-									   	if is_int "${str_hval//[[:punct:]]}"; then
-											if (($2 $str_op ${str_hval//[[:punct:]]})); then
-												let found_member_opt+=1
-												shift
-											fi
-										fi
-									fi
-									shift
-								done
-							done
+							arith_elem_opt_search
 							if (($opt_int_search == $found_member_opt)); then
 								let match_count+=1
 								if ((show_members || show_all || isolate)); then
