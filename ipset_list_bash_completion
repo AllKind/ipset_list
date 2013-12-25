@@ -80,7 +80,7 @@ local cur prev cword words str_tmp
 local sets=( $("$ipset_list" -n ) )
 local opts=(-- -? -a -c -d -h -i -m -n -r -s -t -v)
 local Copts=(-Ca -Cs -Co)
-local Fopts=(-Fh -Fi -Fg -Fr)
+local Fopts=(-Fh -Fi -Fg -Fr -Oi)
 local Hopts=(-Hr -Hs -Ht -Hv)
 local Topts=(-Tm -To -Ts)
 local Xopts=(-Xh -Xg -Xr -Xs -Xo)
@@ -130,12 +130,12 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
         *)
         ((set_index)) && break
         # options expecting an opt arg
-        str_tmp="@(-@(d|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr|Xs))"
+        str_tmp="@(-@(d|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|Oi|To|Xg|Xh|Xr|Xs))"
         if [[ ${words[i-1]} = $str_tmp ]]; then
             continue
         fi
         # if not an option, register set index
-        str_tmp="@(-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Tm|Ts|Xg|Xh|Xo|Xr))"
+        str_tmp="@(-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|Oi|To|Tm|Ts|Xg|Xh|Xo|Xr))"
         if [[ ${words[i]} != $str_tmp ]]; then
             for x in ${!sets[@]}; do
                 if [[ ${sets[x]} = ${words[i]} ]]; then
@@ -169,7 +169,7 @@ if ((set_index)); then
     # and also handles those who have the name of ipset_list options
     _ipset_list_show_sets
 else
-if [[ $prev = @(-@(\?|d|h|n|v|Fg|Fi|Fr|Ht|To|Xg|Xr)) ]]; then
+if [[ $prev = @(-@(\?|d|h|n|v|Fg|Fi|Fr|Ht|Oi|To|Xg|Xr)) ]]; then
     return 0
 elif [[ $prev = -Xs ]]; then
     # list sets if user does not want to enter a glob
@@ -217,7 +217,7 @@ elif [[ $prev = @(-@(Hr|Hs|Hv|Mc)) ]]; then
 elif [[ $cur = -* ]]; then
     # any option is requested
     case "$prev" in
-        @(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|To|Xg|Xh|Xr)))
+        @(-@(\?|d|h|n|v|Fg|Fh|Fi|Fr|Ht|Hr|Hs|Hv|Mc|Oi|To|Xg|Xh|Xr)))
         # options that exclude any other option,
         # or need a value we can't predict
             return 0
@@ -265,9 +265,10 @@ elif [[ $cur = -* ]]; then
                 -Fr) _ipset_list_remove_reply_entry "-Fg" "-Xg" "-Xr" ;;
                 -Xg) _ipset_list_remove_reply_entry "-Fg" "-Fr" "-Xr" ;;
                 -Xr) _ipset_list_remove_reply_entry "-Fg" "-Fr" "-Xg" ;;
+                -Oi) _ipset_list_remove_reply_entry "-Fg" "-Fr" "-Xg" "-Xr" ;;
             esac
             # options allowed multiple times
-            if [[ ${words[i]} = @(""|-|-@(Fh|Fi|Mc|Xh|Xs)) ]]; then
+            if [[ ${words[i]} = @(""|-|-@(Fh|Fi|Mc|Oi|Xh|Xs)) ]]; then
                 continue
             else # remove dupe
                 _ipset_list_remove_reply_entry "${words[i]}"
