@@ -63,5 +63,8 @@ Examples:
 - `ipset_list -c -t -Cs -Ts -Xh "@(Size*|Re*|Header):*" -Ht "!(bitmap:*)"` - find all sets not of any bitmap type, count their members sum, display only the 'Type' header, count amount of matching and traversed sets.
 - `ipset_list -Co -c -Ts -Tm`  - show all set names, count their members, count total amount of sets, show total memory usage of all sets, colorize the output
 - `ipset_list -m -r -To 0`     - show members of all sets, try to resolve hosts, set the timeout to 0 (effectivly disabling it).
+- `ipset_list -m -Xo setA`     - show members of setA, but suppress displaying of the elements options.
+- `ipset_list -m -Oi packets:0`     - show members of all sets which have a packet count of 0.
+- `ipset_list -m -Oi "packets:>100" -Oi "bytes:>1024"`     - show members of all sets which have a packet count greater than 100 and a byte count greater than 1024.
 
 

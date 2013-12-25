@@ -114,6 +114,17 @@
 #
 # $0 -m -r -To 0       - show members of all sets, try to resolve hosts,
 # set the timeout to 0 (effectivly disabling it).
+#
+# $0 -m -Xo setA       - show members of setA,
+# + but suppress displaying of the elements options.
+#
+# $0 -m -Oi packets:0
+# + show members of all sets which have a packet count of 0.
+#
+# $0 -m -Oi "packets:>100" -Oi "bytes:>1024"
+# + show members of all sets which have a 
+# + packet count greater than 100 and a byte count greater than 1024.
+
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -203,11 +214,11 @@ readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_xclude="" opt str_hval str_op
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
-declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=0
+declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
 declare -i exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
-declare -i in_header=found_set=found_hxclude=found_sxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=idx=0
+declare -i in_header=found_set=found_member_opt=found_hxclude=found_sxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=idx=0
 declare -a arr_sets=() arr_par=() arr_hcache=() arr_mcache=() arr_hsearch=()
-declare -a arr_hsearch_int=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=()
+declare -a arr_hsearch_int=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 
 # functions
 ex_miss_optarg() {
@@ -251,14 +262,15 @@ while (($#)); do
 			   	"[-Mc [!|<|>|<=|>=]value] [...] [-To value]"\
 			   	"[-Xh header-glob:value-glob] [...]"\
 				"[-Xs setname-glob] [...] -- [set-name] [...]"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
 			   	"[-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-Tm|-Ts|-Xo] [-d char]"\
 			   	"[-Fh header-glob:value-glob] [...]"\
 			   	"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 			   	"[-Fg|-Fr pattern] [-Ht type-glob]"\
 			   	"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
-			   	"[-Mc [!|<|>|<=|>=]value] [...] [-To value]"\
-				"[-Xh header-glob:value-glob] [...]"\
+			   	"[-Mc [!|<|>|<=|>=]value] [...]"\
+			   	"[-Oi option-glob:[!|<|>|<=|>=]value] [...]"\
+				"[-To value] [-Xh header-glob:value-glob] [...]"\
 			   	"[-Xg|-Xr pattern] [-Xs setname-glob] [...] -- [set-name] [...]"
 			printf 'options:\n'
 			printf '%-13s%s\n' '-a' 'show all information but with default delim (whitespace).'\
@@ -286,6 +298,7 @@ while (($#)); do
 				'-Hs [!|<|>|<=|>=]value' 'match on size in memory (value=int).'\
 				'-Hv [!|<|>|<=|>=]value' 'match on revision number (value=int).'
 			printf '%-30s%s\n' '-Mc [!|<|>|<=|>=]value [...]' 'match on member count (value=int).'
+			printf '%s\n\t%s\n' '-Oi option-glob:[!|<|>|<=|>=]value [...]' 'match on member options (value=int).'
 			printf '%-13s%s\n' '-Tm' 'calculate total memory usage of all matching sets.'\
 				'-To' 'set timeout value (int) for read (listing sets).'\
 				'-Ts' 'count amount of traversed sets.'\
@@ -352,6 +365,15 @@ while (($#)); do
 			[[ $2 ]] || ex_miss_optarg $1 "regex pattern"
 			str_search="$2"
 			shift 2
+		;;
+		-Oi) let opt_int_search+=1
+			[[ $2 ]] || ex_miss_optarg $1 "pattern"
+			if [[ $2 = *:* ]] && is_compare_str "${2#*:}"; then
+				arr_opt_int_search[x++]="$2"
+				shift 2
+			else
+				ex_invalid_usage "invalid format of header descriptor. expecting: \`glob:[!|<|>|<=|>=]value'"
+			fi
 		;;
 		-Fh) let match_on_header+=1 # show only sets, which contain a matching header entry
 			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
@@ -491,7 +513,7 @@ fi
 # option logic
 if ((names_only)); then
 	if ((headers_only||show_count||show_members||show_all||isolate||\
-		match_on_header||do_count||glob_search||regex_search||calc_mem||\
+		match_on_header||do_count||glob_search||opt_int_search||regex_search||calc_mem||\
 		glob_xclude_element||regex_xclude_element||count_sets||sets_total||exclude_set))
    	then
 		ex_invalid_usage "option -n does not allow another option"
@@ -519,6 +541,14 @@ if ((glob_search || regex_search)); then
 	fi
 	if ((glob_xclude_element || regex_xclude_element)); then
 		ex_invalid_usage "options -Fg|-Fr and -Xg|-Xr are mutually exclusive"
+	fi
+fi
+if ((opt_int_search)); then
+	if ((glob_search || regex_search)); then
+		ex_invalid_usage "option -Oi and -Fg|-Fr are mutually exclusive"
+	fi
+	if ((glob_xclude_element || regex_xclude_element)); then
+		ex_invalid_usage "option -Oi and -Xg|-Xr are mutually exclusive"
 	fi
 fi
 if ((exclude_header)); then
@@ -711,14 +741,14 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 						fi
 					fi
 				else # this should be a member entry
-					if ((show_members || show_all || isolate || glob_search || regex_search)); then
-						if ((glob_search)); then # show sets with matching members
+					if ((show_members || show_all || isolate || glob_search || regex_search || opt_int_search)); then
+						if ((glob_search)); then # show sets with glob pattern matching members
 							if [[ $REPLY = $str_search ]]; then let match_count+=1
 								if ((show_members || show_all || isolate)); then
 									arr_mcache[i++]="$REPLY"
 								fi
 							fi
-						elif ((regex_search)); then # show sets with matching members
+						elif ((regex_search)); then # show sets with regex pattern matching members
 							if [[ $REPLY =~ $str_search ]]; then let match_count+=1
 								if ((show_members || show_all || isolate)); then
 									arr_mcache[i++]="$REPLY"
@@ -727,6 +757,32 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 								if (($? == 2)); then
 									printf "Invalid regex pattern \`%s'.\n" "$str_search"
 									exit 1
+								fi
+							fi
+						elif ((opt_int_search)); then # show sets with matching member options
+							found_member_opt=0
+							for idx in ${!arr_opt_int_search[@]}; do
+								str_hval="${arr_opt_int_search[idx]#*:}"
+								str_op="${str_hval//[[:digit:]]}" # compare operator defaults to `=='
+								[[ ${str_op:===} = \! ]] && str_op='!='
+								set -- $REPLY
+								shift
+								while (($# > 1)); do
+									if [[ $1 = ${arr_opt_int_search[idx]%:*} ]]; then
+									   	if is_int "${str_hval//[[:punct:]]}"; then
+											if (($2 $str_op ${str_hval//[[:punct:]]})); then
+												let found_member_opt+=1
+												shift
+											fi
+										fi
+									fi
+									shift
+								done
+							done
+							if (($opt_int_search == $found_member_opt)); then
+								let match_count+=1
+								if ((show_members || show_all || isolate)); then
+									arr_mcache[i++]="$REPLY"
 								fi
 							fi
 						else
@@ -759,7 +815,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		esac
 	done < <("$ipset" list "${arr_sets[idx]}" "${arr_par[@]}")
 	if ((found_set)); then # print gathered information
-		if ((glob_search || regex_search)) && ((match_count == 0)); then
+		if ((glob_search || regex_search || opt_int_search)) && ((match_count == 0)); then
 			continue # glob or regex search didn't match
 		fi
 		if ((${#arr_match_on_msum[@]} > 0)); then # match on member sum
@@ -796,7 +852,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 			printf "\n"
 		fi
 		if ((show_count)); then
-			if ((glob_search || regex_search)); then
+			if ((glob_search || regex_search || opt_int_search)); then
 				if ((colorize)); then
 					printf "$($cl $col_match)Match count$($cl normal $col_fg $col_bg):\
  $($cl bold $col_match)%d$($cl normal $col_fg $col_bg)\n" $match_count
