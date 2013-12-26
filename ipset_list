@@ -58,7 +58,7 @@
 # $0 -m -r -s setA     - show members of setA resolved and sorted
 # $0 -Ts               - show all set names and total count of sets.
 # $0 -Tm               - calculate total size in memory of all sets.
-# $0 -Mc 0             - show sets with zero members 
+# $0 -Mc 0             - show sets with zero members
 # $0 -Fi References:0  - show all sets with 0 references
 # $0 -Hr 0             - shortcut for `-Fi References:0'
 # $0 -Xs setA -Xs setB - show all set names, but exclude setA and setB.
@@ -91,7 +91,7 @@
 # $0 -c -m -Xg "210.*" setA - show members of setA, but suppress listing of entries
 #+ matching the glob pattern "210.*", show count of excluded and total members.
 #
-# $0 -t -Tm -Xh "@(Type|Re*|Header):*" 
+# $0 -t -Tm -Xh "@(Type|Re*|Header):*"
 #+ show all sets headers, but suppress all but name and memsize entry,
 #+ calculate the total memory size of all sets.
 #
@@ -122,17 +122,22 @@
 # + show members of all sets which have a packet count of 0.
 #
 # $0 -m -Oi "packets:>100" -Oi "bytes:>1024"
-# + show members of all sets which have a 
+# + show members of all sets which have a
 # + packet count greater than 100 and a byte count greater than 1024.
-
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
 # Modify here
 # -----------------------------------------------------------------
 
-# path to ipset. defaults to `/sbin/ipset' if unset.
-ipset="/sbin/ipset"
+# modify your PATH variable (commented out by default)
+# PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# path to ipset.
+# defaults to `/sbin/ipset' if unset.
+#ipset="/sbin/ipset"
+# find in path if not declared in parent environment
+: ${ipset:=$(command -v ipset)}
 
 # default delimiter character for set members (elements).
 # defaults to whitespace if unset.
@@ -220,7 +225,10 @@ declare -i in_header=found_set=found_member_opt=found_hxclude=found_sxclude=xclu
 declare -a arr_sets=() arr_par=() arr_hcache=() arr_mcache=() arr_hsearch=()
 declare -a arr_hsearch_int=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 
+# -----------------------------------------------------------------
 # functions
+# -----------------------------------------------------------------
+
 ex_miss_optarg() {
 printf "%s of option \`%s' is missing\n" "$2" "$1" >&2
 exit 2
@@ -239,16 +247,22 @@ is_compare_str() {
 [[ $1 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]
 }
 
+add_search_to_member_cache() {
+if ((show_members || show_all || isolate)); then
+	arr_mcache[i++]="$REPLY"
+fi
+}
+
 arith_elem_opt_search() {
 found_member_opt=0
-for idx in ${!arr_opt_int_search[@]}; do
-	str_hval="${arr_opt_int_search[idx]#*:}"
+for y in ${!arr_opt_int_search[@]}; do
+	str_hval="${arr_opt_int_search[y]#*:}"
 	str_op="${str_hval//[[:digit:]]}" # compare operator defaults to `=='
 	[[ ${str_op:===} = \! ]] && str_op='!='
 	set -- $REPLY
 	shift
 	while (($# > 1)); do
-		if [[ $1 = ${arr_opt_int_search[idx]%:*} ]]; then
+		if [[ $1 = ${arr_opt_int_search[y]%:*} ]]; then
 			if is_int "${str_hval//[[:punct:]]}"; then
 				if (($2 $str_op ${str_hval//[[:punct:]]})); then
 					let found_member_opt+=1
@@ -259,8 +273,14 @@ for idx in ${!arr_opt_int_search[@]}; do
 		shift
 	done
 done
+if (($opt_int_search == $found_member_opt)); then
+	let match_count+=1
+	add_search_to_member_cache
+fi
 }
 
+# -----------------------------------------------------------------
+# main
 # -----------------------------------------------------------------
 
 # validate value of colorize
@@ -509,7 +529,7 @@ while (($#)); do
 		*) break
 	esac
 done
-declare -i i=x=idx=0
+declare -i i=x=y=idx=0
 
 # check for ipset program and version
 [[ -x ${ipset:=/sbin/ipset} ]] || {
@@ -552,7 +572,7 @@ if ((headers_only)); then
 fi
 if ((isolate)); then
 	if ((show_count||show_all||calc_mem||count_sets||sets_total||exclude_set)); then
-		ex_invalid_usage "options -i and -a|-c|-Cs|-Tm|-Ts|-Xs are mutually exclusive"
+		ex_invalid_usage "options -i and -a|-c|-Ca|-Cs|-Tm|-Ts|-Xs are mutually exclusive"
 	fi
 	if ((match_on_header)); then
 		ex_invalid_usage "option -i does not allow matching on header entries"
@@ -643,7 +663,7 @@ fi
 
 # read sets
 for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
-	while read -r || { 
+	while read -r || {
 		(($? > 128)) && \
 			printf "timeout reached or signal received, while reading set \`%s'.\n" \
 			"${arr_sets[idx]}" >&2 && continue 2;
@@ -663,11 +683,11 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 						fi
 					done
 				fi
-				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 xclude_count=0 mem_tmp=0 i=0 x=0 
+				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 xclude_count=0 mem_tmp=0 i=0 x=0
 				if ! ((isolate)); then # if showing members only, continue without saving any header data
 					if ! ((headers_only||show_members||show_all||show_count||match_on_header||do_count||calc_mem||glob_search||regex_search))
 				   	then
-						in_header=0 
+						in_header=0
 						if ((colorize)); then
 							arr_hcache[x++]="$($cl bold $col_headers)${REPLY}$($cl normal $col_fg $col_bg)"
 						else
@@ -695,8 +715,8 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					fi
 				fi
 				if ((exclude_header)); then # don't show certain headers
-					for idx in ${!arr_hxclude[@]}; do
-						if [[ ${REPLY%%:*} = ${arr_hxclude[idx]%%:*} && ${REPLY#*: } = ${arr_hxclude[idx]#*:} ]]
+					for y in ${!arr_hxclude[@]}; do
+						if [[ ${REPLY%%:*} = ${arr_hxclude[y]%%:*} && ${REPLY#*: } = ${arr_hxclude[y]#*:} ]]
 						then found_hxclude=1
 							break
 						fi
@@ -717,18 +737,18 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				fi
 				if ((in_header)); then # we should be in the header
 					if ((match_on_header && found_header < match_on_header)); then # match on an header entry
-						for idx in ${!arr_hsearch[@]}; do # string compare
-							if [[ ${REPLY%%:*} = ${arr_hsearch[idx]%%:*} && ${REPLY#*: } = ${arr_hsearch[idx]#*:} ]]
+						for y in ${!arr_hsearch[@]}; do # string compare
+							if [[ ${REPLY%%:*} = ${arr_hsearch[y]%%:*} && ${REPLY#*: } = ${arr_hsearch[y]#*:} ]]
 							then let found_header+=1
 							fi
 						done
-						for idx in ${!arr_hsearch_int[@]}; do # int compare
-							if [[ ${REPLY%%:*} = ${arr_hsearch_int[idx]%%:*} ]]; then # header name matches
+						for y in ${!arr_hsearch_int[@]}; do # int compare
+							if [[ ${REPLY%%:*} = ${arr_hsearch_int[y]%%:*} ]]; then # header name matches
 								if ! is_int "${REPLY#*: }"; then
 									printf "header value \`%s' is not an integer.\n" "${REPLY#*: }" >&2
 									exit 1
 								fi
-								str_hval="${arr_hsearch_int[idx]#*:}"
+								str_hval="${arr_hsearch_int[y]#*:}"
 								str_op="${str_hval//[[:digit:]]}" # compare operator defaults to `=='
 								[[ ${str_op:===} = \! ]] && str_op='!='
 								if ((${REPLY#*: } $str_op ${str_hval//[[:punct:]]})); then
@@ -749,8 +769,8 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					fi
 					if ((headers_only || show_all)); then found_hxclude=0
 						if ((exclude_header)); then # don't show certain headers
-							for idx in ${!arr_hxclude[@]}; do
-								if [[ ${REPLY%%:*} = ${arr_hxclude[idx]%%:*} && ${REPLY#*: } = ${arr_hxclude[idx]#*:} ]]
+							for y in ${!arr_hxclude[@]}; do
+								if [[ ${REPLY%%:*} = ${arr_hxclude[y]%%:*} && ${REPLY#*: } = ${arr_hxclude[y]#*:} ]]
 								then found_hxclude=1
 									break
 								fi
@@ -766,34 +786,18 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 							if [[ $REPLY = $str_search ]]; then
 								if ((opt_int_search)); then
 									arith_elem_opt_search
-									if (($opt_int_search == $found_member_opt)); then
-										let match_count+=1
-										if ((show_members || show_all || isolate)); then
-											arr_mcache[i++]="$REPLY"
-										fi
-									fi
 								else
 									let match_count+=1
-									if ((show_members || show_all || isolate)); then
-										arr_mcache[i++]="$REPLY"
-									fi
+									add_search_to_member_cache
 								fi
 							fi
 						elif ((regex_search)); then # show sets with regex pattern matching members
 							if [[ $REPLY =~ $str_search ]]; then
 								if ((opt_int_search)); then
 									arith_elem_opt_search
-									if (($opt_int_search == $found_member_opt)); then
-										let match_count+=1
-										if ((show_members || show_all || isolate)); then
-											arr_mcache[i++]="$REPLY"
-										fi
-									fi
 								else
 									let match_count+=1
-									if ((show_members || show_all || isolate)); then
-										arr_mcache[i++]="$REPLY"
-									fi
+									add_search_to_member_cache
 								fi
 							else
 								if (($? == 2)); then
@@ -803,16 +807,10 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 							fi
 						elif ((opt_int_search)); then # show sets with matching member options
 							arith_elem_opt_search
-							if (($opt_int_search == $found_member_opt)); then
-								let match_count+=1
-								if ((show_members || show_all || isolate)); then
-									arr_mcache[i++]="$REPLY"
-								fi
-							fi
 						else
 							if ((glob_xclude_element)); then # exclude matching members
 								if ! [[ $REPLY = $str_xclude ]]; then
-									arr_mcache[i++]="$REPLY"
+									add_search_to_member_cache
 								else let xclude_count+=1
 								fi
 							elif ((regex_xclude_element)); then # exclude matching members
@@ -823,7 +821,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 										printf "Invalid regex pattern \`%s'.\n" "$str_xclude"
 										exit 1
 									fi
-									arr_mcache[i++]="$REPLY"
+									add_search_to_member_cache
 								fi
 							else
 								arr_mcache[i++]="$REPLY"
