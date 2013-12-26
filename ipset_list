@@ -214,10 +214,10 @@ set +u
 
 # variables
 export LC_ALL=C
-readonly version=2.8
+readonly version=2.9
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
-declare ips_version="" str_search="" str_xclude="" opt str_hval str_op
+declare ips_version="" str_search="" str_xclude="" opt str_val str_op
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
 declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
 declare -i exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
@@ -256,15 +256,15 @@ fi
 arith_elem_opt_search() {
 found_member_opt=0
 for y in ${!arr_opt_int_search[@]}; do
-	str_hval="${arr_opt_int_search[y]#*:}"
-	str_op="${str_hval//[[:digit:]]}" # compare operator defaults to `=='
+	str_val="${arr_opt_int_search[y]#*:}"
+	str_op="${str_val//[[:digit:]]}" # compare operator defaults to `=='
 	[[ ${str_op:===} = \! ]] && str_op='!='
 	set -- $REPLY
 	shift
 	while (($# > 1)); do
 		if [[ $1 = ${arr_opt_int_search[y]%:*} ]]; then
-			if is_int "${str_hval//[[:punct:]]}"; then
-				if (($2 $str_op ${str_hval//[[:punct:]]})); then
+			if is_int "${str_val//[[:punct:]]}"; then
+				if (($2 $str_op ${str_val//[[:punct:]]})); then
 					let found_member_opt+=1
 					shift
 				fi
@@ -273,7 +273,7 @@ for y in ${!arr_opt_int_search[@]}; do
 		shift
 	done
 done
-if (($opt_int_search == $found_member_opt)); then
+if ((opt_int_search == found_member_opt)); then
 	let match_count+=1
 	add_search_to_member_cache
 fi
@@ -748,10 +748,10 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 									printf "header value \`%s' is not an integer.\n" "${REPLY#*: }" >&2
 									exit 1
 								fi
-								str_hval="${arr_hsearch_int[y]#*:}"
-								str_op="${str_hval//[[:digit:]]}" # compare operator defaults to `=='
+								str_val="${arr_hsearch_int[y]#*:}"
+								str_op="${str_val//[[:digit:]]}" # compare operator defaults to `=='
 								[[ ${str_op:===} = \! ]] && str_op='!='
-								if ((${REPLY#*: } $str_op ${str_hval//[[:punct:]]})); then
+								if ((${REPLY#*: } $str_op ${str_val//[[:punct:]]})); then
 									let found_header+=1
 								fi
 							fi
