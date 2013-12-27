@@ -24,7 +24,7 @@
 
 # -----------------------------------------------------------------
 # Tested with ipset versions:
-# 6.16.1
+# 6.16.1, 6.20.1
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -152,6 +152,7 @@ TMOUT=30
 colorize=0
 
 # path to cl (to colorize the output).
+# http://sourceforge.net/projects/colorize-shell/ or
 # https://github.com/AllKind/cl
 # defaults to `/usr/local/bin/cl' if unset.
 cl="/usr/local/bin/cl"
