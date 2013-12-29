@@ -294,7 +294,7 @@ while (($#)); do
 	case "$1" in
 		-\?|-h) printf "\n\tipset set listing wrapper script\n\n"
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
-			printf '%s %s\n' "$me" "{-?|-h} | -n"
+			printf '%s %s\n' "$me" "{-?|-h} | -n | -v"
 			printf '%s %s\n\t%s\n\t%s\n' "$me"\
 				"[-i|-r|-s|-Co|-Xo] [-d char] [-To value]"\
 				"[{-Fg|-Fr}|{-Xg|-Xr} pattern]"\
@@ -680,8 +680,8 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				fi
 				let sets_sum+=1
 				if ((exclude_set)); then # don't show certain sets
-					for x in ${!arr_sxclude[@]}; do
-						if [[ ${arr_sets[idx]} = ${arr_sxclude[x]} ]]; then let found_sxclude+=1
+					for y in ${!arr_sxclude[@]}; do
+						if [[ ${arr_sets[idx]} = ${arr_sxclude[y]} ]]; then let found_sxclude+=1
 							continue 3 # don't unset, as user could list sets multiple times
 						fi
 					done
@@ -841,7 +841,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 	done < <("$ipset" list "${arr_sets[idx]}" "${arr_par[@]}")
 	if ((found_set)); then # print gathered information
 		if ((glob_search || regex_search || opt_int_search)) && ((match_count == 0)); then
-			continue # glob or regex search didn't match
+			continue # glob, regex or option-integer search didn't match
 		fi
 		if ((${#arr_match_on_msum[@]} > 0)); then # match on member sum
 			for i in ${!arr_match_on_msum[@]}; do
@@ -856,14 +856,14 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		if ((calc_mem)); then
 			let mem_total+=$mem_tmp
 		fi
-		if ((${#arr_hcache[@]})); then
+		if ((${#arr_hcache[@]})); then # print header
 			if ((colorize)); then
 				printf "$($cl $col_headers)%b$($cl normal $col_fg $col_bg)\n" "${arr_hcache[@]}"
 			else
 				printf "%s\n" "${arr_hcache[@]}"
 			fi
 		fi
-		if ((${#arr_mcache[@]})); then
+		if ((${#arr_mcache[@]})); then # print members
 			if ((xclude_member_opts)); then
 				arr_mcache=( "${arr_mcache[@]%% *}" )
 			fi
@@ -876,7 +876,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 			IFS="$oIFS"
 			printf "\n"
 		fi
-		if ((show_count)); then
+		if ((show_count)); then # print counters
 			if ((glob_search || regex_search || opt_int_search)); then
 				if ((colorize)); then
 					printf "$($cl $col_match)Match count$($cl normal $col_fg $col_bg):\
@@ -902,6 +902,8 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		fi
 	fi
 done
+
+# print global counters
 if ((count_sets || calc_mem || sets_total || exclude_set)); then
 	printf "\n"
 	if ((count_sets)); then
