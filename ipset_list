@@ -704,7 +704,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				if ! ((isolate)); then # if showing members only, continue without saving any header data
 					if ((names_only)); then
 						if ((colorize)); then
-							arr_hcache[x++]="$($cl bold $col_headers)${REPLY#*:+([[:blank:]])}$($cl normal $col_fg $col_bg)"
+							arr_hcache[x++]="$("$cl" bold $col_headers)${REPLY#*:+([[:blank:]])}$("$cl" normal $col_fg $col_bg)"
 						else
 							arr_hcache[x++]="${REPLY#*:+([[:blank:]])}"
 						fi
@@ -712,14 +712,14 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				   	then
 						in_header=0
 						if ((colorize)); then
-							arr_hcache[x++]="$($cl bold $col_headers)${REPLY}$($cl normal $col_fg $col_bg)"
+							arr_hcache[x++]="$("$cl" bold $col_headers)${REPLY}$("$cl" normal $col_fg $col_bg)"
 						else
 							arr_hcache[x++]="$REPLY"
 						fi
 						break # nothing to show but the names
 					else
 						if ((colorize)); then
-							arr_hcache[x++]=$'\n'"$($cl bold $col_headers)${REPLY}$($cl normal $col_fg $col_bg)"
+							arr_hcache[x++]=$'\n'"$("$cl" bold $col_headers)${REPLY}$("$cl" normal $col_fg $col_bg)"
 						else
 							arr_hcache[x++]=$'\n'"$REPLY"
 						fi
@@ -747,7 +747,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				fi
 				if ((show_all && ! found_hxclude)); then
 					if ((colorize)); then
-						arr_hcache[x++]="$($cl bold $col_headers)${REPLY}$($cl normal $col_fg $col_bg)"
+						arr_hcache[x++]="$("$cl" bold $col_headers)${REPLY}$("$cl" normal $col_fg $col_bg)"
 					else
 						arr_hcache[x++]="$REPLY"
 					fi
@@ -878,7 +878,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		fi
 		if ((${#arr_hcache[@]})); then # print header
 			if ((colorize)); then
-				printf "$($cl $col_headers)%b$($cl normal $col_fg $col_bg)\n" "${arr_hcache[@]}"
+				printf "$("$cl" $col_headers)%b$("$cl" normal $col_fg $col_bg)\n" "${arr_hcache[@]}"
 			else
 				printf "%s\n" "${arr_hcache[@]}"
 			fi
@@ -889,7 +889,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 			fi
 			IFS="${delim:= }"
 			if ((colorize)); then
-				printf "$($cl $col_members)%s$($cl normal $col_fg $col_bg)" "${arr_mcache[*]}"
+				printf "$("$cl" $col_members)%s$("$cl" normal $col_fg $col_bg)" "${arr_mcache[*]}"
 			else
 				printf "%s" "${arr_mcache[*]}"
 			fi
@@ -899,23 +899,23 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		if ((show_count)); then # print counters
 			if ((glob_search || regex_search || opt_int_search)); then
 				if ((colorize)); then
-					printf "$($cl $col_match)Match count$($cl normal $col_fg $col_bg):\
- $($cl bold $col_match)%d$($cl normal $col_fg $col_bg)\n" $match_count
+					printf "$("$cl" $col_match)Match count$("$cl" normal $col_fg $col_bg):\
+ $("$cl" bold $col_match)%d$("$cl" normal $col_fg $col_bg)\n" $match_count
 				else
 					printf "Match count: %d\n" $match_count
 				fi
 			fi
 			if ((glob_xclude_element || regex_xclude_element)); then
 				if ((colorize)); then
-					printf "$($cl $col_match)Exclude count$($cl normal $col_fg $col_bg):\
- $($cl bold $col_match)%d$($cl normal $col_fg $col_bg)\n" $xclude_count
+					printf "$("$cl" $col_match)Exclude count$("$cl" normal $col_fg $col_bg):\
+ $("$cl" bold $col_match)%d$("$cl" normal $col_fg $col_bg)\n" $xclude_count
 				else
 					printf "Exclude count: %d\n" $xclude_count
 				fi
 			fi
 			if ((colorize)); then
-				printf "$($cl bold $col_highlight)Member count$($cl normal $col_fg $col_bg):\
- $($cl bold $col_members)%d$($cl normal $col_fg $col_bg)\n" $member_count
+				printf "$("$cl" bold $col_highlight)Member count$("$cl" normal $col_fg $col_bg):\
+ $("$cl" bold $col_members)%d$("$cl" normal $col_fg $col_bg)\n" $member_count
 			else
 				printf "Member count: %d\n" $member_count
 			fi
@@ -928,17 +928,17 @@ if ((count_sets || calc_mem || sets_total || exclude_set)); then
 	printf "\n"
 	if ((count_sets)); then
 		if ((colorize)); then
-			printf "$($cl bold $col_highlight)Count$($cl normal $col_fg $col_bg) of all\
- $($cl bold $col_set_count)matched sets$($cl normal $col_fg $col_bg):\
- $($cl bold $col_set_count)%d$($cl normal $col_fg $col_bg)\n" $set_count
+			printf "$("$cl" bold $col_highlight)Count$("$cl" normal $col_fg $col_bg) of all\
+ $("$cl" bold $col_set_count)matched sets$("$cl" normal $col_fg $col_bg):\
+ $("$cl" bold $col_set_count)%d$("$cl" normal $col_fg $col_bg)\n" $set_count
 		else
 			printf "Count of all matched sets: %d\n" $set_count
 		fi
 		if ((exclude_set)); then
 			if ((colorize)); then
-				printf "$($cl bold $col_highlight)Count$($cl normal $col_fg $col_bg) of all\
- $($cl bold $col_match)excluded sets$($cl normal $col_fg $col_bg):\
- $($cl bold $col_match)%d$($cl normal $col_fg $col_bg)\n" $found_sxclude
+				printf "$("$cl" bold $col_highlight)Count$("$cl" normal $col_fg $col_bg) of all\
+ $("$cl" bold $col_match)excluded sets$("$cl" normal $col_fg $col_bg):\
+ $("$cl" bold $col_match)%d$("$cl" normal $col_fg $col_bg)\n" $found_sxclude
 			else
 				printf "Count of all excluded sets: %d\n" $found_sxclude
 			fi
@@ -946,17 +946,17 @@ if ((count_sets || calc_mem || sets_total || exclude_set)); then
 	fi
 	if ((sets_total)); then
 		if ((colorize)); then
-			printf "$($cl bold $col_highlight)Count$($cl normal $col_fg $col_bg) of all\
- $($cl bold $col_set_total)traversed sets$($cl normal $col_fg $col_bg):\
- $($cl bold $col_set_total)%d$($cl normal $col_fg $col_bg)\n" $sets_sum
+			printf "$("$cl" bold $col_highlight)Count$("$cl" normal $col_fg $col_bg) of all\
+ $("$cl" bold $col_set_total)traversed sets$("$cl" normal $col_fg $col_bg):\
+ $("$cl" bold $col_set_total)%d$("$cl" normal $col_fg $col_bg)\n" $sets_sum
 		else
 			printf "Count of all traversed sets: %d\n" $sets_sum
 		fi
 	fi
 	if ((calc_mem)); then
 		if ((colorize)); then
-			printf "$($cl bold $col_memsize)Total memory size$($cl normal $col_fg $col_bg)\
- of all matched sets: $($cl bold $col_memsize)%d$($cl normal $col_fg $col_bg)\n" $mem_total
+			printf "$("$cl" bold $col_memsize)Total memory size$("$cl" normal $col_fg $col_bg)\
+ of all matched sets: $("$cl" bold $col_memsize)%d$("$cl" normal $col_fg $col_bg)\n" $mem_total
 		else
 			printf "Total memory size of all matched sets: %d\n" $mem_total
 		fi
