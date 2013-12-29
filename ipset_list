@@ -573,6 +573,11 @@ if ((headers_only)); then
 		ex_invalid_usage "options -t and -a|-i|-m are mutually exclusive"
 	fi
 fi
+if ((headers_only)); then
+	if ((xclude_member_opts||glob_xclude_element||regex_xclude_element)); then
+		ex_invalid_usage "options -t and -Xg|-Xr|-Xo are mutually exclusive"
+	fi
+fi
 if ((isolate)); then
 	if ((show_count||show_all||calc_mem||count_sets||sets_total||exclude_set)); then
 		ex_invalid_usage "options -i and -a|-c|-Ca|-Cs|-Tm|-Ts|-Xs are mutually exclusive"
