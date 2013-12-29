@@ -67,5 +67,6 @@ Examples:
 - `ipset_list -m -Xo setA`     - show members of setA, but suppress displaying of the elements options.
 - `ipset_list -m -Oi packets:0`     - show members of all sets which have a packet count of 0.
 - `ipset_list -m -Oi "packets:>100" -Oi "bytes:>1024"`     - show members of all sets which have a packet count greater than 100 and a byte count greater than 1024.
+- `ipset_list -n -Ca "foo*"`    - show only set names matching the glob "foo*" and enable all counters.
 
 

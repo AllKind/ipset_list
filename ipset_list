@@ -124,6 +124,9 @@
 # $0 -m -Oi "packets:>100" -Oi "bytes:>1024"
 # + show members of all sets which have a
 # + packet count greater than 100 and a byte count greater than 1024.
+#
+# $0 -n -Ca "foo*"
+# + show only set names matching the glob "foo*" and enable all counters.
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -293,17 +296,16 @@ fi
 while (($#)); do
 	case "$1" in
 		-\?|-h) printf "\n\tipset set listing wrapper script\n\n"
-			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
+			printf '%s [option [opt-arg]] [set-name-glob] [...]\n\n' "$me"
 			printf '%s %s\n' "$me" "{-?|-h} | -v"
 			printf '%s %s\n\t%s\n\t%s\n' "$me"\
 				"[-i|-r|-s|-Co|-Xo] [-d char] [-To value]"\
 				"[{-Fg|-Fr}|{-Xg|-Xr} pattern]"\
 				"[-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n' "$me"\
+			printf '%s %s\n\t%s\n\t%s\n' "$me"\
 				"[-n|-c|-Ca|-Co|-Cs|-Tm|-Ts|-Xs] [-To value]"\
-				"[-Fh header-glob:value-glob] [...]"\
-				"[-Fg|-Fr pattern]"\
-				"[-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name"
+				"[-Fh header-glob:value-glob] [...] [-Fg|-Fr pattern]"\
+				"[-Oi option-glob:[!|<|>|<=|>=]value] [...] -- [set-name-glob] [...]"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
 				"[-t|-c|-Ca|-Co|-Cs|-Tm|-Ts]"\
 				"[-Fh header-glob:value-glob] [...]"\
@@ -312,7 +314,7 @@ while (($#)); do
 				"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
 				"[-Mc [!|<|>|<=|>=]value] [...] [-To value]"\
 				"[-Xh header-glob:value-glob] [...]"\
-				"[-Xs setname-glob] [...] -- [set-name] [...]"
+				"[-Xs set-name-glob] [...] -- [set-name-glob] [...]"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
 				"[-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-Tm|-Ts|-Xo] [-d char]"\
 				"[-Fh header-glob:value-glob] [...]"\
@@ -322,7 +324,7 @@ while (($#)); do
 				"[-Mc [!|<|>|<=|>=]value] [...]"\
 				"[-Oi option-glob:[!|<|>|<=|>=]value] [...]"\
 				"[-To value] [-Xh header-glob:value-glob] [...]"\
-				"[-Xg|-Xr pattern] [-Xs setname-glob] [...] -- [set-name] [...]"
+				"[-Xg|-Xr pattern] [-Xs set-name-glob] [...] -- [set-name-glob] [...]"
 			printf 'options:\n'
 			printf '%-13s%s\n' '-a' 'show all information but with default delim (whitespace).'\
 				'-c' 'calculate members and match (-Fg|-Fr) sum.'\
@@ -634,7 +636,7 @@ if ((colorize)); then
 	for opt in col_fg col_bg col_headers col_members col_match col_memsize \
 	   	col_set_count col_set_total col_highlight
 	do
-		($cl ${!opt}) || ex_invalid_usage "variable \`$opt' has an invalid color value: \`${!opt}'"
+		("$cl" ${!opt}) || ex_invalid_usage "variable \`$opt' has an invalid color value: \`${!opt}'"
 	done
 	[[ -t 1 ]] || colorize=0 # output is not a terminal
 fi
@@ -648,10 +650,13 @@ if ! ((${#arr_sets[@]})); then
 	exit 1
 fi
 if [[ $1 ]]; then # there are remaining arg(s)
-	for opt in "$@"; do found_set=0 # check if the sets exist
+	for opt; do found_set=0 # check if the sets exist
 		for idx in ${!arr_sets[@]}; do
-			if [[ $opt = ${arr_sets[idx]} ]]; then found_set=1
-				break
+			if [[ ${arr_sets[idx]} = $opt ]]; then found_set=1
+				# match could be a glob, thus multiple matches possible
+				# save to temp array
+				arr_tmp[${#arr_tmp[@]}]="${arr_sets[idx]}"
+				unset arr_sets[idx]
 			fi
 		done
 		if ! ((found_set)); then
@@ -663,7 +668,10 @@ if [[ $1 ]]; then # there are remaining arg(s)
 			ex_invalid_usage "option -i is only valid for a single set"
 		fi
 	fi
-	arr_sets=("$@") # reassign remaining args
+	arr_sets=("${arr_tmp[@]}") # reassign matched sets
+	if ((isolate && ${#arr_sets[@]} > 1)); then
+		ex_invalid_usage "option -i is only valid for a single set"
+	fi
 else
 	if ((isolate)); then
 		ex_invalid_usage "option -i is only valid for a single set"
