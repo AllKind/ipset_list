@@ -76,6 +76,7 @@ done
 _ipset_list_complete() {
 local -i i=x=got_bashcompl=0
 local -i show_all=isolate=show_members=resolve=headers_only=set_index=0
+local -i header_operation=0
 local cur prev cword words str_tmp
 local sets=( $("$ipset_list" -n ) )
 local opts=(-- -? -a -c -d -h -i -m -n -r -s -t -v)
@@ -121,7 +122,7 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
         -i) ((set_index)) && break || isolate=1 Copts=(-Co) ;;
         -m) ((set_index)) && break || show_members=1 ;;
         -r) ((set_index)) && break || resolve=1 ;;
-        -t) ((set_index)) && break || headers_only=1 Xopts=(${Xopts[*]/-Xo/}) ;;
+        -t) ((set_index)) && break || headers_only=1 Xopts=(-Xh -Xs) Fopts=(${Fopts[*]/-Oi/}) ;;
         --) ((set_index)) && break || set_index=$((i+1)) ;;
         -\?|-h|-n|-v)
             ((set_index)) || return 0
@@ -265,7 +266,6 @@ elif [[ $cur = -* ]]; then
                 -Fr) _ipset_list_remove_reply_entry "-Fg" "-Xg" "-Xr" ;;
                 -Xg) _ipset_list_remove_reply_entry "-Fg" "-Fr" "-Xr" ;;
                 -Xr) _ipset_list_remove_reply_entry "-Fg" "-Fr" "-Xg" ;;
-                -Oi) _ipset_list_remove_reply_entry "-Xg" "-Xr" ;;
             esac
             # options allowed multiple times
             if [[ ${words[i]} = @(""|-|-@(Fh|Fi|Mc|Oi|Xh|Xs)) ]]; then
