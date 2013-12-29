@@ -294,10 +294,15 @@ while (($#)); do
 	case "$1" in
 		-\?|-h) printf "\n\tipset set listing wrapper script\n\n"
 			printf '%s [option [opt-arg]] [set-name] [...]\n\n' "$me"
-			printf '%s %s\n' "$me" "{-?|-h} | -n | -v"
+			printf '%s %s\n' "$me" "{-?|-h} | -v"
 			printf '%s %s\n\t%s\n\t%s\n' "$me"\
 				"[-i|-r|-s|-Co|-Xo] [-d char] [-To value]"\
 				"[{-Fg|-Fr}|{-Xg|-Xr} pattern]"\
+				"[-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name"
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n' "$me"\
+				"[-n|-c|-Ca|-Co|-Cs|-Tm|-Ts|-Xs] [-To value]"\
+				"[-Fh header-glob:value-glob] [...]"\
+				"[-Fg|-Fr pattern]"\
 				"[-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
 				"[-t|-c|-Ca|-Co|-Cs|-Tm|-Ts]"\
@@ -558,15 +563,11 @@ fi
 
 # option logic
 if ((names_only)); then
-	if ((headers_only||show_count||show_members||show_all||isolate||\
-		match_on_header||do_count||glob_search||opt_int_search||regex_search||calc_mem||\
-		glob_xclude_element||regex_xclude_element||count_sets||sets_total||exclude_set))
+	if ((headers_only||show_members||show_all||isolate||\
+		glob_xclude_element||regex_xclude_element||xclude_member_opts))
    	then
-		ex_invalid_usage "option -n does not allow another option"
+		ex_invalid_usage "option -n does not allow this combination of options"
 	fi
-	# raw ipset output
-	"$ipset" list -n
-	exit $?
 fi
 if ((headers_only)); then
 	if ((show_members || show_all || isolate)); then
@@ -693,7 +694,13 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				fi
 				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 xclude_count=0 mem_tmp=0 i=0 x=0
 				if ! ((isolate)); then # if showing members only, continue without saving any header data
-					if ! ((headers_only||show_members||show_all||show_count||match_on_header||do_count||calc_mem||glob_search||regex_search))
+					if ((names_only)); then
+						if ((colorize)); then
+							arr_hcache[x++]="$($cl bold $col_headers)${REPLY#*:+([[:blank:]])}$($cl normal $col_fg $col_bg)"
+						else
+							arr_hcache[x++]="${REPLY#*:+([[:blank:]])}"
+						fi
+					elif ! ((headers_only||show_members||show_all||show_count||match_on_header||do_count||calc_mem||glob_search||regex_search||opt_int_search))
 				   	then
 						in_header=0
 						if ((colorize)); then
@@ -848,7 +855,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 		if ((glob_search || regex_search || opt_int_search)) && ((match_count == 0)); then
 			continue # glob, regex or option-integer search didn't match
 		fi
-		if ((${#arr_match_on_msum[@]} > 0)); then # match on member sum
+		if ((${#arr_match_on_msum[@]} > 0)); then # match on member sum (do_count=1)
 			for i in ${!arr_match_on_msum[@]}; do
 				str_op="${arr_match_on_msum[i]//[[:digit:]]}"
 				[[ ${str_op:===} = \! ]] && str_op='!='
