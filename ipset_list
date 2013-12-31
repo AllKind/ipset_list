@@ -226,7 +226,7 @@ declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc
 declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
 declare -i exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
 declare -i in_header=found_set=found_member_opt=found_hxclude=found_sxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=y=idx=0
-declare -a arr_sets=() arr_par=() arr_hcache=() arr_mcache=() arr_hsearch=()
+declare -a arr_sets=() arr_par=() arr_hcache=() arr_mcache=() arr_hsearch=() arr_tmp=()
 declare -a arr_hsearch_int=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 
 # -----------------------------------------------------------------
