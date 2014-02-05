@@ -332,7 +332,7 @@ while (($#)); do
 				'-h|-?' 'show this help text.'\
 				'-i' 'show only the members of a single set.'\
 				'-m' 'show set members.'\
-				'-n' "show set names only (raw \`ipset list -n' output)."\
+				'-n' "show set names only."\
 				'-r' 'try to resolve ip addresses in the output (slow!).'\
 				'-s' 'print elements sorted (if supported by the set type).'\
 				'-t' 'show set headers only.'\
