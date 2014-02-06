@@ -23,6 +23,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # -----------------------------------------------------------------
+# Compatible with ipset version 6+
 # Tested with ipset versions:
 # 6.16.1, 6.20.1
 # -----------------------------------------------------------------
@@ -34,6 +35,8 @@
 # - Choose a delimiter character for separating members.
 # - Show only sets containing a specific (glob matching) header.
 # - Arithmetic comparison on headers with an integer value.
+# - Arithmetic comparison on flags of the headers 'Header' field.
+# - Arithmetic comparison on member options with an integer value.
 # - Match members using a globbing or regex pattern.
 # - Suppress listing of (glob matching) sets.
 # - Suppress listing of (glob matching) headers.
@@ -42,6 +45,7 @@
 # - Calculate the amount of matching, excluded and traversed sets.
 # - Colorize the output.
 # - Operate on a single, selected, or all sets.
+# - Programmable completion is included to make usage easier and faster.
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -127,6 +131,10 @@
 #
 # $0 -n -Ca "foo*"
 # + show only set names matching the glob "foo*" and enable all counters.
+#
+# $0 -Hi "markmask:>=0x0000beef" -Hi timeout:\!10000`
+# + show only sets with the header 'Header' fields containing a markmask
+# + greater or equal to 0x0000beef and a timeout which is not 10000.
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------

@@ -13,8 +13,8 @@ Features:
 - Show only sets containing a specific (glob matching) header.
 - Arithmetic comparison on headers with an integer value.
 - Arithmetic comparison on flags of the headers 'Header' field.
-- Match members using a globbing or regex pattern.
 - Arithmetic comparison on member options with an integer value.
+- Match members using a globbing or regex pattern.
 - Suppress listing of (glob matching) sets.
 - Suppress listing of (glob matching) headers.
 - Suppress listing of members matching a glob or regex pattern.
