@@ -798,6 +798,10 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 						if ((${#arr_hsearch_xint[@]})) && [[ ${REPLY%%:*} = Header ]]; then
 							set -- ${REPLY#*:}
 							while (($#)); do
+								if [[ $1 = @(+([[:digit:]])|0x+([[:xdigit:]])) ]]; then
+									shift
+									continue
+								fi
 								for y in ${!arr_hsearch_xint[@]}; do
 									str_name="${arr_hsearch_xint[y]%%:*}"
 									str_val="${arr_hsearch_xint[y]#*:}"
@@ -812,7 +816,6 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 										if [[ $2 = @(+([[:digit:]])|0x+([[:xdigit:]])) ]]; then
 											if (($2 $str_op $str_val)); then
 												let found_header+=1
-												unset arr_hsearch_xint[y]
 												shift
 												break
 											fi
