@@ -247,6 +247,10 @@ is_int() {
 [[ $1 = +([[:digit:]]) ]]
 }
 
+is_digit_or_xigit() {
+[[ $1 = @(+([[:digit:]])|0x+([[:xdigit:]])) ]]
+}
+
 is_compare_str() {
 [[ $1 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]
 }
@@ -810,7 +814,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 						if ((${#arr_hsearch_xint[@]})) && [[ ${REPLY%%:*} = Header ]]; then
 							set -- ${REPLY#*:}
 							while (($#)); do
-								if [[ $1 = @(+([[:digit:]])|0x+([[:xdigit:]])) ]]; then
+								if is_digit_or_xigit "$1"; then
 									shift
 									continue
 								fi
@@ -825,7 +829,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 									str_val="${str_val#"${str_op}"}"
 									[[ ${str_op:===} = \! ]] && str_op='!='
 									if [[ $1 = $str_name ]]; then
-										if [[ $2 = @(+([[:digit:]])|0x+([[:xdigit:]])) ]]; then
+										if is_digit_or_xigit "$2"; then
 											if (($2 $str_op $str_val)); then
 												let found_header+=1
 												shift
