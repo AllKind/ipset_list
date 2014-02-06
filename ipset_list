@@ -283,6 +283,26 @@ if ((opt_int_search == found_member_opt)); then
 fi
 }
 
+xclude_elem_search() {
+if ((glob_xclude_element)); then # exclude matching members
+	if [[ $REPLY = $str_xclude ]]; then
+		let xclude_count+=1
+		return 0
+	fi
+elif ((regex_xclude_element)); then # exclude matching members
+	if [[ $REPLY =~ $str_xclude ]]; then
+		let xclude_count+=1
+		return 0
+	else
+		if (($? == 2)); then
+			printf "Invalid regex pattern \`%s'.\n" "$str_xclude"
+			exit 1
+		fi
+	fi
+fi
+return 1
+}
+
 # -----------------------------------------------------------------
 # main
 # -----------------------------------------------------------------
@@ -300,7 +320,7 @@ while (($#)); do
 			printf '%s %s\n' "$me" "{-?|-h} | -v"
 			printf '%s %s\n\t%s\n\t%s\n' "$me"\
 				"[-i|-r|-s|-Co|-Xo] [-d char] [-To value]"\
-				"[{-Fg|-Fr}|{-Xg|-Xr} pattern]"\
+				"[-Fg|-Fr pattern] [-Xg|-Xr pattern]"\
 				"[-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n' "$me"\
 				"[-n|-c|-Ca|-Co|-Cs|-Tm|-Ts|-Xs] [-To value]"\
@@ -608,14 +628,6 @@ if ((glob_search || regex_search)); then
 	if ((glob_search && regex_search)); then
 		ex_invalid_usage "options -Fg and -Fr are mutually exclusive"
 	fi
-	if ((glob_xclude_element || regex_xclude_element)); then
-		ex_invalid_usage "options -Fg|-Fr and -Xg|-Xr are mutually exclusive"
-	fi
-fi
-if ((opt_int_search)); then
-	if ((glob_xclude_element || regex_xclude_element)); then
-		ex_invalid_usage "option -Oi and -Xg|-Xr are mutually exclusive"
-	fi
 fi
 if ((exclude_header)); then
 	if ! ((headers_only || show_all)); then
@@ -852,30 +864,36 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				else # this should be a member entry
 					if ((show_members || show_all || isolate || glob_search || regex_search || opt_int_search)); then
 						if ((glob_search)); then # show sets with glob pattern matching members
-							if [[ $REPLY = $str_search ]]; then
-								if ((opt_int_search)); then
-									arith_elem_opt_search
-								else
-									let match_count+=1
-									add_search_to_member_cache
+							if ! xclude_elem_search; then
+								if [[ $REPLY = $str_search ]]; then
+									if ((opt_int_search)); then
+										arith_elem_opt_search
+									else
+										let match_count+=1
+										add_search_to_member_cache
+									fi
 								fi
 							fi
 						elif ((regex_search)); then # show sets with regex pattern matching members
-							if [[ $REPLY =~ $str_search ]]; then
-								if ((opt_int_search)); then
-									arith_elem_opt_search
+							if ! xclude_elem_search; then
+								if [[ $REPLY =~ $str_search ]]; then
+									if ((opt_int_search)); then
+										arith_elem_opt_search
+									else
+										let match_count+=1
+										add_search_to_member_cache
+									fi
 								else
-									let match_count+=1
-									add_search_to_member_cache
-								fi
-							else
-								if (($? == 2)); then
-									printf "Invalid regex pattern \`%s'.\n" "$str_search"
-									exit 1
+									if (($? == 2)); then
+										printf "Invalid regex pattern \`%s'.\n" "$str_search"
+										exit 1
+									fi
 								fi
 							fi
 						elif ((opt_int_search)); then # show sets with matching member options
-							arith_elem_opt_search
+							if ! xclude_elem_search; then
+								arith_elem_opt_search
+							fi
 						else
 							if ((glob_xclude_element)); then # exclude matching members
 								if ! [[ $REPLY = $str_xclude ]]; then
