@@ -236,7 +236,7 @@ elif [[ $cur = -* ]]; then
     fi
     # some options allow only a subset of other options
     if ((isolate)); then
-        COMPREPLY=( $(compgen -W '-- -Co -d -r -s -Xo' -- $cur ) )
+        COMPREPLY=( $(compgen -W '-- -Co -d -r -s -Fg -Fr -Oi -To -Xg -Xo -Xr' -- $cur ) )
     elif ((names_only)); then
         COMPREPLY=( $(compgen -W \
             '-- -c ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} -Xs' \
