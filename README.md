@@ -12,6 +12,7 @@ Features:
 - Choose a delimiter character for separating members.
 - Show only sets containing a specific (glob matching) header.
 - Arithmetic comparison on headers with an integer value.
+- Arithmetic comparison on flags of the headers 'Header' field.
 - Match members using a globbing or regex pattern.
 - Arithmetic comparison on member options with an integer value.
 - Suppress listing of (glob matching) sets.
@@ -68,5 +69,6 @@ Examples:
 - `ipset_list -m -Oi packets:0`     - show members of all sets which have a packet count of 0.
 - `ipset_list -m -Oi "packets:>100" -Oi "bytes:>1024"`     - show members of all sets which have a packet count greater than 100 and a byte count greater than 1024.
 - `ipset_list -n -Ca "foo*"`    - show only set names matching the glob "foo*" and enable all counters.
+- `ipset_list -Hi "markmask:>=0x0000beef" -Hi timeout:\!10000`    - show only sets with the header 'Header' fields containing a markmask greater or equal to 0x0000beef and a timeout which is not 10000.
 
 
