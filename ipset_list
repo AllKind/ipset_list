@@ -228,7 +228,7 @@ set +u
 
 # variables
 export LC_ALL=C
-readonly version=3.0
+readonly version=3.1
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_xclude="" opt str_name str_val str_op
