@@ -1,7 +1,8 @@
 ipset_list
 ==========
 
-ipset set listing wrapper script
+ipset set listing wrapper script written for the bash shell.
+It allows you to match and display sets, headers and elements in various ways.
 
 
 Features:
