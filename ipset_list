@@ -636,7 +636,7 @@ if ((exclude_header)); then
 fi
 if ((glob_xclude_element || regex_xclude_element)); then
 	if ! ((show_members || show_all || isolate)); then
-		ex_invalid_usage "options -Fg|-Fr require any of -a|-i|-m"
+		ex_invalid_usage "options -Xg|-Xr require any of -a|-i|-m"
 	fi
 fi
 if ((colorize)); then
