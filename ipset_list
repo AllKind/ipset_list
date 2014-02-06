@@ -331,7 +331,7 @@ while (($#)); do
 				"[-Xg|-Xr pattern] [-Xs set-name-glob] [...] -- [set-name-glob] [...]"
 			printf 'options:\n'
 			printf '%-13s%s\n' '-a' 'show all information but with default delim (whitespace).'\
-				'-c' 'calculate members and match (-Fg|-Fr) sum.'\
+				'-c' 'calculate members and match sum.'\
 				'-d delim' 'delimiter character for separating member entries.'\
 				'-h|-?' 'show this help text.'\
 				'-i' 'show only the members of a single set.'\
