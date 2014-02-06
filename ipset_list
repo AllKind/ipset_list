@@ -295,7 +295,7 @@ elif ((regex_xclude_element)); then # exclude matching members
 		return 0
 	else
 		if (($? == 2)); then
-			printf "Invalid regex pattern \`%s'.\n" "$str_xclude"
+			printf "Invalid regex pattern \`%s'.\n" "$str_xclude" >&2
 			exit 1
 		fi
 	fi
@@ -885,7 +885,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 									fi
 								else
 									if (($? == 2)); then
-										printf "Invalid regex pattern \`%s'.\n" "$str_search"
+										printf "Invalid regex pattern \`%s'.\n" "$str_search" >&2
 										exit 1
 									fi
 								fi
@@ -905,7 +905,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 									let xclude_count+=1
 								else
 									if (($? == 2)); then
-										printf "Invalid regex pattern \`%s'.\n" "$str_xclude"
+										printf "Invalid regex pattern \`%s'.\n" "$str_xclude" >&2
 										exit 1
 									fi
 									add_search_to_member_cache
