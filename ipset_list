@@ -307,7 +307,7 @@ while (($#)); do
 				"[-Fh header-glob:value-glob] [...] [-Fg|-Fr pattern]"\
 				"[-Hi glob:[!|<|>|<=|>=]value] [...]"\
 				"[-Oi option-glob:[!|<|>|<=|>=]value] [...] -- [set-name-glob] [...]"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
 				"[-t|-c|-Ca|-Co|-Cs|-Tm|-Ts]"\
 				"[-Fh header-glob:value-glob] [...]"\
 				"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
@@ -315,6 +315,7 @@ while (($#)); do
 				"[-Hi glob:[!|<|>|<=|>=]value] [...]"\
 				"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
 				"[-Mc [!|<|>|<=|>=]value] [...] [-To value]"\
+				"[-Oi option-glob:[!|<|>|<=|>=]value] [...]"\
 				"[-Xh header-glob:value-glob] [...]"\
 				"[-Xs set-name-glob] [...] -- [set-name-glob] [...]"
 			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
