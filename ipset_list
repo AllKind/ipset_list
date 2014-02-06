@@ -141,8 +141,10 @@
 # Modify here
 # -----------------------------------------------------------------
 
-# modify your PATH variable (commented out by default)
+# modify your PATH variable
+# by default the path is only set if the PATH variable is not already set in the environment
 # PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+: ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
 
 # path to ipset.
 # defaults to `/sbin/ipset' if unset.
