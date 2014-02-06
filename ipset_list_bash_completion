@@ -128,7 +128,7 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
         -\?|-h|-v)
             ((set_index)) || return 0
         ;;
-        @(-Fh|-Fi|-Xh)) ((set_index)) && break || header_operation=1 ;;
+        @(-Fh|-Fi|-Hi|-Xh)) ((set_index)) && break || header_operation=1 ;;
         *)
         ((set_index)) && break
         # options expecting an opt arg
@@ -247,7 +247,7 @@ elif [[ $cur = -* ]]; then
             -- $cur ) )
     elif ((show_members)); then
         COMPREPLY=( $(compgen -W \
-            '-- -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} -Xo' \
+            '-- -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} -Xg -Xr -Xo' \
             -- $cur ) )
     elif ((show_all)); then
         COMPREPLY=( $(compgen -W \
@@ -272,10 +272,10 @@ elif [[ $cur = -* ]]; then
         # mutual exclusive options
         for ((i=1; i < x; i++)); do
             case "${words[i]}" in
-                -Fg) _ipset_list_remove_reply_entry "-Fr" "-Xg" "-Xr" ;;
-                -Fr) _ipset_list_remove_reply_entry "-Fg" "-Xg" "-Xr" ;;
-                -Xg) _ipset_list_remove_reply_entry "-Fg" "-Fr" "-Xr" ;;
-                -Xr) _ipset_list_remove_reply_entry "-Fg" "-Fr" "-Xg" ;;
+                -Fg) _ipset_list_remove_reply_entry "-Fr" ;;
+                -Fr) _ipset_list_remove_reply_entry "-Fg" ;;
+                -Xg) _ipset_list_remove_reply_entry "-Xr" ;;
+                -Xr) _ipset_list_remove_reply_entry "-Xg" ;;
             esac
             # options allowed multiple times
             if [[ ${words[i]} = @(""|-|-@(Fh|Fi|Hi|Mc|Oi|Xh|Xs)) ]]; then
