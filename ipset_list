@@ -258,7 +258,7 @@ is_int() {
 }
 
 is_digit_or_xigit() {
-[[ $1 = @(+([[:digit:]])|0x+([[:xdigit:]])) ]]
+[[ $1 = @(+([[:digit:]])|0[xX]+([[:xdigit:]])) ]]
 }
 
 is_compare_str() {
@@ -476,7 +476,7 @@ while (($#)); do
 		;;
 		-Hi) let match_on_header+=1 # match on name + integer (digit & xdigit) inside of headers 'Header' flag
 			[[ $2 ]] || ex_miss_optarg $1 "header pattern"
-			if [[ $2 = *:?(\!|<|>|<=|>=)@(+([[:digit:]])|0x+([[:xdigit:]])) ]]; then
+			if [[ $2 = *:?(\!|<|>|<=|>=)@(+([[:digit:]])|0[xX]+([[:xdigit:]])) ]]; then
 				arr_hsearch_xint[${#arr_hsearch_xint[@]}]="$2"
 				shift
 			else
@@ -817,8 +817,8 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 								for y in ${!arr_hsearch_xint[@]}; do
 									str_name="${arr_hsearch_xint[y]%%:*}"
 									str_val="${arr_hsearch_xint[y]#*:}"
-									if [[ $str_val = ??0x+([[:xdigit:]]) ]]; then
-										str_op="${str_val%0x*}"
+									if [[ $str_val = ??0[xX]+([[:xdigit:]]) ]]; then
+										str_op="${str_val%0[xX]*}"
 									elif [[ $str_val = ??+([[:digit:]]) ]]; then
 										str_op="${str_val//[[:digit:]]}"
 									fi
