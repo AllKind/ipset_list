@@ -262,7 +262,11 @@ is_digit_or_xigit() {
 }
 
 is_compare_str() {
-[[ $1 = ?(\!|<|>|<=|>=)+([[:digit:]]) ]]
+	[[ $1 = ?(\!|<|>|<=|>=)@(+([[:digit:]])|0[x|X]+([[:xdigit:]])) ]]
+}
+
+is_compare_str_complex() {
+	[[ $1 = ?(\!|<|>|<=|>=)@(+([[:digit:]])|0@(x|X)+([[:xdigit:]])?(/0@(x|X)+([[:xdigit:]]))|+([[:xdigit:]]):?(\!|<|>|<=|>=)+([[:xdigit:]])) ]]
 }
 
 add_search_to_member_cache() {
@@ -272,20 +276,54 @@ fi
 }
 
 arith_elem_opt_search() {
+local str_opt_val str_val2 str_op2 str_cg='?(\!|<|>|<=|>=)' str_xdig='0[xX]+([[:xdigit:]])'
 found_member_opt=0
 for y in ${!arr_opt_int_search[@]}; do
 	str_val="${arr_opt_int_search[y]#*:}"
-	str_op="${str_val//[[:digit:]]}" # compare operator defaults to `=='
+	if [[ $str_val = ${str_cg}@(+([[:digit:]])|$str_xdig) ]]; then # i.e. timeout or skbqueue
+		str_op="${str_val//[![:punct:]]}"
+		str_val="${str_val//[=\!\>\<]}"
+	elif [[ $str_val  = ${str_cg}${str_xdig}/$str_xdig ]]; then # i.e. skbmark
+		str_op="${str_val//[![:punct:]]}"
+		str_op="${str_op//\/}"
+		str_val="${str_val//[=\!\>\<]}"
+	elif [[ $str_val  = ${str_cg}+([[:xdigit:]]):${str_cg}+([[:xdigit:]]) ]]; then # i.e. skbprio
+		str_op="${str_val%:*}"
+		str_op="${str_op%%+([[:xdigit:]])}"
+		str_op2="${str_val#*:}"
+		str_op2="${str_op2%%+([[:xdigit:]])}"
+		str_val="${str_val##+([[:punct:]])}"
+		str_val2="${str_val#*:}"
+		str_val2="${str_val2//[[:punct:]]}"
+	fi
+	# compare operator defaults to `=='
+	# if it's a '!' set it to '!='
 	[[ ${str_op:===} = \! ]] && str_op='!='
+	[[ ${str_op2:===} = \! ]] && str_op2='!='
 	set -- $REPLY
 	shift
-	while (($# > 1)); do
-		if [[ $1 = ${arr_opt_int_search[y]%:*} ]]; then
-			if is_int "${str_val//[[:punct:]]}" && is_int "$2"; then
-				if (($2 $str_op ${str_val//[[:punct:]]})); then
+	while (($# > 1)); do # cycle through options
+		if [[ $1 = ${arr_opt_int_search[y]%%:*} ]]; then str_opt_val="$2"
+			if [[ $str_val = @(+([[:digit:]])|$str_xdig) && $str_opt_val = @(+([[:digit:]])|$str_xdig) ]]; then # i.e. timeout or skbqueue
+				if (( $str_opt_val $str_op $str_val )); then
 					let found_member_opt+=1
-					shift
 				fi
+				shift
+			elif [[ $str_val = $str_xdig && $str_opt_val = ${str_xdig}/$str_xdig ]]; then # i.e. skbmark
+				if (( $str_opt_val $str_op $(( ${str_val%/*} & ${str_val#*/} )) )); then # logicaly AND mark/mask
+					let found_member_opt+=1
+				fi
+				shift
+			elif [[ $str_val = ${str_xdig}/$str_xdig && $str_opt_val = ${str_xdig}/$str_xdig ]]; then # i.e. skbmark
+				if (( $(( ${str_opt_val%/*} & ${str_opt_val#*/} )) $str_op $(( ${str_val%/*} & ${str_val#*/} )) )); then # logicaly AND mark/mask
+					let found_member_opt+=1
+				fi
+				shift
+			elif [[ $str_val = +([[:xdigit:]]):${str_cg}+([[:xdigit:]]) && $str_opt_val = +([[:xdigit:]]):+([[:xdigit:]]) ]]; then # i.e. skbprio
+				if (( ${str_opt_val%:*} $str_op ${str_val%:*} && ${str_opt_val#*:} $str_op2 $str_val2 )); then
+					let found_member_opt+=1
+				fi
+				shift
 			fi
 		fi
 		shift
@@ -449,7 +487,7 @@ while (($#)); do
 		;;
 		-Oi) let opt_int_search+=1
 			[[ $2 ]] || ex_miss_optarg $1 "pattern"
-			if [[ $2 = *:* ]] && is_compare_str "${2#*:}"; then
+			if [[ $2 = *:* ]] && is_compare_str_complex "${2#*:}"; then
 				arr_opt_int_search[y++]="$2"
 				shift
 			else
