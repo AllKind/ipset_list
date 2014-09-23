@@ -281,7 +281,7 @@ for y in ${!arr_opt_int_search[@]}; do
 	shift
 	while (($# > 1)); do
 		if [[ $1 = ${arr_opt_int_search[y]%:*} ]]; then
-			if is_int "${str_val//[[:punct:]]}"; then
+			if is_int "${str_val//[[:punct:]]}" && is_int "$2"; then
 				if (($2 $str_op ${str_val//[[:punct:]]})); then
 					let found_member_opt+=1
 					shift
