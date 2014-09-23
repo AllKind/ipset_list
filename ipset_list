@@ -129,6 +129,11 @@
 # + show members of all sets which have a
 # + packet count greater than 100 and a byte count greater than 1024.
 #
+# $0 -m -Oi "skbmark:>0x123/0XFF" -Oi skbprio:\>=2:<=3 -Oi skbqueue:\!1
+# + show members of all sets which have the following member options set:
+# + skbmark greater than 0x123/0xFF, skbprio major greater or equal to 2
+# + and minor lower or equal to 3, skbqueue not of value 1.
+#
 # $0 -n -Ca "foo*"
 # + show only set names matching the glob "foo*" and enable all counters.
 #
@@ -429,7 +434,7 @@ while (($#)); do
 				'-Hs [!|<|>|<=|>=]value' 'match on size in memory (value=int).'\
 				'-Hv [!|<|>|<=|>=]value' 'match on revision number (value=int).'
 			printf '%-30s%s\n' '-Mc [!|<|>|<=|>=]value [...]' 'match on member count (value=int).'
-			printf '%s\n\t%s\n' '-Oi option-glob:[!|<|>|<=|>=]value [...]' 'match on member options (value=int).'
+			printf '%s\n\t%s\n' '-Oi option-glob:[!|<|>|<=|>=]value [...]' 'match on member options (value=int | 0xhex[/0xhex] | hex:hex).'
 			printf '%-13s%s\n' '-Tm' 'calculate total memory usage of all matching sets.'\
 				'-To' 'set timeout value (int) for read (listing sets).'\
 				'-Ts' 'count amount of traversed sets.'\
