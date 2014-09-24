@@ -25,7 +25,7 @@
 # -----------------------------------------------------------------
 # Compatible with ipset version 6+
 # Tested with ipset versions:
-# 6.16.1, 6.20.1
+# 6.16.1, 6.20.1, 6.22
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -233,7 +233,7 @@ set +u
 
 # variables
 export LC_ALL=C
-readonly version=3.2
+readonly version=3.2.1
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_xclude="" opt str_name str_val str_op
@@ -434,7 +434,8 @@ while (($#)); do
 				'-Hs [!|<|>|<=|>=]value' 'match on size in memory (value=int).'\
 				'-Hv [!|<|>|<=|>=]value' 'match on revision number (value=int).'
 			printf '%-30s%s\n' '-Mc [!|<|>|<=|>=]value [...]' 'match on member count (value=int).'
-			printf '%s\n\t%s\n' '-Oi option-glob:[!|<|>|<=|>=]value [...]' 'match on member options (value=int | 0xhex[/0xhex] | hex:hex).'
+			printf '%s\n\t%s\n' '-Oi option-glob:[!|<|>|<=|>=]value [...]'\
+				'match member options (value=int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex).'
 			printf '%-13s%s\n' '-Tm' 'calculate total memory usage of all matching sets.'\
 				'-To' 'set timeout value (int) for read (listing sets).'\
 				'-Ts' 'count amount of traversed sets.'\
