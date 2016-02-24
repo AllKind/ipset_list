@@ -89,8 +89,8 @@
 # $0 -t -Xh "Revision:*" -Xh "References:*"
 #+ - show all sets headers, but exclude Revision and References entries.
 #
-# $0 -t -Ht "!(@(bit|port)map):*" -Xh "!(Type):*"   - show all sets that are
-#+ neither of type bitmap or portmap, suppress all but the type header.
+# $0 -t -Ht "!(bitmap:@(ip|port))" -Xh "!(Type):*"   - show all sets that are
+#+ neither of type bitmap:ip or bitmap:port, suppress all but the type header.
 #
 # $0 -c -m -Xg "210.*" setA - show members of setA, but suppress listing of entries
 #+ matching the glob pattern "210.*", show count of excluded and total members.

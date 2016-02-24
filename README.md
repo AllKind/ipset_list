@@ -62,7 +62,7 @@ Examples:
 - `ipset_list -t -Tm -Xh "@(Type|Re*|Header):*"` - show all sets headers, but suppress all but name and memsize entry, calculate the total memory size of all sets.
 - `ipset_list -t -Tm -Xh "!(Size*|Type):*" -Ts -Co` List all sets headers, but suppress all but name, type and memsize entry,
  count amount of sets, calculate total memory usage, colorize the output.
-- `ipset_list -t -Ht "!(@(bit|port)map):*" -Xh "!(Type):*"`   - show all sets that are neither of type bitmap or portmap, suppress all but the type header.
+- `ipset_list -t -Ht "!(bitmap:@(ip|port))" -Xh "!(Type):*"`   - show all sets that are neither of type bitmap:ip or bitmap:port, suppress all but the type header.
 - `ipset_list -c -t -Cs -Ts -Xh "@(Size*|Re*|Header):*" -Ht "!(bitmap:*)"` - find all sets not of any bitmap type, count their members sum, display only the 'Type' header, count amount of matching and traversed sets.
 - `ipset_list -Co -c -Ts -Tm`  - show all set names, count their members, count total amount of sets, show total memory usage of all sets, colorize the output
 - `ipset_list -m -r -To 0`     - show members of all sets, try to resolve hosts, set the timeout to 0 (effectivly disabling it).
