@@ -241,6 +241,7 @@ declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc
 declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
 declare -i exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
 declare -i in_header=found_set=found_member_opt=found_hxclude=found_sxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=y=idx=0
+declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
 declare -a arr_sets=() arr_par=() arr_hcache=() arr_mcache=() arr_hsearch=() arr_tmp=()
 declare -a arr_hsearch_int=() arr_hsearch_xint=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 
@@ -771,7 +772,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 						fi
 					done
 				fi
-				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 xclude_count=0 mem_tmp=0 i=0 x=0
+				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 xclude_count=0 mem_tmp=0 builtin_mc=-1 i=0 x=0
 				if ! ((isolate)); then # if showing members only, continue without saving any header data
 					if ((names_only)); then
 						if ((colorize)); then
@@ -830,6 +831,9 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					exit 1
 				fi
 				if ((in_header)); then # we should be in the header
+					if [[ $REPLY = "Number of entries:"+([[:blank:]])+([[:digit:]]) ]]; then
+						builtin_mc=${REPLY#*:+([[:blank:]])}
+					fi
 					if ((match_on_header && found_header < match_on_header)); then # match on an header entry
 						for y in ${!arr_hsearch[@]}; do # string compare
 							if [[ ${REPLY%%:*} = ${arr_hsearch[y]%%:*} && ${REPLY#*: } = ${arr_hsearch[y]#*:} ]]
@@ -961,8 +965,12 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					else # nothing to show or search for, do we need to count members?
 						if ! ((show_count || do_count)); then
 							break # nothing more to do for this set
+						elif ((builtin_mc != -1)); then # we need to count, but we can use the builtin counter
+							member_count=$builtin_mc
+							break
 						fi
 					fi
+					# finally just count. not using builtin counter, would require check -> not worth it
 					let member_count+=1
 				fi
 		esac
