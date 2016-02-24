@@ -8,7 +8,7 @@ It allows you to match and display sets, headers and elements in various ways.
 Features:
 ==========
 
-- Calculate sum of set members (and match on that count).
+- Calculate sum of set members (since ipset v6.25 using built in values) and match on that count.
 - List only members of a specified set.
 - Choose a delimiter character for separating members.
 - Show only sets containing a specific (glob matching) header.
@@ -19,7 +19,7 @@ Features:
 - Suppress listing of (glob matching) sets.
 - Suppress listing of (glob matching) headers.
 - Suppress listing of members matching a glob or regex pattern.
-- Suppress listing of members options.
+- Suppress listing of member options.
 - Calculate the total size in memory of all matching sets.
 - Calculate the amount of matching, excluded and traversed sets.
 - Colorize the output.
