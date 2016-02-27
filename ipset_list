@@ -264,8 +264,12 @@ exit 2
 }
 
 ex_invalid_usage() {
-printf "%s\n" "$*" >&2
-exit 2
+if ((iactive > 1)); then
+	run_wt --msgbox "ERROR: $*" $w_height $w_with
+else
+	printf "%s\n" "$*" >&2
+	exit 2
+fi
 }
 
 is_int() {
@@ -393,49 +397,65 @@ if ((names_only)); then
 		glob_xclude_element||regex_xclude_element||xclude_member_opts))
    	then
 		ex_invalid_usage "option -n does not allow this combination of options"
+		((iactive > 1)) && return 1
 	fi
 fi
 if ((headers_only)); then
 	if ((show_members || show_all || isolate)); then
 		ex_invalid_usage "options -t and -a|-i|-m are mutually exclusive"
+		((iactive > 1)) && return 1
 	fi
 fi
 if ((headers_only)); then
 	if ((xclude_member_opts||glob_xclude_element||regex_xclude_element)); then
 		ex_invalid_usage "options -t and -Xg|-Xr|-Xo are mutually exclusive"
+		((iactive > 1)) && return 1
 	fi
 fi
 if ((isolate)); then
 	if ((show_count||show_all||calc_mem||count_sets||sets_total||exclude_set)); then
 		ex_invalid_usage "options -i and -a|-c|-Ca|-Cs|-Tm|-Ts|-Xs are mutually exclusive"
+		((iactive > 1)) && return 1
 	fi
 	if ((match_on_header)); then
 		ex_invalid_usage "option -i does not allow matching on header entries"
+		((iactive > 1)) && return 1
 	fi
 fi
 if ((glob_search || regex_search)); then
 	if ((glob_search && regex_search)); then
 		ex_invalid_usage "options -Fg and -Fr are mutually exclusive"
+		((iactive > 1)) && return 1
 	fi
 fi
 if ((exclude_header)); then
 	if ! ((headers_only || show_all)); then
 		ex_invalid_usage "option -Xh requires -a or -t"
+		((iactive > 1)) && return 1
 	fi
 fi
 if ((glob_xclude_element || regex_xclude_element)); then
 	if ! ((show_members || show_all || isolate)); then
 		ex_invalid_usage "options -Xg|-Xr require any of -a|-i|-m"
+		((iactive > 1)) && return 1
 	fi
 fi
 if ((colorize)); then
 	if ! [[ -x ${cl:=/usr/local/bin/cl} ]]; then
-		printf "\ncl program \`%s' does not exist, or is not executable.\ncheck \`cl' variable.\n\n" "$cl" >&2
-		printf "If you do not have the program, you can download it from:\n"
-		printf "%s\n" "http://sourceforge.net/projects/colorize-shell/" \
-			"https://github.com/AllKind/cl" >&2
-		printf "\n"
-		exit 1
+		if ((iactive > 1)); then
+			ex_invalid_usage "cl program \`$cl' does not exist, or is not executable. \
+If you do not have the program, you can download it from: \
+http://sourceforge.net/projects/colorize-shell/ or \
+https://github.com/AllKind/cl"
+			return 1
+		else
+			printf "\ncl program \`%s' does not exist, or is not executable.\ncheck \`cl' variable.\n\n" "$cl" >&2
+			printf "If you do not have the program, you can download it from:\n"
+			printf "%s\n" "http://sourceforge.net/projects/colorize-shell/" \
+				"https://github.com/AllKind/cl" >&2
+			printf "\n"
+			exit 1
+		fi
 	fi
 	# set color defaults if unset
 	: ${col_fg:=white}
@@ -452,7 +472,10 @@ if ((colorize)); then
 	for opt in col_fg col_bg col_headers col_members col_match col_memsize \
 	   	col_set_count col_set_total col_highlight
 	do
-		("$cl" ${!opt}) || ex_invalid_usage "variable \`$opt' has an invalid color value: \`${!opt}'"
+		if ! ("$cl" "${!opt}"); then
+			ex_invalid_usage "variable \`$opt' has an invalid color value: \`${!opt}'"
+			return 1
+		fi
 	done
 	[[ -t 1 ]] || colorize=0 # output is not a terminal
 fi
@@ -469,20 +492,24 @@ if [[ $1 ]]; then # there are remaining arg(s)
 		done
 		if ! ((found_set)); then
 			ex_invalid_usage "\`$opt' is not a valid option nor an existing set name"
+			((iactive > 1)) && return 1
 		fi
 	done
 	if ((isolate)); then
 		if (($# != 1)); then
 			ex_invalid_usage "option -i is only valid for a single set"
+			((iactive > 1)) && return 1
 		fi
 	fi
 	arr_sets=("${arr_tmp[@]}") # reassign matched sets
 	if ((isolate && ${#arr_sets[@]} > 1)); then
 		ex_invalid_usage "option -i is only valid for a single set"
+		((iactive > 1)) && return 1
 	fi
 else
 	if ((isolate)); then
 		ex_invalid_usage "option -i is only valid for a single set"
+		((iactive > 1)) && return 1
 	fi
 	arr_sets=( "${all_sets[@]}" )
 fi
@@ -823,6 +850,7 @@ local -a arr_title=( --title "ipset_list interactive mode" )
 }
 
 interactive_mode() {
+iactive=2 # -ge 1 means we are in interactive mode
 i=x=0
 show_all=show_count=show_members=headers_only=isolate=calc_mem=count_sets=sets_total=0
 match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
@@ -908,6 +936,7 @@ if ((${#xopts[*]})); then
 				if (($? == 0)); then
 					if ! [[ ${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]} = *:* ]]; then
 						ex_invalid_usage "invalid format of header descriptor. expecting: \`*:*'"
+						return 1
 					fi
 				else
 					((${#arr_hsearch[@]})) && unset arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]
@@ -923,6 +952,7 @@ if ((${#xopts[*]})); then
 				if (($? == 0)); then
 					if ! is_compare_str "${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]#*:}"; then
 						ex_invalid_usage "invalid format of header descriptor. expecting: \`glob:[!|<|>|<=|>=]value'"
+						return 1
 					fi
 				else
 					((${#arr_hsearch_int[@]})) && unset arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]
@@ -938,6 +968,7 @@ if ((${#xopts[*]})); then
 				if (($? == 0)); then
 					if ! [[ ${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]} = *:* ]]; then
 						ex_invalid_usage "invalid format of headers \'Header' flag descriptor. expecting: \`glob:[!|<|>|<=|>=]value'"
+						return 1
 					fi
 				else
 					((${#arr_hsearch_xint[@]})) && unset arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]
@@ -950,6 +981,7 @@ if ((${#xopts[*]})); then
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
 					ex_invalid_usage "invalid format of references header descriptor. expecting: \`[!|<|>|<=|>=]value'"
+					return 1
 				fi
 				arr_hsearch_int[${#arr_hsearch_int[@]}]="Size in memory:$str_tmp"
 			fi
@@ -959,6 +991,7 @@ if ((${#xopts[*]})); then
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
 					ex_invalid_usage "invalid format of references header descriptor. expecting: \`[!|<|>|<=|>=]value'"
+					return 1
 				fi
 				arr_hsearch_int[${#arr_hsearch_int[@]}]="References:$str_tmp"
 			fi
@@ -968,6 +1001,7 @@ if ((${#xopts[*]})); then
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
 					ex_invalid_usage "invalid format of references header descriptor. expecting: \`[!|<|>|<=|>=]value'"
+					return 1
 				fi
 				arr_hsearch_int[${#arr_hsearch_int[@]}]="Revision:$str_tmp"
 			fi
@@ -977,6 +1011,7 @@ if ((${#xopts[*]})); then
 			if (($? == 0)); then
 				if ! [[ $str_tmp = *:* ]]; then
 					ex_invalid_usage "invalid format of set type descriptor. expecting: \`*:*'."
+					return 1
 				fi
 				arr_hsearch[${#arr_hsearch[@]}]="Type:$str_tmp"
 			fi
@@ -999,6 +1034,7 @@ if ((${#xopts[*]})); then
 						is_compare_str_complex "${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]#*:}"
 					then
 						ex_invalid_usage "invalid format of header descriptor. expecting: \`glob:[!|<|>|<=|>=]value'"
+						return 1
 					fi
 				else
 					((${#arr_opt_int_search[@]})) && unset arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]
@@ -1014,6 +1050,7 @@ if ((${#xopts[*]})); then
 				if (($? == 0)); then
 					if ! is_compare_str "${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}"; then
 						ex_invalid_usage "invalid format of match on member count value. expecting: \`[!|<|>|<=|>=]value'"
+						return 1
 					fi
 				else
 					((${#arr_match_on_msum[@]})) && unset arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]
@@ -1036,6 +1073,7 @@ if ((${#xopts[*]})); then
 				if (($? == 0)); then
 					if ! [[ ${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]} = *:* ]]; then
 						ex_invalid_usage "invalid format of header descriptor. expecting: \`*:*'"
+						return 1
 					fi
 				else
 					((${#arr_hxclude[@]})) && unset arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]
@@ -1069,9 +1107,9 @@ if ((${#xopts[*]})); then
 				$w_height $w_with 2>&1 > /dev/tty) )
 			if ((${#delim} > 1)); then
 				ex_invalid_usage "only one character is allowed as delim"
+				return 1
 			fi
 		elif [[ ${xopts[x]} = Resolve ]]; then str_tmp=0
-			set -x
 			if ((${#arr_par[@]})); then
 				for i in ${!arr_par[@]}; do
 					if [[ ${arr_par[i]} = -r ]]; then
@@ -1082,9 +1120,7 @@ if ((${#xopts[*]})); then
 			if ! ((str_tmp)); then
 				arr_par[${#arr_par[@]}]="-r"
 			fi
-			set +x
 		elif [[ ${xopts[x]} = Sort ]]; then str_tmp=0
-			set -x
 			if ((${#arr_par[@]})); then
 				for i in ${!arr_par[@]}; do
 					if [[ ${arr_par[i]} = -s ]]; then
@@ -1095,7 +1131,6 @@ if ((${#xopts[*]})); then
 			if ! ((str_tmp)); then
 				arr_par[${#arr_par[@]}]="-s"
 			fi
-			set +x
 		fi
 	done
 fi
