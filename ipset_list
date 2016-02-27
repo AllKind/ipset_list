@@ -1190,8 +1190,11 @@ while (($#)); do
 				"[-Oi option-glob:[!|<|>|<=|>=]value] [...]"\
 				"[-To value] [-Xh header-glob:value-glob] [...]"\
 				"[-Xg|-Xr pattern] [-Xs set-name-glob] [...] -- [set-name-glob] [...]"
+			printf '%s %s\t%s\n' "$me" "- [-r|-s|-d delim]"
 			printf 'options:\n'
-			printf '%-13s%s\n' '-a' 'show all information but with default delim (whitespace).'\
+			printf '%-13s%s\n' \
+				'-' 'interactive mode.'\
+				'-a' 'show all information but with default delim (whitespace).'\
 				'-c' 'calculate members and match sum.'\
 				'-d delim' 'delimiter character for separating member entries.'\
 				'-h|-?' 'show this help text.'\
