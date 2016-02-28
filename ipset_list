@@ -145,6 +145,7 @@
 # + greater or equal to 0x0000beef and a timeout which is not 10000.
 #
 # $0 - -d $'\n'  - enter interactive mode, globally set delim to newline.
+# $0 - >/tmp/data  - enter interactive mode and redirect the output to a file.
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
