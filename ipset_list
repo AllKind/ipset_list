@@ -636,7 +636,7 @@ if ((${#xopts[*]})); then
 			exclude_header=1 # don't show certain headers
 			while (($? == 0)); do
 				arr_hxclude[${#arr_hxclude[@]}]=$(rwt --inputbox \
-					"Enter one or more glob expression(s) for: ${xopts[x]}.\nCancel to quit." \
+					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`*:*'.\nCancel to quit." \
 					$w_height $w_with)
 				if (($? == 0)); then
 					if ! [[ ${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]} = *:* ]]; then
