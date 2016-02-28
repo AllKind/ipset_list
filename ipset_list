@@ -863,35 +863,35 @@ local -i w_height=0 w_with=0 l_height=0
 local -a xopts sopts setglob=() arr_iopts=() arr_tmp=()
 local -a arr_opts=(
 "Select_sets" "Choose sets to operate on (default all)" off
-"Show_header" "Show the set header" off
-"Show_members" "Show the set members" off
-"Show_all" "Show set header and members" off
-"Members_only" "Show only the set members" off
-"Header_search" "Match [ext]glob matching headers" off
-"Header_int_search" "Match integer valued header entries" off
-"Header_option_int" "Match integer valued header option entries" off
-"Match_memsize" "Match on size in memory" off
-"Match_references" "Match on number of references" off
-"Match_revision" "Match on revision number" off
-"Match_type" "Match on set type" off
-"Glob_search" "Match members using a [ext]glob pattern" off
-"Regex_search" "Match members using a regex pattern" off
-"Opt_int_search" "Match integer valued member options" off
-"Match_member_sum" "Match on member count (value=int)" off
-"Exclude_set" "Exclude sets matching a [ext]glob pattern" off
-"Exclude_header" "Suppress [ext]glob matching header entries" off
-"Glob_xclude_elem" "Exclude members matching a [ext]glob pattern" off
-"Regex_xclude_elem" "Exclude members matching a regex pattern" off
-"Exclude_elem_opt" "Suppress display of member options" off
-"Count_sets" "Count amount of matching sets" off
-"Count_members" "Calculate members and match sum" off
-"Calc_mem" "Calculate memory usage of all matching sets" off
-"Count_sets_total" "Count amount of traversed sets" off
-"All_counters" "Enable all counters" off
-"Colorize" "Enable colored output" off
-"Delim" "Delimiter character for separating members" off
-"Resolve" "Resolve ip addresses in the output (slow!)" off
-"Sort" "Print elements sorted (if supported)" off
+"Show_header" "Show the set header (-t)" off
+"Show_members" "Show the set members (-m)" off
+"Show_all" "Show set header and members (-a)" off
+"Members_only" "Show only the set members (-i)" off
+"Header_search" "Match [ext]glob matching headers (-Fh)" off
+"Header_int_search" "Match integer valued header entries (-Fi)" off
+"Header_option_int" "Match integer valued header option entries (-Hi)" off
+"Match_memsize" "Match on size in memory (-Hs)" off
+"Match_references" "Match on number of references (-Hr)" off
+"Match_revision" "Match on revision number (-Hv)" off
+"Match_type" "Match on set type (-Ht)" off
+"Glob_search" "Match members using a [ext]glob patterni (-Fg)" off
+"Regex_search" "Match members using a regex pattern (-Fr)" off
+"Opt_int_search" "Match integer valued member options (-Oi)" off
+"Match_member_sum" "Match on member count (value=int) (-Mc)" off
+"Exclude_set" "Exclude sets matching a [ext]glob pattern (-Xs)" off
+"Exclude_header" "Suppress [ext]glob matching header entries (-Xh)" off
+"Glob_xclude_elem" "Exclude members matching a [ext]glob pattern (-Xg)" off
+"Regex_xclude_elem" "Exclude members matching a regex pattern (-Xr)" off
+"Exclude_elem_opt" "Suppress display of member options (-Xo)" off
+"Count_sets" "Count amount of matching sets (-Cs)" off
+"Count_members" "Calculate members and match sum (-c)" off
+"Calc_mem" "Calculate memory usage of all matching sets (-Tm)" off
+"Count_sets_total" "Count amount of traversed sets (-Ts)" off
+"All_counters" "Enable all counters (-Ca)" off
+"Colorize" "Enable colored output (-Co)" off
+"Delim" "Delimiter character for separating members (-d)" off
+"Resolve" "Resolve ip addresses in the output (slow!) (-r)" off
+"Sort" "Print elements sorted (if supported) (-s)" off
 )
 
 xopts=( $(run_wt --separate-output \
