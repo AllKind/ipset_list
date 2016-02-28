@@ -1159,83 +1159,83 @@ fi
 # parse cmd-line options
 while (($#)); do
 	case "$1" in
-		-\?|-h) printf "\n\tipset set listing wrapper script\n\n"
-			printf '%s [option [opt-arg]] [set-name-glob] [...]\n\n' "$me"
-			printf '%s %s\n' "$me" "{-?|-h} | -v"
-			printf '%s %s\n\t%s\n\t%s\n' "$me"\
-				"[-i|-r|-s|-Co|-Xo] [-d char] [-To value]"\
-				"[-Fg|-Fr pattern] [-Xg|-Xr pattern]"\
-				"[-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
-				"[-n|-c|-Ca|-Co|-Cs|-Tm|-Ts|-Xs] [-To value]"\
-				"[-Fh header-glob:value-glob] [...] [-Fg|-Fr pattern]"\
-				"[-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]"\
-				"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]"\
-				"[-Oi option-glob:[!|<|>|<=|>=]value] [...]"\
-				"[-Xs set-name-glob] [...] -- [set-name-glob] [...]"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
-				"[-t|-c|-Ca|-Co|-Cs|-Tm|-Ts] [-To value]"\
-				"[-Fh header-glob:value-glob] [...]"\
-				"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
-				"[-Fg|-Fr pattern] [-Ht type-glob]"\
-				"[-Hi glob:[!|<|>|<=|>=]value] [...]"\
-				"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]"\
-				"[-Oi option-glob:[!|<|>|<=|>=]value] [...]"\
-				"[-Xh header-glob:value-glob] [...]"\
-				"[-Xs set-name-glob] [...] -- [set-name-glob] [...]"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
-				"[-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-Tm|-Ts|-Xo] [-d char] [-To value]"\
-				"[-Fh header-glob:value-glob] [...]"\
-				"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
-				"[-Fg|-Fr pattern] [-Ht type-glob]"\
-				"[-Hi glob:[!|<|>|<=|>=]value] [...]"\
-				"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]"\
-				"[-Oi option-glob:[!|<|>|<=|>=]value] [...]"\
-				"[-Xh header-glob:value-glob] [...]"\
-				"[-Xg|-Xr pattern] [-Xs set-name-glob] [...] -- [set-name-glob] [...]"
-			printf '%s %s\t%s\n' "$me" "- [-r|-s] [-d delim] [-To value]"
-			printf 'options:\n'
-			printf '%-13s%s\n' \
-				'-' 'interactive mode.'\
-				'-a' 'show all information but with default delim (whitespace).'\
-				'-c' 'calculate members and match sum.'\
-				'-d delim' 'delimiter character for separating member entries.'\
-				'-h|-?' 'show this help text.'\
-				'-i' 'show only the members of a single set.'\
-				'-m' 'show set members.'\
-				'-n' "show set names only."\
-				'-r' 'try to resolve ip addresses in the output (slow!).'\
-				'-s' 'print elements sorted (if supported by the set type).'\
-				'-t' 'show set headers only.'\
-				'-v' 'version information.'\
-				'-Ca' "enable all counters (shortcut for -c -Cs -Ts -Tm)."\
-				'-Co' "colorize output (requires \`cl')."\
-				'-Cs' 'count amount of matching sets.'\
-				'-Fg pattern' 'match on members using a [ext]glob pattern.'\
-				'-Fr pattern' 'match on members using a regex (=~ operator) pattern.'
-			printf '%s\n\t%s\n' '-Fh header-glob:value-glob [...]'\
-				'show sets containing one or more [ext]glob matching headers.'
-			printf '%s\n\t%s\n' '-Fi header-glob:[!|<|>|<=|>=]value [...]'\
-				'show sets matching one or more integer valued header entries.'
-			printf '%s\n\t%s\n' '-Hi header-glob:[!|<|>|<=|>=]value [...]'\
-				"match one or more integer valued headers \`Header' entries."
-			printf '%-24s%s\n' '-Ht set-type-glob' 'match on set type.'\
-				'-Hr [!|<|>|<=|>=]value' 'match on number of references (value=int).'\
-				'-Hs [!|<|>|<=|>=]value' 'match on size in memory (value=int).'\
-				'-Hv [!|<|>|<=|>=]value' 'match on revision number (value=int).'
-			printf '%-30s%s\n' '-Mc [!|<|>|<=|>=]value [...]' 'match on member count (value=int).'
-			printf '%s\n\t%s\n' '-Oi option-glob:[!|<|>|<=|>=]value [...]'\
-				'match member options (value=int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex).'
-			printf '%-13s%s\n' '-Tm' 'calculate total memory usage of all matching sets.'\
-				'-To' 'set timeout value (int) for read (listing sets).'\
-				'-Ts' 'count amount of traversed sets.'\
-				'-Xo' 'suppress display of member options.'
-			printf '%s\n\t%s\n' '-Xh header-glob:value-glob [...]'\
-				'exclude one or more [ext]glob matching header entries.'
-			printf '%-13s%s\n' '-Xg pattern' 'exclude members matching a [ext]glob pattern.'\
-				'-Xr pattern' 'exclude members matching a regex pattern.'\
-				'-Xs pattern' 'exclude sets matching a [ext]glob pattern.'
-			printf '%-13s%s\n' '--' 'stop further option processing.'
+		-\?|-h) printf "%s\n" "
+    ipset set listing wrapper script
+
+ipset_list [option [opt-arg]] [set-name-glob] [...]
+
+ipset_list {-?|-h} | -v
+ipset_list [-i|-r|-s|-Co|-Xo] [-d char] [-To value]
+    [-Fg|-Fr pattern] [-Xg|-Xr pattern]
+    [-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name
+ipset_list [-n|-c|-Ca|-Co|-Cs|-Tm|-Ts|-Xs] [-To value]
+    [-Fh header-glob:value-glob] [...] [-Fg|-Fr pattern]
+    [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
+    [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
+    [-Oi option-glob:[!|<|>|<=|>=]value] [...]
+    [-Xs set-name-glob] [...] -- [set-name-glob] [...]
+ipset_list [-t|-c|-Ca|-Co|-Cs|-Tm|-Ts] [-To value]
+    [-Fh header-glob:value-glob] [...]
+    [-Fi header-glob:[!|<|>|<=|>=]value] [...]
+    [-Fg|-Fr pattern] [-Ht type-glob]
+    [-Hi glob:[!|<|>|<=|>=]value] [...]
+    [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
+    [-Oi option-glob:[!|<|>|<=|>=]value] [...]
+    [-Xh header-glob:value-glob] [...]
+    [-Xs set-name-glob] [...] -- [set-name-glob] [...]
+ipset_list [-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-Tm|-Ts|-Xo] [-d char] [-To value]
+    [-Fh header-glob:value-glob] [...]
+    [-Fi header-glob:[!|<|>|<=|>=]value] [...]
+    [-Fg|-Fr pattern] [-Ht type-glob]
+    [-Hi glob:[!|<|>|<=|>=]value] [...]
+    [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
+    [-Oi option-glob:[!|<|>|<=|>=]value] [...]
+    [-Xh header-glob:value-glob] [...]
+    [-Xg|-Xr pattern] [-Xs set-name-glob] [...] -- [set-name-glob] [...]
+ipset_list - [-r|-s] [-d delim] [-To value]
+
+options:
+-            interactive mode.
+-a           show all information but with default delim (whitespace).
+-c           calculate members and match sum.
+-d delim     delimiter character for separating member entries.
+-h|-?        show this help text.
+-i           show only the members of a single set.
+-m           show set members.
+-n           show set names only.
+-r           try to resolve ip addresses in the output (slow!).
+-s           print elements sorted (if supported by the set type).
+-t           show set headers only.
+-v           version information.
+-Ca          enable all counters (shortcut for -c -Cs -Ts -Tm).
+-Co          colorize output (requires \`cl').
+-Cs          count amount of matching sets.
+-Fg pattern  match on members using a [ext]glob pattern.
+-Fr pattern  match on members using a regex (=~ operator) pattern.
+-Fh header-glob:value-glob [...]
+    show sets containing one or more [ext]glob matching headers.
+-Fi header-glob:[!|<|>|<=|>=]value [...]
+    show sets matching one or more integer valued header entries.
+-Hi header-glob:[!|<|>|<=|>=]value [...]
+    match one or more integer valued headers \`Header' entries.
+-Ht set-type-glob       match on set type.
+-Hr [!|<|>|<=|>=]value  match on number of references (value=int).
+-Hs [!|<|>|<=|>=]value  match on size in memory (value=int).
+-Hv [!|<|>|<=|>=]value  match on revision number (value=int).
+-Mc [!|<|>|<=|>=]value [...]  match on member count (value=int).
+-Oi option-glob:[!|<|>|<=|>=]value [...]
+    match member options (value=int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex).
+-Tm          calculate total memory usage of all matching sets.
+-To          set timeout value (int) for read (listing sets).
+-Ts          count amount of traversed sets.
+-Xo          suppress display of member options.
+-Xh header-glob:value-glob [...]
+    exclude one or more [ext]glob matching header entries.
+-Xg pattern  exclude members matching a [ext]glob pattern.
+-Xr pattern  exclude members matching a regex pattern.
+-Xs pattern  exclude sets matching a [ext]glob pattern.
+--           stop further option processing.
+"
 			exit 0
 		;;
 		-) iactive=1
