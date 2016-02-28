@@ -47,6 +47,7 @@
 # - Calculate the amount of matching, excluded and traversed sets.
 # - Colorize the output.
 # - Operate on a single, selected, or all sets.
+# - A wizard based interactive mode.
 # - Programmable completion is included to make usage easier and faster.
 # -----------------------------------------------------------------
 
@@ -142,6 +143,8 @@
 # $0 -Hi "markmask:>=0x0000beef" -Hi timeout:\!10000`
 # + show only sets with the header 'Header' fields containing a markmask
 # + greater or equal to 0x0000beef and a timeout which is not 10000.
+#
+# $0 - -d $'\n'  - enter interactive mode, globally set delim to newline.
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------

@@ -24,6 +24,7 @@ Features:
 - Calculate the amount of matching, excluded and traversed sets.
 - Colorize the output.
 - Operate on a single, selected, or all sets.
+- A wizard based interactive mode.
 - Programmable completion is included to make usage easier and faster.
 
 
@@ -72,5 +73,6 @@ Examples:
 - `ipset_list -m -Oi "skbmark:>0x123/0XFF" -Oi skbprio:\>=2:<=3 -Oi skbqueue:\!1` - show members of all sets which have the following member options set: skbmark greater than 0x123/0xFF, skbprio major greater or equal to 2 and minor lower or equal to 3, skbqueue not of value 1.
 - `ipset_list -n -Ca "foo*"`    - show only set names matching the glob "foo*" and enable all counters.
 - `ipset_list -Hi "markmask:>=0x0000beef" -Hi timeout:\!10000`    - show only sets with the header 'Header' fields containing a markmask greater or equal to 0x0000beef and a timeout which is not 10000.
+- `ipset_list - -d $'\n'`  - enter interactive mode, globally set delim to newline.
 
 
