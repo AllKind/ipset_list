@@ -1427,7 +1427,7 @@ done
 
 # validate value of colorize
 if [[ ${colorize:=0} != [01] ]]; then
-	ex_invalid_usage "value of variable \`colorize' \`$colorize' is not 0 or 1."
+	ex_invalid_usage "value of variable \`colorize' \`$colorize' is not 0 or 1"
 fi
 
 # validate TMOUT variable
@@ -1436,10 +1436,12 @@ if [[ $TMOUT ]] && ! is_int "$TMOUT"; then
 fi
 
 # check for ipset program and version
-[[ -x ${ipset:=/sbin/ipset} ]] || {
+while :; do
+	[[ -x ${ipset:-$(command -v ipset)} ]] && ipset="$(command -v ipset)" && break
+	[[ -x ${ipset:=/sbin/ipset} ]] && break
 	printf "ipset binary \`%s' does not exist, or is not executable. check \`ipset' variable\n" "$ipset" >&2
 	exit 1
-}
+done
 ips_version="$("$ipset" version)"
 ips_version="${ips_version#ipset v}"
 ips_version="${ips_version%%.*}"
