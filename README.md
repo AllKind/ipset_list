@@ -22,8 +22,8 @@ Features:
 - Suppress listing of member options.
 - Calculate the total size in memory of all matching sets.
 - Calculate the amount of matching, excluded and traversed sets.
-- Colorize the output.
 - Operate on a single, selected, or all sets.
+- Colorize the output.
 - A wizard based interactive mode.
 - Programmable completion is included to make usage easier and faster.
 

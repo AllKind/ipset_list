@@ -7,7 +7,7 @@
 # https://sourceforge.net/projects/ipset-list/
 # -----------------------------------------------------------------
 
-# Copyright (C) 2013-2016 AllKind aka Mart Frauenlob (AllKind@fastest.cc)
+# Copyright (C) 2013-2016 Mart Frauenlob aka AllKind (AllKind@fastest.cc)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,8 +45,8 @@
 # - Suppress listing of member options.
 # - Calculate the total size in memory of all matching sets.
 # - Calculate the amount of matching, excluded and traversed sets.
-# - Colorize the output.
 # - Operate on a single, selected, or all sets.
+# - Colorize the output.
 # - A wizard based interactive mode.
 # - Programmable completion is included to make usage easier and faster.
 # -----------------------------------------------------------------
