@@ -224,6 +224,27 @@ col_highlight="white"
 # find in path if not declared in parent environment
 : ${whiptail:=$(command -v whiptail)}
 
+# tput binary - optional for interactive mode
+#tput="/usr/bin/tput"
+# find in path if not declared in parent environment
+: ${tput:=$(command -v tput)}
+
+
+# applies to the three window measure variables below:
+# if `0' and the `tput' program is available adjustment is done autmatically.
+# if tput is not present, a value of `0' should give good results.
+# otherwise set it to your desired value (integer),
+# with the downside of fixed size.
+
+# window height for interactive mode
+w_height=0
+
+# window with for interactive mode
+w_with=0
+
+# list height for interactive mode
+l_height=0
+
 # -----------------------------------------------------------------
 # DO NOT MODIFY ANYTHING BEYOND THIS LINE!
 # -----------------------------------------------------------------
@@ -294,19 +315,6 @@ is_compare_str_complex() {
 add_search_to_member_cache() {
 if ((show_members || show_all || isolate)); then
 	arr_mcache[i++]="$REPLY"
-fi
-}
-
-read_sets() {
-# sets to work on (no arg means all sets)
-local idx=0
-arr_sets=()
-while IFS=$'\n' read -r; do
-	arr_sets[idx++]="$REPLY"
-done < <("$ipset" list -n)
-if ! ((${#arr_sets[@]})); then
-	printf "Cannot find any sets\n" >&2
-	exit 1
 fi
 }
 
@@ -859,7 +867,6 @@ match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_i
 exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
 arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 local str_tmp
-local -i w_height=0 w_with=0 l_height=0
 local -a xopts sopts setglob=() arr_iopts=() arr_tmp=()
 local -a arr_opts=(
 "Select_sets" "Choose sets to operate on (default all)" off
@@ -1160,11 +1167,6 @@ fi
 # main
 # -----------------------------------------------------------------
 
-# validate value of colorize
-if [[ ${colorize:=0} != [01] ]]; then
-	ex_invalid_usage "value of variable \`colorize' \`$colorize' is not 0 or 1."
-fi
-
 # parse cmd-line options
 while (($#)); do
 	case "$1" in
@@ -1419,7 +1421,16 @@ options:
 	esac
 	shift
 done
-declare -i i=x=y=idx=0
+
+# validate value of colorize
+if [[ ${colorize:=0} != [01] ]]; then
+	ex_invalid_usage "value of variable \`colorize' \`$colorize' is not 0 or 1."
+fi
+
+# validate TMOUT variable
+if [[ $TMOUT ]] && ! is_int "$TMOUT"; then
+	ex_invalid_usage "timeout value \`$TMOUT' is not an integer"
+fi
 
 # check for ipset program and version
 [[ -x ${ipset:=/sbin/ipset} ]] || {
@@ -1438,12 +1449,17 @@ if ((ips_version < 6)); then
 	exit 1
 fi
 
-# validate TMOUT variable
-if [[ $TMOUT ]] && ! is_int "$TMOUT"; then
-	ex_invalid_usage "timeout value \`$TMOUT' is not an integer"
+# sets to work on (no arg means all sets)
+idx=0
+arr_sets=()
+while IFS=$'\n' read -r; do
+	arr_sets[idx++]="$REPLY"
+done < <("$ipset" list -n)
+if ! ((${#arr_sets[@]})); then
+	printf "Cannot find any sets\n" >&2
+	exit 1
 fi
 
-read_sets
 declare -a all_sets=( "${arr_sets[@]}" )
 # interactive mode
 if ((iactive)); then
@@ -1452,6 +1468,31 @@ if ((iactive)); then
 		printf "whiptail binary \`%s' does not exist, or is not executable. check \`whiptail' variable\n" "$whiptail" >&2
 		exit 1
 	}
+	# check for tput program
+	if ! [[ -x ${tput:=$(command -v tput)} || -x ${tput:=/usr/bin/tput} ]]; then
+		unset tput
+	fi
+	# set some defaults if unset
+	: ${w_height:=0}
+	: ${w_with:=0}
+	: ${l_height:=0}
+
+	# check for int values
+	for opt in w_height w_with l_height; do
+		if ! is_int "${!opt}"; then
+			ex_invalid_usage "value of \`$opt' is not an integer"
+		fi
+	done
+	# if 0 and tput is present, adjust window measures automatically
+	if (( w_height == 0 )) && [[ $tput ]]; then
+		w_height=$( "$tput" lines )
+	fi
+	if (( w_with == 0 )) && [[ $tput ]]; then
+		w_with=$( "$tput" cols )
+	fi
+	if (( l_height == 0 )) && [[ $tput ]]; then
+		l_height=$(( $( "$tput" lines ) - 10 ))
+	fi
 	while (($? == 0)); do
 		interactive_mode
 	done
