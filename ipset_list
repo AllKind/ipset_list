@@ -1193,7 +1193,7 @@ while (($#)); do
 				"[-Oi option-glob:[!|<|>|<=|>=]value] [...]"\
 				"[-To value] [-Xh header-glob:value-glob] [...]"\
 				"[-Xg|-Xr pattern] [-Xs set-name-glob] [...] -- [set-name-glob] [...]"
-			printf '%s %s\t%s\n' "$me" "- [-r|-s|-d delim]"
+			printf '%s %s\t%s\n' "$me" "- [-r|-s] [-d delim] [-To value]"
 			printf 'options:\n'
 			printf '%-13s%s\n' \
 				'-' 'interactive mode.'\
