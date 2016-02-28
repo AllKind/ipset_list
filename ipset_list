@@ -478,8 +478,11 @@ if ((${#xopts[*]})); then
 							setglob+=( "${arr_tmp[@]}" )
 						fi
 					elif [[ ${sopts[i]} = Glob ]]; then
-						setglob+=( $(rwt --inputbox "Enter the glob expression for: ${xopts[x]}" \
-							$w_height $w_with) )
+						while (($? == 0)); do
+							setglob+=( $(rwt --inputbox \
+								"Enter one or more glob expression(s) for: ${xopts[x]}.\nCancel to quit." \
+								$w_height $w_with) )
+						done
 					fi
 				done
 			fi
