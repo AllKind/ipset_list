@@ -398,6 +398,315 @@ fi
 return 1
 }
 
+rwt() {
+local -a arr_title=( --title "ipset_list interactive mode" )
+"$whiptail" "${arr_title[@]}" "$@" 2>&1 > /dev/tty
+}
+
+interactive_mode() { # interactive mode - wizard based composing of commands
+# some global variables need to set on each run
+iactive=2 # -ge 1 means we are in interactive mode
+i=x=0
+show_all=show_count=show_members=headers_only=isolate=calc_mem=count_sets=sets_total=0
+match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
+exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
+arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
+local str_tmp
+local -a xopts sopts setglob=() arr_iopts=()
+local -ar arr_opts=(
+"Select_sets" "Choose sets to operate on (default all)" off
+"Show_header" "Show the set header (-t)" off
+"Show_members" "Show the set members (-m)" off
+"Show_all" "Show set header and members (-a)" off
+"Members_only" "Show only the set members (-i)" off
+"Header_search" "Match [ext]glob matching headers (-Fh)" off
+"Header_int_search" "Match integer valued header entries (-Fi)" off
+"Header_option_int" "Match integer valued header option entries (-Hi)" off
+"Match_memsize" "Match on size in memory (-Hs)" off
+"Match_references" "Match on number of references (-Hr)" off
+"Match_revision" "Match on revision number (-Hv)" off
+"Match_type" "Match on set type (-Ht)" off
+"Glob_search" "Match members using a [ext]glob patterni (-Fg)" off
+"Regex_search" "Match members using a regex pattern (-Fr)" off
+"Opt_int_search" "Match integer valued member options (-Oi)" off
+"Match_member_sum" "Match on member count (value=int) (-Mc)" off
+"Exclude_set" "Exclude sets matching a [ext]glob pattern (-Xs)" off
+"Exclude_header" "Suppress [ext]glob matching header entries (-Xh)" off
+"Glob_xclude_elem" "Exclude members matching a [ext]glob pattern (-Xg)" off
+"Regex_xclude_elem" "Exclude members matching a regex pattern (-Xr)" off
+"Exclude_elem_opt" "Suppress display of member options (-Xo)" off
+"Count_sets" "Count amount of matching sets (-Cs)" off
+"Count_members" "Calculate members and match sum (-c)" off
+"Calc_mem" "Calculate memory usage of all matching sets (-Tm)" off
+"Count_sets_total" "Count amount of traversed sets (-Ts)" off
+"All_counters" "Enable all counters (-Ca)" off
+"Colorize" "Enable colored output (-Co)" off
+"Delim" "Delimiter character for separating members (-d)" off
+"Resolve" "Resolve ip addresses in the output (slow!) (-r)" off
+"Sort" "Print elements sorted (if supported) (-s)" off
+)
+
+# main screen: checklist with all options
+xopts=( $(rwt --separate-output --checklist \
+"Select the desired options (multiple choice).\n\
+Use SPACE key to (de)select.\n\
+After you confirm with ENTER or the OK button, options will be evaluated.\n\
+You will be prompted for input if an option requires this.\n\
+Use the ESC key or CANCEL button to quit."\
+	$w_height $w_with $l_height "${arr_opts[@]}") )
+if (($?)); then
+	return 1
+fi
+
+# iterate over selected options
+if ((${#xopts[*]})); then
+	for ((x=0; x<=${#xopts[*]}; x++)); do
+		if [[ ${xopts[x]} = Select_sets ]]; then
+			sopts=( $(rwt --separate-output --checklist \
+				"Select the desired options (multiple choice)." $w_height $w_with $l_height \
+				"List" "Select from list" off "Glob" "Enter a search [ext]glob" off) )
+			if ((${#sopts[*]})); then
+				for ((i=0; i<=${#sopts[*]}; i++)); do
+					if [[ ${sopts[i]} = List ]]; then arr_tmp=()
+						arr_tmp=( $(rwt --separate-output --noitem --checklist \
+							"Choose the set(s) (multiple choice)." $w_height $w_with $l_height \
+							$(printf "%s off\n" "${all_sets[@]}")) )
+						if ((${#arr_tmp[@]})); then
+							setglob+=( "${arr_tmp[@]}" )
+						fi
+					elif [[ ${sopts[i]} = Glob ]]; then
+						setglob+=( $(rwt --inputbox "Enter the glob expression for: ${xopts[x]}" \
+							$w_height $w_with) )
+					fi
+				done
+			fi
+		elif [[ ${xopts[x]} = Show_header ]]; then
+			headers_only=1
+		elif [[ ${xopts[x]} = Show_members ]]; then
+			show_members=1
+		elif [[ ${xopts[x]} = Show_all ]]; then
+			show_all=1
+		elif [[ ${xopts[x]} = Members_only ]]; then
+			isolate=1
+		elif [[ ${xopts[x]} = Header_search ]]; then
+			let match_on_header+=1 # show only sets, which contain a matching header entry
+			while (($? == 0)); do
+				arr_hsearch[${#arr_hsearch[@]}]=$(rwt --inputbox \
+					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`*:*'\nCancel to quit." \
+					$w_height $w_with)
+				if (($? == 0)); then
+					if ! [[ ${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]} = *:* ]]; then
+						ex_invalid_usage "invalid format of header descriptor: \`${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]}'. expecting: \`*:*'"
+						return 0
+					fi
+				else
+					((${#arr_hsearch[@]})) && unset arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]
+					break
+				fi
+			done
+		elif [[ ${xopts[x]} = Header_int_search ]]; then
+			let match_on_header+=1 # show only sets, containing a matching (int compare) header entry
+			while (($? == 0)); do
+				arr_hsearch_int[${#arr_hsearch_int[@]}]=$(rwt --inputbox \
+					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit." \
+					$w_height $w_with)
+				if (($? == 0)); then
+					if ! is_compare_str "${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]#*:}"; then
+						ex_invalid_usage "invalid format of header descriptor: \`${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+						return 0
+					fi
+				else
+					((${#arr_hsearch_int[@]})) && unset arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]
+					break
+				fi
+			done
+		elif [[ ${xopts[x]} = Header_option_int ]]; then
+			let match_on_header+=1 # match on name + integer (digit & xdigit) inside of headers 'Header' flag
+			while (($? == 0)); do
+				arr_hsearch_xint[${#arr_hsearch_xint[@]}]=$(rwt --inputbox \
+					"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit." \
+					$w_height $w_with)
+				if (($? == 0)); then
+					if ! [[ ${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]} = *:* ]]; then
+						ex_invalid_usage "invalid format of headers \'Header' flag descriptor: \`${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+						return 0
+					fi
+				else
+					((${#arr_hsearch_xint[@]})) && unset arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]
+					break
+				fi
+			done
+		elif [[ ${xopts[x]} = Match_memsize ]]; then
+			let match_on_header+=1 # shortcut for -Fi "Size in Memory:..."
+			str_tmp=$(rwt --inputbox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'" \
+				$w_height $w_with)
+			if (($? == 0)); then
+				if ! is_compare_str "$str_tmp"; then
+					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+					return 0
+				fi
+				arr_hsearch_int[${#arr_hsearch_int[@]}]="Size in memory:$str_tmp"
+			fi
+		elif [[ ${xopts[x]} = Match_references ]]; then
+			let match_on_header+=1 # shortcut for -Fi References:...
+			str_tmp=$(rwt --inputbox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'" \
+				$w_height $w_with)
+			if (($? == 0)); then
+				if ! is_compare_str "$str_tmp"; then
+					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+					return 0
+				fi
+				arr_hsearch_int[${#arr_hsearch_int[@]}]="References:$str_tmp"
+			fi
+		elif [[ ${xopts[x]} = Match_revision ]]; then
+			let match_on_header+=1 # shortcut for -Fi Revision:...
+			str_tmp=$(rwt --inputbox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'" \
+				$w_height $w_with)
+			if (($? == 0)); then
+				if ! is_compare_str "$str_tmp"; then
+					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+					return 0
+				fi
+				arr_hsearch_int[${#arr_hsearch_int[@]}]="Revision:$str_tmp"
+			fi
+		elif [[ ${xopts[x]} = Match_type ]]; then
+			let match_on_header+=1 # shortcut for -Fh Type:x:y
+			str_tmp=$(rwt --inputbox "Enter glob expression for: ${xopts[x]}.\nExpected input: \`*:*'" \
+				$w_height $w_with)
+			if (($? == 0)); then
+				if ! [[ $str_tmp = *:* ]]; then
+					ex_invalid_usage "invalid format of set type descriptor: \`$str_tmp'. expecting: \`*:*'."
+					return 0
+				fi
+				arr_hsearch[${#arr_hsearch[@]}]="Type:$str_tmp"
+			fi
+		elif [[ ${xopts[x]} = Glob_search ]]; then
+			glob_search=1
+			str_search=( $(rwt --inputbox "Enter the glob expression for: ${xopts[x]}" $w_height $w_with) )
+		elif [[ ${xopts[x]} = Regex_search ]]; then
+			regex_search=1
+			str_search=( $(rwt --inputbox "Enter the regex expression for: ${xopts[x]}" $w_height $w_with) )
+		elif [[ ${xopts[x]} = Opt_int_search ]]; then
+			let opt_int_search+=1
+			while (($? == 0)); do
+				arr_opt_int_search[${#arr_opt_int_search[@]}]=$(rwt --inputbox \
+					"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nvalue = int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex\nCancel to quit." \
+					$w_height $w_with)
+				if (($? == 0)); then
+					if ! ( [[ ${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]} = *:* ]] && is_compare_str_complex "${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]#*:}" )
+					then
+						ex_invalid_usage "invalid format of header descriptor: \`${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+						return 0
+					fi
+				else
+					((${#arr_opt_int_search[@]})) && unset arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]
+					break
+				fi
+			done
+		elif [[ ${xopts[x]} = Match_member_sum ]]; then
+			do_count=1
+			while (($? == 0)); do
+				arr_match_on_msum[${#arr_match_on_msum[@]}]=$(rwt --inputbox \
+					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'\nCancel to quit." \
+					$w_height $w_with)
+				if (($? == 0)); then
+					if ! is_compare_str "${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}"; then
+						ex_invalid_usage "invalid format of match on member count value: \`${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}'. expecting: \`[!|<|>|<=|>=]value'"
+						return 0
+					fi
+				else
+					((${#arr_match_on_msum[@]})) && unset arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]
+					break
+				fi
+			done
+		elif [[ ${xopts[x]} = Exclude_set ]]; then
+			exclude_set=1
+			while (($? == 0)); do
+				arr_sxclude[${#arr_sxclude[@]}]=$(rwt --inputbox \
+					"Enter one or more glob expression(s) for: ${xopts[x]}.\nCancel to quit." \
+					$w_height $w_with)
+			done
+		elif [[ ${xopts[x]} = Exclude_header ]]; then
+			exclude_header=1 # don't show certain headers
+			while (($? == 0)); do
+				arr_hxclude[${#arr_hxclude[@]}]=$(rwt --inputbox \
+					"Enter one or more glob expression(s) for: ${xopts[x]}.\nCancel to quit." \
+					$w_height $w_with)
+				if (($? == 0)); then
+					if ! [[ ${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]} = *:* ]]; then
+						ex_invalid_usage "invalid format of header descriptor: \`${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]}'. expecting: \`*:*'"
+						return 0
+					fi
+				else
+					((${#arr_hxclude[@]})) && unset arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]
+					break
+				fi
+			done
+		elif [[ ${xopts[x]} = Glob_xclude_elem ]]; then
+			glob_xclude_element=1
+			str_xclude=( $(rwt --inputbox "Enter the glob expression for: ${xopts[x]}" \
+				$w_height $w_with) )
+		elif [[ ${xopts[x]} = Regex_xclude_elem ]]; then
+			regex_xclude_element=1
+			str_xclude=( $(rwt --inputbox "Enter the regex expression for: ${xopts[x]}" \
+				$w_height $w_with) )
+		elif [[ ${xopts[x]} = Exclude_elem_opt ]]; then
+			xclude_member_opts=1
+		elif [[ ${xopts[x]} = Count_sets ]]; then
+			count_sets=1
+		elif [[ ${xopts[x]} = Count_members ]]; then
+			show_count=1
+		elif [[ ${xopts[x]} = Calc_mem ]]; then
+			calc_mem=1
+		elif [[ ${xopts[x]} = Count_sets_total ]]; then
+			sets_total=1
+		elif [[ ${xopts[x]} = All_counters ]]; then
+			show_count=1 count_sets=1 calc_mem=1 sets_total=1
+		elif [[ ${xopts[x]} = Colorize ]]; then
+			colorize=1
+		elif [[ ${xopts[x]} = Delim ]]; then
+			delim=( $(rwt --inputbox \
+				"Enter the new delimiter character.\nPersistent until you reset it.\n\$'string' type escapes are not supported in interactive mode." \
+				$w_height $w_with) )
+			if ((${#delim} > 1)); then
+				ex_invalid_usage "only one character is allowed as delim"
+				return 0
+			fi
+		elif [[ ${xopts[x]} = Resolve ]]; then str_tmp=0
+			if ((${#arr_par[@]})); then
+				for i in ${!arr_par[@]}; do
+					if [[ ${arr_par[i]} = -r ]]; then
+						str_tmp=1
+					fi
+				done
+			fi
+			if ! ((str_tmp)); then
+				arr_par[${#arr_par[@]}]="-r"
+			fi
+		elif [[ ${xopts[x]} = Sort ]]; then str_tmp=0
+			if ((${#arr_par[@]})); then
+				for i in ${!arr_par[@]}; do
+					if [[ ${arr_par[i]} = -s ]]; then
+						str_tmp=1
+					fi
+				done
+			fi
+			if ! ((str_tmp)); then
+				arr_par[${#arr_par[@]}]="-s"
+			fi
+		fi
+	done
+fi
+
+main "${setglob[@]}"
+printf "\n"
+read -N 1 -p " Press \`ENTER' to continue, or \`ESC' to return to the shell."
+if [[ $REPLY = $'\E' ]]; then
+	printf "\n" # avoid moving the shell prompt
+	return 1
+fi
+}
+
 main() {
 local str_name str_val str_op
 in_header=found_set=found_member_opt=found_hxclude=found_sxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=idx=0
@@ -855,315 +1164,6 @@ if ((count_sets || calc_mem || sets_total || exclude_set)); then
 			printf "Total memory size of all matched sets: %d\n" $mem_total
 		fi
 	fi
-fi
-}
-
-rwt() {
-local -a arr_title=( --title "ipset_list interactive mode" )
-"$whiptail" "${arr_title[@]}" "$@" 2>&1 > /dev/tty
-}
-
-interactive_mode() { # interactive mode - wizard based composing of commands
-# some global variables need to set on each run
-iactive=2 # -ge 1 means we are in interactive mode
-i=x=0
-show_all=show_count=show_members=headers_only=isolate=calc_mem=count_sets=sets_total=0
-match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
-exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
-arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
-local str_tmp
-local -a xopts sopts setglob=() arr_iopts=()
-local -ar arr_opts=(
-"Select_sets" "Choose sets to operate on (default all)" off
-"Show_header" "Show the set header (-t)" off
-"Show_members" "Show the set members (-m)" off
-"Show_all" "Show set header and members (-a)" off
-"Members_only" "Show only the set members (-i)" off
-"Header_search" "Match [ext]glob matching headers (-Fh)" off
-"Header_int_search" "Match integer valued header entries (-Fi)" off
-"Header_option_int" "Match integer valued header option entries (-Hi)" off
-"Match_memsize" "Match on size in memory (-Hs)" off
-"Match_references" "Match on number of references (-Hr)" off
-"Match_revision" "Match on revision number (-Hv)" off
-"Match_type" "Match on set type (-Ht)" off
-"Glob_search" "Match members using a [ext]glob patterni (-Fg)" off
-"Regex_search" "Match members using a regex pattern (-Fr)" off
-"Opt_int_search" "Match integer valued member options (-Oi)" off
-"Match_member_sum" "Match on member count (value=int) (-Mc)" off
-"Exclude_set" "Exclude sets matching a [ext]glob pattern (-Xs)" off
-"Exclude_header" "Suppress [ext]glob matching header entries (-Xh)" off
-"Glob_xclude_elem" "Exclude members matching a [ext]glob pattern (-Xg)" off
-"Regex_xclude_elem" "Exclude members matching a regex pattern (-Xr)" off
-"Exclude_elem_opt" "Suppress display of member options (-Xo)" off
-"Count_sets" "Count amount of matching sets (-Cs)" off
-"Count_members" "Calculate members and match sum (-c)" off
-"Calc_mem" "Calculate memory usage of all matching sets (-Tm)" off
-"Count_sets_total" "Count amount of traversed sets (-Ts)" off
-"All_counters" "Enable all counters (-Ca)" off
-"Colorize" "Enable colored output (-Co)" off
-"Delim" "Delimiter character for separating members (-d)" off
-"Resolve" "Resolve ip addresses in the output (slow!) (-r)" off
-"Sort" "Print elements sorted (if supported) (-s)" off
-)
-
-# main screen: checklist with all options
-xopts=( $(rwt --separate-output --checklist \
-"Select the desired options (multiple choice).\n\
-Use SPACE key to (de)select.\n\
-After you confirm with ENTER or the OK button, options will be evaluated.\n\
-You will be prompted for input if an option requires this.\n\
-Use the ESC key or CANCEL button to quit."\
-	$w_height $w_with $l_height "${arr_opts[@]}") )
-if (($?)); then
-	return 1
-fi
-
-# iterate over selected options
-if ((${#xopts[*]})); then
-	for ((x=0; x<=${#xopts[*]}; x++)); do
-		if [[ ${xopts[x]} = Select_sets ]]; then
-			sopts=( $(rwt --separate-output --checklist \
-				"Select the desired options (multiple choice)." $w_height $w_with $l_height \
-				"List" "Select from list" off "Glob" "Enter a search [ext]glob" off) )
-			if ((${#sopts[*]})); then
-				for ((i=0; i<=${#sopts[*]}; i++)); do
-					if [[ ${sopts[i]} = List ]]; then arr_tmp=()
-						arr_tmp=( $(rwt --separate-output --noitem --checklist \
-							"Choose the set(s) (multiple choice)." $w_height $w_with $l_height \
-							$(printf "%s off\n" "${all_sets[@]}")) )
-						if ((${#arr_tmp[@]})); then
-							setglob+=( "${arr_tmp[@]}" )
-						fi
-					elif [[ ${sopts[i]} = Glob ]]; then
-						setglob+=( $(rwt --inputbox "Enter the glob expression for: ${xopts[x]}" \
-							$w_height $w_with) )
-					fi
-				done
-			fi
-		elif [[ ${xopts[x]} = Show_header ]]; then
-			headers_only=1
-		elif [[ ${xopts[x]} = Show_members ]]; then
-			show_members=1
-		elif [[ ${xopts[x]} = Show_all ]]; then
-			show_all=1
-		elif [[ ${xopts[x]} = Members_only ]]; then
-			isolate=1
-		elif [[ ${xopts[x]} = Header_search ]]; then
-			let match_on_header+=1 # show only sets, which contain a matching header entry
-			while (($? == 0)); do
-				arr_hsearch[${#arr_hsearch[@]}]=$(rwt --inputbox \
-					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`*:*'\nCancel to quit." \
-					$w_height $w_with)
-				if (($? == 0)); then
-					if ! [[ ${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]} = *:* ]]; then
-						ex_invalid_usage "invalid format of header descriptor: \`${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]}'. expecting: \`*:*'"
-						return 0
-					fi
-				else
-					((${#arr_hsearch[@]})) && unset arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]
-					break
-				fi
-			done
-		elif [[ ${xopts[x]} = Header_int_search ]]; then
-			let match_on_header+=1 # show only sets, containing a matching (int compare) header entry
-			while (($? == 0)); do
-				arr_hsearch_int[${#arr_hsearch_int[@]}]=$(rwt --inputbox \
-					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit." \
-					$w_height $w_with)
-				if (($? == 0)); then
-					if ! is_compare_str "${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]#*:}"; then
-						ex_invalid_usage "invalid format of header descriptor: \`${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
-						return 0
-					fi
-				else
-					((${#arr_hsearch_int[@]})) && unset arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]
-					break
-				fi
-			done
-		elif [[ ${xopts[x]} = Header_option_int ]]; then
-			let match_on_header+=1 # match on name + integer (digit & xdigit) inside of headers 'Header' flag
-			while (($? == 0)); do
-				arr_hsearch_xint[${#arr_hsearch_xint[@]}]=$(rwt --inputbox \
-					"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit." \
-					$w_height $w_with)
-				if (($? == 0)); then
-					if ! [[ ${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]} = *:* ]]; then
-						ex_invalid_usage "invalid format of headers \'Header' flag descriptor: \`${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
-						return 0
-					fi
-				else
-					((${#arr_hsearch_xint[@]})) && unset arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]
-					break
-				fi
-			done
-		elif [[ ${xopts[x]} = Match_memsize ]]; then
-			let match_on_header+=1 # shortcut for -Fi "Size in Memory:..."
-			str_tmp=$(rwt --inputbox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'" \
-				$w_height $w_with)
-			if (($? == 0)); then
-				if ! is_compare_str "$str_tmp"; then
-					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
-					return 0
-				fi
-				arr_hsearch_int[${#arr_hsearch_int[@]}]="Size in memory:$str_tmp"
-			fi
-		elif [[ ${xopts[x]} = Match_references ]]; then
-			let match_on_header+=1 # shortcut for -Fi References:...
-			str_tmp=$(rwt --inputbox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'" \
-				$w_height $w_with)
-			if (($? == 0)); then
-				if ! is_compare_str "$str_tmp"; then
-					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
-					return 0
-				fi
-				arr_hsearch_int[${#arr_hsearch_int[@]}]="References:$str_tmp"
-			fi
-		elif [[ ${xopts[x]} = Match_revision ]]; then
-			let match_on_header+=1 # shortcut for -Fi Revision:...
-			str_tmp=$(rwt --inputbox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'" \
-				$w_height $w_with)
-			if (($? == 0)); then
-				if ! is_compare_str "$str_tmp"; then
-					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
-					return 0
-				fi
-				arr_hsearch_int[${#arr_hsearch_int[@]}]="Revision:$str_tmp"
-			fi
-		elif [[ ${xopts[x]} = Match_type ]]; then
-			let match_on_header+=1 # shortcut for -Fh Type:x:y
-			str_tmp=$(rwt --inputbox "Enter glob expression for: ${xopts[x]}.\nExpected input: \`*:*'" \
-				$w_height $w_with)
-			if (($? == 0)); then
-				if ! [[ $str_tmp = *:* ]]; then
-					ex_invalid_usage "invalid format of set type descriptor: \`$str_tmp'. expecting: \`*:*'."
-					return 0
-				fi
-				arr_hsearch[${#arr_hsearch[@]}]="Type:$str_tmp"
-			fi
-		elif [[ ${xopts[x]} = Glob_search ]]; then
-			glob_search=1
-			str_search=( $(rwt --inputbox "Enter the glob expression for: ${xopts[x]}" $w_height $w_with) )
-		elif [[ ${xopts[x]} = Regex_search ]]; then
-			regex_search=1
-			str_search=( $(rwt --inputbox "Enter the regex expression for: ${xopts[x]}" $w_height $w_with) )
-		elif [[ ${xopts[x]} = Opt_int_search ]]; then
-			let opt_int_search+=1
-			while (($? == 0)); do
-				arr_opt_int_search[${#arr_opt_int_search[@]}]=$(rwt --inputbox \
-					"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nvalue = int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex\nCancel to quit." \
-					$w_height $w_with)
-				if (($? == 0)); then
-					if ! ( [[ ${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]} = *:* ]] && is_compare_str_complex "${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]#*:}" )
-					then
-						ex_invalid_usage "invalid format of header descriptor: \`${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
-						return 0
-					fi
-				else
-					((${#arr_opt_int_search[@]})) && unset arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]
-					break
-				fi
-			done
-		elif [[ ${xopts[x]} = Match_member_sum ]]; then
-			do_count=1
-			while (($? == 0)); do
-				arr_match_on_msum[${#arr_match_on_msum[@]}]=$(rwt --inputbox \
-					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'\nCancel to quit." \
-					$w_height $w_with)
-				if (($? == 0)); then
-					if ! is_compare_str "${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}"; then
-						ex_invalid_usage "invalid format of match on member count value: \`${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}'. expecting: \`[!|<|>|<=|>=]value'"
-						return 0
-					fi
-				else
-					((${#arr_match_on_msum[@]})) && unset arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]
-					break
-				fi
-			done
-		elif [[ ${xopts[x]} = Exclude_set ]]; then
-			exclude_set=1
-			while (($? == 0)); do
-				arr_sxclude[${#arr_sxclude[@]}]=$(rwt --inputbox \
-					"Enter one or more glob expression(s) for: ${xopts[x]}.\nCancel to quit." \
-					$w_height $w_with)
-			done
-		elif [[ ${xopts[x]} = Exclude_header ]]; then
-			exclude_header=1 # don't show certain headers
-			while (($? == 0)); do
-				arr_hxclude[${#arr_hxclude[@]}]=$(rwt --inputbox \
-					"Enter one or more glob expression(s) for: ${xopts[x]}.\nCancel to quit." \
-					$w_height $w_with)
-				if (($? == 0)); then
-					if ! [[ ${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]} = *:* ]]; then
-						ex_invalid_usage "invalid format of header descriptor: \`${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]}'. expecting: \`*:*'"
-						return 0
-					fi
-				else
-					((${#arr_hxclude[@]})) && unset arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]
-					break
-				fi
-			done
-		elif [[ ${xopts[x]} = Glob_xclude_elem ]]; then
-			glob_xclude_element=1
-			str_xclude=( $(rwt --inputbox "Enter the glob expression for: ${xopts[x]}" \
-				$w_height $w_with) )
-		elif [[ ${xopts[x]} = Regex_xclude_elem ]]; then
-			regex_xclude_element=1
-			str_xclude=( $(rwt --inputbox "Enter the regex expression for: ${xopts[x]}" \
-				$w_height $w_with) )
-		elif [[ ${xopts[x]} = Exclude_elem_opt ]]; then
-			xclude_member_opts=1
-		elif [[ ${xopts[x]} = Count_sets ]]; then
-			count_sets=1
-		elif [[ ${xopts[x]} = Count_members ]]; then
-			show_count=1
-		elif [[ ${xopts[x]} = Calc_mem ]]; then
-			calc_mem=1
-		elif [[ ${xopts[x]} = Count_sets_total ]]; then
-			sets_total=1
-		elif [[ ${xopts[x]} = All_counters ]]; then
-			show_count=1 count_sets=1 calc_mem=1 sets_total=1
-		elif [[ ${xopts[x]} = Colorize ]]; then
-			colorize=1
-		elif [[ ${xopts[x]} = Delim ]]; then
-			delim=( $(rwt --inputbox \
-				"Enter the new delimiter character.\nPersistent until you reset it.\n\$'string' type escapes are not supported in interactive mode." \
-				$w_height $w_with) )
-			if ((${#delim} > 1)); then
-				ex_invalid_usage "only one character is allowed as delim"
-				return 0
-			fi
-		elif [[ ${xopts[x]} = Resolve ]]; then str_tmp=0
-			if ((${#arr_par[@]})); then
-				for i in ${!arr_par[@]}; do
-					if [[ ${arr_par[i]} = -r ]]; then
-						str_tmp=1
-					fi
-				done
-			fi
-			if ! ((str_tmp)); then
-				arr_par[${#arr_par[@]}]="-r"
-			fi
-		elif [[ ${xopts[x]} = Sort ]]; then str_tmp=0
-			if ((${#arr_par[@]})); then
-				for i in ${!arr_par[@]}; do
-					if [[ ${arr_par[i]} = -s ]]; then
-						str_tmp=1
-					fi
-				done
-			fi
-			if ! ((str_tmp)); then
-				arr_par[${#arr_par[@]}]="-s"
-			fi
-		fi
-	done
-fi
-
-main "${setglob[@]}"
-printf "\n"
-read -N 1 -p " Press \`ENTER' to continue, or \`ESC' to return to the shell."
-if [[ $REPLY = $'\E' ]]; then
-	printf "\n" # avoid moving the shell prompt
-	return 1
 fi
 }
 
