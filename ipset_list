@@ -400,47 +400,47 @@ if ((names_only)); then
 		glob_xclude_element||regex_xclude_element||xclude_member_opts))
    	then
 		ex_invalid_usage "option -n does not allow this combination of options"
-		((iactive > 1)) && return 1
+		((iactive > 1)) && return 0
 	fi
 fi
 if ((headers_only)); then
 	if ((show_members || show_all || isolate)); then
 		ex_invalid_usage "options -t and -a|-i|-m are mutually exclusive"
-		((iactive > 1)) && return 1
+		((iactive > 1)) && return 0
 	fi
 fi
 if ((headers_only)); then
 	if ((xclude_member_opts||glob_xclude_element||regex_xclude_element)); then
 		ex_invalid_usage "options -t and -Xg|-Xr|-Xo are mutually exclusive"
-		((iactive > 1)) && return 1
+		((iactive > 1)) && return 0
 	fi
 fi
 if ((isolate)); then
 	if ((show_count||show_all||calc_mem||count_sets||sets_total||exclude_set)); then
 		ex_invalid_usage "options -i and -a|-c|-Ca|-Cs|-Tm|-Ts|-Xs are mutually exclusive"
-		((iactive > 1)) && return 1
+		((iactive > 1)) && return 0
 	fi
 	if ((match_on_header)); then
 		ex_invalid_usage "option -i does not allow matching on header entries"
-		((iactive > 1)) && return 1
+		((iactive > 1)) && return 0
 	fi
 fi
 if ((glob_search || regex_search)); then
 	if ((glob_search && regex_search)); then
 		ex_invalid_usage "options -Fg and -Fr are mutually exclusive"
-		((iactive > 1)) && return 1
+		((iactive > 1)) && return 0
 	fi
 fi
 if ((exclude_header)); then
 	if ! ((headers_only || show_all)); then
 		ex_invalid_usage "option -Xh requires -a or -t"
-		((iactive > 1)) && return 1
+		((iactive > 1)) && return 0
 	fi
 fi
 if ((glob_xclude_element || regex_xclude_element)); then
 	if ! ((show_members || show_all || isolate)); then
 		ex_invalid_usage "options -Xg|-Xr require any of -a|-i|-m"
-		((iactive > 1)) && return 1
+		((iactive > 1)) && return 0
 	fi
 fi
 if ((colorize)); then
@@ -490,29 +490,28 @@ if [[ $1 ]]; then # there are remaining arg(s)
 				# match could be a glob, thus multiple matches possible
 				# save to temp array
 				arr_tmp[${#arr_tmp[@]}]="${all_sets[idx]}"
-#				unset arr_sets[idx]
 			fi
 		done
 		if ! ((found_set)); then
 			ex_invalid_usage "\`$opt' is not a valid option nor an existing set name"
-			((iactive > 1)) && return 1
+			((iactive > 1)) && return 0
 		fi
 	done
 	if ((isolate)); then
 		if (($# != 1)); then
 			ex_invalid_usage "option -i is only valid for a single set"
-			((iactive > 1)) && return 1
+			((iactive > 1)) && return 0
 		fi
 	fi
 	arr_sets=("${arr_tmp[@]}") # reassign matched sets
 	if ((isolate && ${#arr_sets[@]} > 1)); then
 		ex_invalid_usage "option -i is only valid for a single set"
-		((iactive > 1)) && return 1
+		((iactive > 1)) && return 0
 	fi
 else
 	if ((isolate)); then
 		ex_invalid_usage "option -i is only valid for a single set"
-		((iactive > 1)) && return 1
+		((iactive > 1)) && return 0
 	fi
 	arr_sets=( "${all_sets[@]}" )
 fi
@@ -944,8 +943,8 @@ if ((${#xopts[*]})); then
 					$w_height $w_with 2>&1 > /dev/tty)
 				if (($? == 0)); then
 					if ! [[ ${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]} = *:* ]]; then
-						ex_invalid_usage "invalid format of header descriptor. expecting: \`*:*'"
-						return 1
+						ex_invalid_usage "invalid format of header descriptor: \`${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]}'. expecting: \`*:*'"
+						return 0
 					fi
 				else
 					((${#arr_hsearch[@]})) && unset arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]
@@ -960,8 +959,8 @@ if ((${#xopts[*]})); then
 					$w_height $w_with 2>&1 > /dev/tty)
 				if (($? == 0)); then
 					if ! is_compare_str "${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]#*:}"; then
-						ex_invalid_usage "invalid format of header descriptor. expecting: \`glob:[!|<|>|<=|>=]value'"
-						return 1
+						ex_invalid_usage "invalid format of header descriptor: \`${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+						return 0
 					fi
 				else
 					((${#arr_hsearch_int[@]})) && unset arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]
@@ -976,8 +975,8 @@ if ((${#xopts[*]})); then
 					$w_height $w_with 2>&1 > /dev/tty)
 				if (($? == 0)); then
 					if ! [[ ${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]} = *:* ]]; then
-						ex_invalid_usage "invalid format of headers \'Header' flag descriptor. expecting: \`glob:[!|<|>|<=|>=]value'"
-						return 1
+						ex_invalid_usage "invalid format of headers \'Header' flag descriptor: \`${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+						return 0
 					fi
 				else
 					((${#arr_hsearch_xint[@]})) && unset arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]
@@ -990,8 +989,8 @@ if ((${#xopts[*]})); then
 				$w_height $w_with 2>&1 > /dev/tty)
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
-					ex_invalid_usage "invalid format of references header descriptor. expecting: \`[!|<|>|<=|>=]value'"
-					return 1
+					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+					return 0
 				fi
 				arr_hsearch_int[${#arr_hsearch_int[@]}]="Size in memory:$str_tmp"
 			fi
@@ -1001,8 +1000,8 @@ if ((${#xopts[*]})); then
 				$w_height $w_with 2>&1 > /dev/tty)
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
-					ex_invalid_usage "invalid format of references header descriptor. expecting: \`[!|<|>|<=|>=]value'"
-					return 1
+					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+					return 0
 				fi
 				arr_hsearch_int[${#arr_hsearch_int[@]}]="References:$str_tmp"
 			fi
@@ -1012,8 +1011,8 @@ if ((${#xopts[*]})); then
 				$w_height $w_with 2>&1 > /dev/tty)
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
-					ex_invalid_usage "invalid format of references header descriptor. expecting: \`[!|<|>|<=|>=]value'"
-					return 1
+					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+					return 0
 				fi
 				arr_hsearch_int[${#arr_hsearch_int[@]}]="Revision:$str_tmp"
 			fi
@@ -1023,8 +1022,8 @@ if ((${#xopts[*]})); then
 				$w_height $w_with 2>&1 > /dev/tty)
 			if (($? == 0)); then
 				if ! [[ $str_tmp = *:* ]]; then
-					ex_invalid_usage "invalid format of set type descriptor. expecting: \`*:*'."
-					return 1
+					ex_invalid_usage "invalid format of set type descriptor: \`$str_tmp'. expecting: \`*:*'."
+					return 0
 				fi
 				arr_hsearch[${#arr_hsearch[@]}]="Type:$str_tmp"
 			fi
@@ -1043,11 +1042,10 @@ if ((${#xopts[*]})); then
 					"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nvalue = int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex\nCancel to quit." \
 					$w_height $w_with 2>&1 > /dev/tty)
 				if (($? == 0)); then
-					if ! [[ ${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]} = *:* ]] && \
-						is_compare_str_complex "${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]#*:}"
+					if ! ( [[ ${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]} = *:* ]] && is_compare_str_complex "${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]#*:}" )
 					then
-						ex_invalid_usage "invalid format of header descriptor. expecting: \`glob:[!|<|>|<=|>=]value'"
-						return 1
+						ex_invalid_usage "invalid format of header descriptor: \`${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+						return 0
 					fi
 				else
 					((${#arr_opt_int_search[@]})) && unset arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]
@@ -1062,8 +1060,8 @@ if ((${#xopts[*]})); then
 					$w_height $w_with 2>&1 > /dev/tty)
 				if (($? == 0)); then
 					if ! is_compare_str "${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}"; then
-						ex_invalid_usage "invalid format of match on member count value. expecting: \`[!|<|>|<=|>=]value'"
-						return 1
+						ex_invalid_usage "invalid format of match on member count value: \`${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}'. expecting: \`[!|<|>|<=|>=]value'"
+						return 0
 					fi
 				else
 					((${#arr_match_on_msum[@]})) && unset arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]
@@ -1085,8 +1083,8 @@ if ((${#xopts[*]})); then
 					$w_height $w_with 2>&1 > /dev/tty)
 				if (($? == 0)); then
 					if ! [[ ${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]} = *:* ]]; then
-						ex_invalid_usage "invalid format of header descriptor. expecting: \`*:*'"
-						return 1
+						ex_invalid_usage "invalid format of header descriptor: \`${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]}'. expecting: \`*:*'"
+						return 0
 					fi
 				else
 					((${#arr_hxclude[@]})) && unset arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]
@@ -1121,7 +1119,7 @@ if ((${#xopts[*]})); then
 				$w_height $w_with 2>&1 > /dev/tty) )
 			if ((${#delim} > 1)); then
 				ex_invalid_usage "only one character is allowed as delim"
-				return 1
+				return 0
 			fi
 		elif [[ ${xopts[x]} = Resolve ]]; then str_tmp=0
 			if ((${#arr_par[@]})); then
@@ -1300,7 +1298,7 @@ options:
 				arr_opt_int_search[y++]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of header descriptor. expecting: \`glob:[!|<|>|<=|>=]value'"
+				ex_invalid_usage "invalid format of header descriptor: \`$2'. expecting: \`glob:[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Fh) let match_on_header+=1 # show only sets, which contain a matching header entry
@@ -1309,7 +1307,7 @@ options:
 				arr_hsearch[x++]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of header descriptor. expecting: \`*:*'"
+				ex_invalid_usage "invalid format of header descriptor: \`$2'. expecting: \`*:*'"
 			fi
 		;;
 		-Fi) let match_on_header+=1 # show only sets, containing a matching (int compare) header entry
@@ -1318,7 +1316,7 @@ options:
 				arr_hsearch_int[idx++]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of header descriptor. expecting: \`name:[!|<|>|<=|>=]value'"
+				ex_invalid_usage "invalid format of header descriptor: \`$2'. expecting: \`name:[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Hi) let match_on_header+=1 # match on name + integer (digit & xdigit) inside of headers 'Header' flag
@@ -1327,7 +1325,7 @@ options:
 				arr_hsearch_xint[${#arr_hsearch_xint[@]}]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of headers \'Header' flag descriptor. expecting: \`name:[!|<|>|<=|>=]value'"
+				ex_invalid_usage "invalid format of headers \'Header' flag descriptor: \`$2'. expecting: \`name:[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Hr) let match_on_header+=1 # shortcut for -Fi References:...
@@ -1336,7 +1334,7 @@ options:
 				arr_hsearch_int[idx++]="References:$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of references header descriptor. expecting: \`[!|<|>|<=|>=]value'"
+				ex_invalid_usage "invalid format of references header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Hs) let match_on_header+=1 # shortcut for -Fi "Size in Memory:..."
@@ -1345,7 +1343,7 @@ options:
 				arr_hsearch_int[idx++]="Size in memory:$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of memsize header descriptor. expecting: \`[!|<|>|<=|>=]value'"
+				ex_invalid_usage "invalid format of memsize header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Ht) let match_on_header+=1 # shortcut for -Fh Type:x:y
@@ -1354,7 +1352,7 @@ options:
 				arr_hsearch[x++]="Type:$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of set type descriptor. expecting: \`*:*'."
+				ex_invalid_usage "invalid format of set type descriptor: \`$2'. expecting: \`*:*'."
 			fi
 		;;
 		-Hv) let match_on_header+=1 # shortcut for -Fi Revision:...
@@ -1363,7 +1361,7 @@ options:
 				arr_hsearch_int[idx++]="Revision:$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of revision header descriptor. expecting: \`[!|<|>|<=|>=]value'"
+				ex_invalid_usage "invalid format of revision header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Mc) do_count=1 # match on the count of members
@@ -1372,7 +1370,7 @@ options:
 				arr_match_on_msum[${#arr_match_on_msum[@]}]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of match on member count value. expecting: \`[!|<|>|<=|>=]value'"
+				ex_invalid_usage "invalid format of match on member count value: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-To) # set the timeout for read (limited to integer)
@@ -1390,7 +1388,7 @@ options:
 				arr_hxclude[${#arr_hxclude[@]}]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of header descriptor. expecting: \`*:*'"
+				ex_invalid_usage "invalid format of header descriptor: \`$2'. expecting: \`*:*'"
 			fi
 		;;
 		-Xg) glob_xclude_element=1 # suppress printing of matching members using a globbing pattern
