@@ -391,7 +391,7 @@ elif ((regex_xclude_element)); then # exclude matching members
 	else
 		if (($? == 2)); then
 			ex_invalid_usage "Invalid regex pattern \`$str_xclude'."
-			((iactive > 1)) && return 1
+			((iactive > 1)) && return 2
 		fi
 	fi
 fi
@@ -687,6 +687,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					if ((show_members || show_all || isolate || glob_search || regex_search || opt_int_search)); then
 						if ((glob_search)); then # show sets with glob pattern matching members
 							if ! xclude_elem_search; then
+								(($? == 2 && iactive > 1)) && return 0
 								if [[ $REPLY = $str_search ]]; then
 									if ((opt_int_search)); then
 										arith_elem_opt_search
@@ -698,6 +699,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 							fi
 						elif ((regex_search)); then # show sets with regex pattern matching members
 							if ! xclude_elem_search; then
+								(($? == 2 && iactive > 1)) && return 0
 								if [[ $REPLY =~ $str_search ]]; then
 									if ((opt_int_search)); then
 										arith_elem_opt_search
@@ -714,6 +716,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 							fi
 						elif ((opt_int_search)); then # show sets with matching member options
 							if ! xclude_elem_search; then
+								(($? == 2 && iactive > 1)) && return 0
 								arith_elem_opt_search
 							fi
 						else
