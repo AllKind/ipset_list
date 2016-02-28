@@ -275,7 +275,7 @@ declare -i i=x=y=idx=0
 declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
 declare -i iactive=0 # en/disable interactive mode
 declare -a arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
-declare -a arr_hxclude=() arr_sxclude=() arr_par=() arr_tmp=()
+declare -a arr_hxclude=() arr_sxclude=() arr_par=() all_sets=() arr_tmp=()
 
 # -----------------------------------------------------------------
 # functions
@@ -1463,18 +1463,24 @@ if ! ((${#arr_sets[@]})); then
 	exit 1
 fi
 
-declare -a all_sets=( "${arr_sets[@]}" )
+# remember sets - interactive mode may modify arr_sets()
+all_sets=( "${arr_sets[@]}" )
+
 # interactive mode
 if ((iactive)); then
 	# check for whiptail program
-	[[ -x ${whiptail:=/usr/bin/whiptail} ]] || {
+	while :; do
+		[[ -x ${whiptail:-$(command -v whiptail)} ]] && whiptail="$(command -v whiptail)" && break
+		[[ -x ${whiptail:=/usr/bin/whiptail} ]] && break
 		printf "whiptail binary \`%s' does not exist, or is not executable. check \`whiptail' variable\n" "$whiptail" >&2
 		exit 1
-	}
+	done
 	# check for tput program
-	if ! [[ -x ${tput:=$(command -v tput)} || -x ${tput:=/usr/bin/tput} ]]; then
+	while :; do
+		[[ -x ${tput:-$(command -v tput)} ]] && tput="$(command -v tput)" && break
+		[[ -x ${tput:=/usr/bin/tput} ]] && break
 		unset tput
-	fi
+	done
 	# set some defaults if unset
 	: ${w_height:=0}
 	: ${w_with:=0}
