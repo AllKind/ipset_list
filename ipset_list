@@ -1166,32 +1166,32 @@ while (($#)); do
 				"[-i|-r|-s|-Co|-Xo] [-d char] [-To value]"\
 				"[-Fg|-Fr pattern] [-Xg|-Xr pattern]"\
 				"[-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n' "$me"\
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
 				"[-n|-c|-Ca|-Co|-Cs|-Tm|-Ts|-Xs] [-To value]"\
 				"[-Fh header-glob:value-glob] [...] [-Fg|-Fr pattern]"\
-				"[-Hi glob:[!|<|>|<=|>=]value] [...]"\
-				"[-Oi option-glob:[!|<|>|<=|>=]value] [...] -- [set-name-glob] [...]"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
-				"[-t|-c|-Ca|-Co|-Cs|-Tm|-Ts]"\
+				"[-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]"\
+				"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]"\
+				"[-Oi option-glob:[!|<|>|<=|>=]value] [...]"\
+				"[-Xs set-name-glob] [...] -- [set-name-glob] [...]"
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
+				"[-t|-c|-Ca|-Co|-Cs|-Tm|-Ts] [-To value]"\
 				"[-Fh header-glob:value-glob] [...]"\
 				"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 				"[-Fg|-Fr pattern] [-Ht type-glob]"\
 				"[-Hi glob:[!|<|>|<=|>=]value] [...]"\
-				"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
-				"[-Mc [!|<|>|<=|>=]value] [...] [-To value]"\
+				"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]"\
 				"[-Oi option-glob:[!|<|>|<=|>=]value] [...]"\
 				"[-Xh header-glob:value-glob] [...]"\
 				"[-Xs set-name-glob] [...] -- [set-name-glob] [...]"
-			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
-				"[-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-Tm|-Ts|-Xo] [-d char]"\
+			printf '%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n' "$me"\
+				"[-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-Tm|-Ts|-Xo] [-d char] [-To value]"\
 				"[-Fh header-glob:value-glob] [...]"\
 				"[-Fi header-glob:[!|<|>|<=|>=]value] [...]"\
 				"[-Fg|-Fr pattern] [-Ht type-glob]"\
 				"[-Hi glob:[!|<|>|<=|>=]value] [...]"\
-				"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value]"\
-				"[-Mc [!|<|>|<=|>=]value] [...]"\
+				"[-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]"\
 				"[-Oi option-glob:[!|<|>|<=|>=]value] [...]"\
-				"[-To value] [-Xh header-glob:value-glob] [...]"\
+				"[-Xh header-glob:value-glob] [...]"\
 				"[-Xg|-Xr pattern] [-Xs set-name-glob] [...] -- [set-name-glob] [...]"
 			printf '%s %s\t%s\n' "$me" "- [-r|-s] [-d delim] [-To value]"
 			printf 'options:\n'
@@ -1208,7 +1208,7 @@ while (($#)); do
 				'-s' 'print elements sorted (if supported by the set type).'\
 				'-t' 'show set headers only.'\
 				'-v' 'version information.'\
-				'-Ca' "shortcut for -c -Cs -Ts -Tm (enable all counters)."\
+				'-Ca' "enable all counters (shortcut for -c -Cs -Ts -Tm)."\
 				'-Co' "colorize output (requires \`cl')."\
 				'-Cs' 'count amount of matching sets.'\
 				'-Fg pattern' 'match on members using a [ext]glob pattern.'\
