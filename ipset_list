@@ -278,6 +278,9 @@ declare -i iactive=0 # en/disable interactive mode
 declare -a arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
 declare -a arr_hxclude=() arr_sxclude=() arr_par=() all_sets=() arr_tmp=()
 
+# simple trap
+trap "echo trap activated - exiting; enable exit; exit 111" ERR HUP INT QUIT STOP TERM
+
 # -----------------------------------------------------------------
 # functions
 # -----------------------------------------------------------------
