@@ -30,62 +30,53 @@
 .SH "NAME"
 ipset_list \- Match and display ipset (netfilter\&.org) sets in various ways
 .SH "SYNOPSIS"
-.HP \w'\fBipset_listy\fR\ 'u
-\fBipset_listy\fR [\fIoption\fR\ [\ \fIoption_argument\fR\ ]...] [\fIset\-name\-glob\fR...]
+.HP \w'\fBipset_list\fR\ 'u
+\fBipset_list\fR [\fIoption\fR\ [\ \fIoption_argument\fR\ ]...] [\fIset\-name\-glob\fR...]
 .SH "DESCRIPTION"
 .PP
 ipset_list is a wrapper script for listing sets of the netfilter
 \fBipset\fR
-program\&. It allows you to match and display sets, headers, and elements in various ways\&. It includes an interactive wizard based mode utilizing a dialog program (\fBdialog\fR
+program\&. It allows you to match and display sets, headers, and elements in various ways\&.
+.PP
+It is written for the
+\fBbash\fR
+shell\&.
+.PP
+It includes an interactive wizard based mode utilizing a dialog program (\fBdialog\fR
 or
 \fBwhiptail\fR
-are supported)\&. Optionally the output can be colorized\&. It is written for the
-\fBbash\fR
-shell\&. Some variables are available inside the script configuration header\&. Some of them are mentioned here\&. For the others please read the according comments inside the script\&. None of them is mandatory, unless you want to change default values\&. Some options exclude each other\&. The script will complain if that is the case\&.
+are supported)\&.
 .PP
-When run without arguments the names of all sets found are displayed with the prefix `Name:\*(Aq\&.
+Optionally the output can be colorized\&.
+.PP
+Some variables are available inside the script configuration header\&. Some of them are mentioned here\&. For the others please read the according comments inside the script\&. None of them is mandatory, unless you want to change default values\&.
+.PP
+Some options exclude each other\&.
+\fBipset_list\fR
+will complain if that is the case\&. The output of
+\fBipset_list \-h\fR
+does display the valid combinations\&.
+.PP
+Example usage is given in the header of the script itself, or in the Readme\&.md shipping with
+\fBipset_list\fR\&.
 .SH "OPTIONS"
 .PP
 All options are optional\&. Some require an argument, others do not\&. All options and their arguments must be separated by blank(s)\&. If an option can be used more than once, it is mentioned explicitly\&.
 .PP
-
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+When run without arguments, the names of all sets found, are displayed with the prefix `Name:\*(Aq\&.
+.PP
 \-h, \-?
-.sp
+.RS 4
 Show usage instructions\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-v
-.sp
+.RS 4
 Show version information\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-
-.sp
+.RS 4
 Enter interactive mode\&. This wizard based way to select the options utilizes a dialog program\&. Which can either be
 \fBdialog\fR
 or
@@ -93,45 +84,21 @@ or
 \fBdialog\fR
 is the preferred and default, if the variable
 \fIdialog_prog\fR
-is not defined\&.
+is not defined\&. Only dialog versions greater or equal to 1\&.2 are supported\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-a
-.sp
+.RS 4
 Show all information but with default delim (whitespace)\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-c
-.sp
+.RS 4
 Calculate the of set members and also the sum of members matching a criteria given by another option\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-d delim
-.sp
+.RS 4
 Delimiter character used to separate member entries\&. By default
 \fBipset\fR
 uses newline as delimiter\&.
@@ -140,110 +107,46 @@ by default uses a whitespace\&. Which can be changed permanently by editing the 
 \fIdelim\fR
 in the configuration header of ipset_list\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-i
-.sp
+.RS 4
 Show only the members of a single set\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-m
-.sp
+.RS 4
 Show the members of a set\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-n
-.sp
-Show set names only\&. No prefix is shown, as with running
+.RS 4
+Show set names only\&. No prefix is shown, as when running
 \fBipset_list\fR
 without arguments
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-r
-.sp
+.RS 4
 Try to resolve ip addresses in the output (slow!)\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-s
-.sp
+.RS 4
 Print elements sorted (if supported by the set type)\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-t
-.sp
+.RS 4
 Show set headers only\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Ca
-.sp
+.RS 4
 Enable all counters (shortcut for \-c \-Cs \-Ts \-Tm)\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Co
-.sp
+.RS 4
 Colorize the output\&. Requires the
 \fBcl\fR
 program\&. It can be downloaded from here:
@@ -251,290 +154,123 @@ program\&. It can be downloaded from here:
 or
 \m[blue]\fBhttps://github\&.com/AllKind/cl\fR\m[]\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Cs
-.sp
+.RS 4
 Count the amount of sets that matched the search criteria\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Fg pattern
-.sp
+.RS 4
 Match on members using a [ext]glob pattern\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Fr pattern
-.sp
+.RS 4
 Match on members using a regex pattern\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Fh header\-glob:value\-glob [\&.\&.\&.]
-.sp
+.RS 4
 Show sets containing one or more [ext]glob matching headers\&. This option can be used multiple times\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Fi header\-glob:[!|<|>|<=|>=]value [\&.\&.\&.]
-.sp
+.RS 4
 Show sets matching one or more integer valued header entries\&. This option can be used multiple times\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Hi header\-glob:[!|<|>|<=|>=]value [\&.\&.\&.]
-.sp
+.RS 4
 Match one or more integer valued headers `Header\*(Aq entries (i\&.e\&. timeout)\&. This option can be used multiple times\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Ht set\-type\-glob
-.sp
+.RS 4
 Match on the set type\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Hr [!|<|>|<=|>=]value
-.sp
+.RS 4
 Match on number of references\&. value=integer\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Hs [!|<|>|<=|>=]value
-.sp
+.RS 4
 Match on size in memory\&. value=integer\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Hv [!|<|>|<=|>=]value
-.sp
+.RS 4
 Match on revision number\&. value=integer\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Mc [!|<|>|<=|>=]value [\&.\&.\&.]
-.sp
+.RS 4
 Match on member count\&. value=integer\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Oi option\-glob:[!|<|>|<=|>=]value [\&.\&.\&.]
-.sp
-Enable or disable usage of ipset\&. This setting is globally\&. It disables builtin usage as well as the users ipset rules\&. This option can be used multiple times\&.
-.RE
-.sp
 .RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+Match member options\&. i\&.e\&. timeout\&.
+value=int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex\&. This option can be used multiple times\&.
+.RE
+.PP
 \-Tm
-.sp
+.RS 4
 Calculate total memory usage of all matching sets\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-To
-.sp
-Set timeout value (integer) in seconds for
-\fBread\fR\&. This affects the listing of sets, as well as how long the result is displayed in interactive mode, before returning to the main screen\&. The default value set by the
-\fITMOUT\fR
-variable is 30\&. This command line option overrides this\&. Setting one of them to 0, disables the timeout\&.
-.RE
-.sp
 .RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-\-\-Ts
-.sp
+Set timeout value (integer) in seconds for
+\fBread\fR\&. This affects the listing of sets, as well as how long the result is displayed in interactive mode, before returning to the main screen\&. The default value of the
+\fITMOUT\fR
+variable, set in the configuration header of the script, is 30\&. This command line option overrides it\&. Setting one of them to 0, disables the timeout\&.
+.RE
+.PP
+\-Ts
+.RS 4
 Count amount of traversed sets\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Xo
-.sp
+.RS 4
 Suppress the display of member options\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Xh header\-glob:value\-glob [\&.\&.\&.]
-.sp
+.RS 4
 Exclude one or more [ext]glob matching header entries\&. This option can be used multiple times\&.
 .RE
-.sp
+.PP
+\-Xg pattern
 .RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-\-Xg
-.sp
 Pattern exclude members matching a [ext]glob pattern\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Xr pattern
-.sp
+.RS 4
 Exclude members matching a regex pattern\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-Xs pattern
-.sp
+.RS 4
 Exclude sets matching a [ext]glob pattern\&.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
+.PP
 \-\-
-.sp
+.RS 4
 Stop further option processing\&.
 .RE
-.sp
 .SH "SEE ALSO"
 .PP
 
 \fBipset\fR(8)
-\fBdialog\fR(8)
-\fBwhiptail\fR(8)
-\fBbash\fR(8)
+\fBdialog\fR(1)
+\fBwhiptail\fR(1)
+\fBbash\fR(1)
+\fBregex\fR(7)
 .SH "AUTHOR"
 .PP
 \fBAllKind aka Mart Frauenlob\fR <\&AllKind@fastest\&.cc\&>

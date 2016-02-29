@@ -33,7 +33,7 @@
     </refnamediv>
     <refsynopsisdiv>
         <cmdsynopsis>
-            <command>ipset_listy</command>
+            <command>ipset_list</command>
             <arg choice="opt" rep="repeat">
                 <replaceable>option</replaceable>
                 <arg choice="opt">
@@ -49,191 +49,287 @@
         <title>Description</title>
         <para>ipset_list is a wrapper script for listing sets of the netfilter
                 <command>ipset</command> program. It allows you to match and display sets, headers,
-            and elements in various ways. It includes an interactive wizard based mode utilizing a
-            dialog program (<command>dialog</command> or <command>whiptail</command> are supported).
-            Optionally the output can be colorized. It is written for the <command>bash</command>
-            shell. Some variables are available inside the script configuration header. Some of them
-            are mentioned here. For the others please read the according comments inside the script.
-            None of them is mandatory, unless you want to change default values. Some options
-            exclude each other. The script will complain if that is the case.</para>
-        <para>When run without arguments the names of all sets found are displayed with the prefix
-            `Name:'.</para>
+            and elements in various ways.</para>
+        <para>It is written for the <command>bash</command> shell.</para>
+        <para>It includes an interactive wizard based mode utilizing a dialog program
+                (<command>dialog</command> or <command>whiptail</command> are supported).</para>
+        <para>Optionally the output can be colorized.</para>
+        <para>Some variables are available inside the script configuration header. Some of them are
+            mentioned here. For the others please read the according comments inside the script.
+            None of them is mandatory, unless you want to change default values.</para>
+        <para>Some options exclude each other. <command>ipset_list</command> will complain if that
+            is the case. The output of <command>ipset_list -h</command> does display the valid
+            combinations.</para>
+        <para>Example usage is given in the header of the script itself, or in the Readme.md
+            shipping with <command>ipset_list</command>.</para>
     </refsect1>
     <refsect1>
         <title>Options</title>
         <para>All options are optional. Some require an argument, others do not. All options and
             their arguments must be separated by blank(s). If an option can be used more than once,
             it is mentioned explicitly. </para>
-        <para>
-            <itemizedlist xmlns:xi="http://www.w3.org/2001/XInclude"
-                xmlns:xlink="http://www.w3.org/1999/xlink" annotations="">
+        <para>When run without arguments, the names of all sets found, are displayed with the prefix
+            `Name:'.</para>
+        <variablelist>
+            <varlistentry>
+                <term>-h, -?</term>
                 <listitem>
-                    <para>-h, -?</para>
                     <para>Show usage instructions.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-v</term>
                 <listitem>
-                    <para>-v</para>
                     <para>Show version information.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-</term>
                 <listitem>
-                    <para>-</para>
                     <para>Enter interactive mode. This wizard based way to select the options
-                        utilizes a dialog program. Which can either be <command>dialog</command> or
-                            <command>whiptail</command>. <command>dialog</command> is the preferred
-                        and default, if the variable <varname>dialog_prog</varname> is not
-                        defined.</para>
+                        utilizes a dialog program. Which can either be <command
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">dialog</command> or <command
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">whiptail</command>. <command
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">dialog</command> is the
+                        preferred and default, if the variable <varname
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">dialog_prog</varname> is not
+                        defined. Only dialog versions greater or equal to 1.2 are supported.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-a</term>
                 <listitem>
-                    <para>-a</para>
                     <para>Show all information but with default delim (whitespace).</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-c</term>
                 <listitem>
-                    <para>-c</para>
                     <para>Calculate the of set members and also the sum of members matching a
                         criteria given by another option.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-d delim</term>
                 <listitem>
-                    <para>-d delim</para>
-                    <para>Delimiter character used to separate member entries. By default
-                            <command>ipset</command> uses newline as delimiter.
-                            <command>ipset_list</command> by default uses a whitespace. Which can be
-                        changed permanently by editing the variable <varname>delim</varname> in the
+                    <para>Delimiter character used to separate member entries. By default <command
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">ipset</command> uses newline
+                        as delimiter. <command xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">ipset_list</command> by
+                        default uses a whitespace. Which can be changed permanently by editing the
+                        variable <varname xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">delim</varname> in the
                         configuration header of ipset_list.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-i</term>
                 <listitem>
-                    <para>-i</para>
                     <para>Show only the members of a single set.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-m</term>
                 <listitem>
-                    <para>-m</para>
                     <para>Show the members of a set.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-n</term>
                 <listitem>
-                    <para>-n</para>
-                    <para>Show set names only. No prefix is shown, as with running
-                            <command>ipset_list</command> without arguments</para>
+                    <para>Show set names only. No prefix is shown, as when running <command
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">ipset_list</command> without
+                        arguments</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-r</term>
                 <listitem>
-                    <para>-r</para>
                     <para>Try to resolve ip addresses in the output (slow!).</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-s</term>
                 <listitem>
-                    <para>-s</para>
                     <para>Print elements sorted (if supported by the set type).</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-t</term>
                 <listitem>
-                    <para>-t</para>
                     <para>Show set headers only.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Ca</term>
                 <listitem>
-                    <para>-Ca</para>
                     <para>Enable all counters (shortcut for -c -Cs -Ts -Tm).</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Co</term>
                 <listitem>
-                    <para>-Co</para>
-                    <para>Colorize the output. Requires the <command>cl</command> program. It can be
-                        downloaded from here: <link
+                    <para>Colorize the output. Requires the <command
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">cl</command> program. It can
+                        be downloaded from here: <link
                             xlink:href="http://sf.net/projects/colorize-shell/"
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"
                             >http://sf.net/projects/colorize-shell/</link> or <link
                             xlink:href="https://github.com/AllKind/cl"
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"
                             >https://github.com/AllKind/cl</link>.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Cs</term>
                 <listitem>
-                    <para>-Cs</para>
                     <para>Count the amount of sets that matched the search criteria.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Fg pattern</term>
                 <listitem>
-                    <para>-Fg pattern</para>
                     <para>Match on members using a [ext]glob pattern.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Fr pattern</term>
                 <listitem>
-                    <para>-Fr pattern</para>
                     <para>Match on members using a regex pattern.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Fh header-glob:value-glob [...]</term>
                 <listitem>
-                    <para>-Fh header-glob:value-glob [...]</para>
                     <para>Show sets containing one or more [ext]glob matching headers. This option
                         can be used multiple times.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Fi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
-                    <para>-Fi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</para>
                     <para>Show sets matching one or more integer valued header entries. This option
                         can be used multiple times.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Hi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
-                    <para>-Hi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</para>
                     <para>Match one or more integer valued headers `Header' entries (i.e. timeout).
                         This option can be used multiple times.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Ht set-type-glob</term>
                 <listitem>
-                    <para>-Ht set-type-glob</para>
                     <para>Match on the set type.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Hr [!|&lt;|>|&lt;=|>=]value</term>
                 <listitem>
-                    <para>-Hr [!|&lt;|>|&lt;=|>=]value</para>
                     <para>Match on number of references. value=integer.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Hs [!|&lt;|>|&lt;=|>=]value</term>
                 <listitem>
-                    <para>-Hs [!|&lt;|>|&lt;=|>=]value</para>
                     <para>Match on size in memory. value=integer.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Hv [!|&lt;|>|&lt;=|>=]value</term>
                 <listitem>
-                    <para>-Hv [!|&lt;|>|&lt;=|>=]value</para>
                     <para>Match on revision number. value=integer.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Mc [!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
-                    <para>-Mc [!|&lt;|>|&lt;=|>=]value [...]</para>
                     <para>Match on member count. value=integer.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Oi option-glob:[!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
-                    <para>-Oi option-glob:[!|&lt;|>|&lt;=|>=]value [...]</para>
-                    <para>Enable or disable usage of ipset. This setting is globally. It disables
-                        builtin usage as well as the users ipset rules. This option can be used
-                        multiple times.</para>
+                    <para>Match member options. i.e. timeout. <code>value=int | 0xhex[/0xhex] |
+                            hex:[!|&lt;|>|&lt;=|>=]hex</code>. This option can be used multiple
+                        times.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Tm</term>
                 <listitem>
-                    <para>-Tm</para>
                     <para>Calculate total memory usage of all matching sets.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-To</term>
                 <listitem>
-                    <para>-To</para>
-                    <para>Set timeout value (integer) in seconds for <command>read</command>. This
-                        affects the listing of sets, as well as how long the result is displayed in
-                        interactive mode, before returning to the main screen. The default value set
-                        by the <varname>TMOUT</varname> variable is 30. This command line option
-                        overrides this. Setting one of them to 0, disables the timeout.</para>
+                    <para>Set timeout value (integer) in seconds for <command
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">read</command>. This affects
+                        the listing of sets, as well as how long the result is displayed in
+                        interactive mode, before returning to the main screen. The default value of
+                        the <varname xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">TMOUT</varname> variable, set
+                        in the configuration header of the script, is 30. This command line option
+                        overrides it. Setting one of them to 0, disables the timeout.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Ts</term>
                 <listitem>
-                    <para>--Ts</para>
                     <para>Count amount of traversed sets.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Xo</term>
                 <listitem>
-                    <para>-Xo</para>
                     <para>Suppress the display of member options.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Xh header-glob:value-glob [...]</term>
                 <listitem>
-                    <para>-Xh header-glob:value-glob [...]</para>
                     <para>Exclude one or more [ext]glob matching header entries. This option can be
                         used multiple times.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Xg pattern</term>
                 <listitem>
-                    <para>-Xg</para>
                     <para>Pattern exclude members matching a [ext]glob pattern.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Xr pattern</term>
                 <listitem>
-                    <para>-Xr pattern</para>
                     <para>Exclude members matching a regex pattern.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Xs pattern</term>
                 <listitem>
-                    <para>-Xs pattern</para>
                     <para>Exclude sets matching a [ext]glob pattern.</para>
                 </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>--</term>
                 <listitem>
-                    <para>--</para>
                     <para>Stop further option processing.</para>
                 </listitem>
-            </itemizedlist>
-        </para>
+            </varlistentry>
+        </variablelist>
     </refsect1>
     <refsect1>
         <title>See also</title>
@@ -244,16 +340,19 @@
             </citerefentry>
             <citerefentry>
                 <refentrytitle>dialog</refentrytitle>
-                <manvolnum>8</manvolnum>
+                <manvolnum>1</manvolnum>
             </citerefentry>
             <citerefentry>
                 <refentrytitle>whiptail</refentrytitle>
-                <manvolnum>8</manvolnum>
+                <manvolnum>1</manvolnum>
             </citerefentry>
             <citerefentry>
                 <refentrytitle>bash</refentrytitle>
-                <manvolnum>8</manvolnum>
+                <manvolnum>1</manvolnum>
             </citerefentry>
-        </para>
+            <citerefentry>
+                <refentrytitle>regex</refentrytitle>
+                <manvolnum>7</manvolnum>
+            </citerefentry></para>
     </refsect1>
 </refentry>
