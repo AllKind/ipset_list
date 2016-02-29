@@ -220,10 +220,17 @@ col_set_total="blue"
 # defaults to: white
 col_highlight="white"
 
-# whiptail binary - required for interactive mode
-#whiptail="/usr/bin/whiptail"
+# a dialog program is required for interactive mode
+# either dialog (default), or whiptail are supported
+# variable can be either:
+# - empty (automatic retrieval if in PATH)
+# - dialog or whiptail
+# - the full path to one of them
+#dialog_prog="dialog"
+#dialog_prog="/usr/bin/dialog"
 # find in path if not declared in parent environment
-: ${whiptail:=$(command -v whiptail)}
+: ${dialog_prog:=$(command -v dialog)}
+: ${dialog_prog:=$(command -v whiptail)}
 
 # tput binary - optional for interactive mode
 #tput="/usr/bin/tput"
@@ -292,7 +299,7 @@ exit 2
 
 ex_invalid_usage() {
 if ((iactive > 1)); then
-	rwt --msgbox "ERROR: $*" $w_height $w_with
+	rdia --msgbox "ERROR: $*" $w_height $w_with
 else
 	printf "%s\n" "$*" >&2
 	exit 2
@@ -401,16 +408,16 @@ fi
 return 1
 }
 
-rwt() { # run whiptail
+rdia() { # run dialog program
 local -a arr_title=( --title "ipset_list interactive mode" )
-"$whiptail" "${arr_title[@]}" "$@" 2>&1 > /dev/tty
+"$dialog_prog" "${arr_title[@]}" "$@" 2>&1 > /dev/tty
 }
 
-wt_ibox() { # input box
-rwt --inputbox "$1" $w_height $w_with
+dia_ibox() { # input box
+rdia --inputbox "$1" $w_height $w_with
 }
 
-wt_clist() { # checklist
+dia_clist() { # checklist
 if [[ $1 = --noitem ]]; then
 	local str_cmd="--noitem --checklist"
 	shift
@@ -419,7 +426,7 @@ else
 fi
 local str="$1"
 shift
-rwt --separate-output $str_cmd "$str" $w_height $w_with $l_height "$@"
+rdia --separate-output $str_cmd "$str" $w_height $w_with $l_height "$@"
 }
 
 interactive_mode() { # interactive mode - wizard based composing of commands
@@ -466,7 +473,7 @@ local -ar arr_opts=(
 )
 
 # main screen: checklist with all options
-xopts=( $(wt_clist \
+xopts=( $(dia_clist \
 "Select the desired options (multiple choice).\n\
 Use SPACE key to (de)select.\n\
 After you confirm with ENTER or the OK button, options will be evaluated.\n\
@@ -480,20 +487,20 @@ fi
 if ((${#xopts[*]})); then
 	for ((x=0; x<=${#xopts[*]}; x++)); do
 		if [[ ${xopts[x]} = Select_sets ]]; then
-			sopts=( $(wt_clist \
+			sopts=( $(dia_clist \
 				"Select the desired options (multiple choice)." \
 				"List" "Select from list" off "Glob" "Enter a search [ext]glob" off) )
 			if ((${#sopts[*]})); then
 				for ((i=0; i<=${#sopts[*]}; i++)); do
 					if [[ ${sopts[i]} = List ]]; then arr_tmp=()
-						arr_tmp=( $(wt_clist --noitem "Choose the set(s) (multiple choice)." \
+						arr_tmp=( $(dia_clist --noitem "Choose the set(s) (multiple choice)." \
 							$(printf "%s off\n" "${all_sets[@]}")) )
 						if ((${#arr_tmp[@]})); then
 							setglob+=( "${arr_tmp[@]}" )
 						fi
 					elif [[ ${sopts[i]} = Glob ]]; then
 						while (($? == 0)); do
-							setglob+=( $(wt_ibox "Enter one or more glob expression(s) for: ${xopts[x]}.\nCancel to quit.") )
+							setglob+=( $(dia_ibox "Enter one or more glob expression(s) for: ${xopts[x]}.\nCancel to quit.") )
 						done
 					fi
 				done
@@ -509,7 +516,7 @@ if ((${#xopts[*]})); then
 		elif [[ ${xopts[x]} = Header_search ]]; then
 			let match_on_header+=1 # show only sets, which contain a matching header entry
 			while (($? == 0)); do
-				arr_hsearch[${#arr_hsearch[@]}]=$(wt_ibox \
+				arr_hsearch[${#arr_hsearch[@]}]=$(dia_ibox \
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`*:*'\nCancel to quit.")
 				if (($? == 0)); then
 					if ! [[ ${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]} = *:* ]]; then
@@ -524,7 +531,7 @@ if ((${#xopts[*]})); then
 		elif [[ ${xopts[x]} = Header_int_search ]]; then
 			let match_on_header+=1 # show only sets, containing a matching (int compare) header entry
 			while (($? == 0)); do
-				arr_hsearch_int[${#arr_hsearch_int[@]}]=$(wt_ibox \
+				arr_hsearch_int[${#arr_hsearch_int[@]}]=$(dia_ibox \
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit.")
 				if (($? == 0)); then
 					if ! is_compare_str "${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]#*:}"; then
@@ -539,7 +546,7 @@ if ((${#xopts[*]})); then
 		elif [[ ${xopts[x]} = Header_option_int ]]; then
 			let match_on_header+=1 # match on name + integer (digit & xdigit) inside of headers 'Header' flag
 			while (($? == 0)); do
-				arr_hsearch_xint[${#arr_hsearch_xint[@]}]=$(wt_ibox \
+				arr_hsearch_xint[${#arr_hsearch_xint[@]}]=$(dia_ibox \
 					"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit.")
 				if (($? == 0)); then
 					if ! [[ ${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]} = *:* ]]; then
@@ -553,7 +560,7 @@ if ((${#xopts[*]})); then
 			done
 		elif [[ ${xopts[x]} = Match_memsize ]]; then
 			let match_on_header+=1 # shortcut for -Fi "Size in Memory:..."
-			str_tmp=$(wt_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
+			str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
 					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
@@ -563,7 +570,7 @@ if ((${#xopts[*]})); then
 			fi
 		elif [[ ${xopts[x]} = Match_references ]]; then
 			let match_on_header+=1 # shortcut for -Fi References:...
-			str_tmp=$(wt_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
+			str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
 					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
@@ -573,7 +580,7 @@ if ((${#xopts[*]})); then
 			fi
 		elif [[ ${xopts[x]} = Match_revision ]]; then
 			let match_on_header+=1 # shortcut for -Fi Revision:...
-			str_tmp=$(wt_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
+			str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
 					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
@@ -583,7 +590,7 @@ if ((${#xopts[*]})); then
 			fi
 		elif [[ ${xopts[x]} = Match_type ]]; then
 			let match_on_header+=1 # shortcut for -Fh Type:x:y
-			str_tmp=$(wt_ibox "Enter glob expression for: ${xopts[x]}.\nExpected input: \`*:*'")
+			str_tmp=$(dia_ibox "Enter glob expression for: ${xopts[x]}.\nExpected input: \`*:*'")
 			if (($? == 0)); then
 				if ! [[ $str_tmp = *:* ]]; then
 					ex_invalid_usage "invalid format of set type descriptor: \`$str_tmp'. expecting: \`*:*'."
@@ -593,14 +600,14 @@ if ((${#xopts[*]})); then
 			fi
 		elif [[ ${xopts[x]} = Glob_search ]]; then
 			glob_search=1
-			str_search=( $(wt_ibox "Enter the glob expression for: ${xopts[x]}") )
+			str_search=( $(dia_ibox "Enter the glob expression for: ${xopts[x]}") )
 		elif [[ ${xopts[x]} = Regex_search ]]; then
 			regex_search=1
-			str_search=( $(wt_ibox "Enter the regex expression for: ${xopts[x]}") )
+			str_search=( $(dia_ibox "Enter the regex expression for: ${xopts[x]}") )
 		elif [[ ${xopts[x]} = Opt_int_search ]]; then
 			let opt_int_search+=1
 			while (($? == 0)); do
-				arr_opt_int_search[${#arr_opt_int_search[@]}]=$(wt_ibox \
+				arr_opt_int_search[${#arr_opt_int_search[@]}]=$(dia_ibox \
 					"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nvalue = int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex\nCancel to quit.")
 				if (($? == 0)); then
 					if ! ( [[ ${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]} = *:* ]] && is_compare_str_complex "${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]#*:}" )
@@ -616,7 +623,7 @@ if ((${#xopts[*]})); then
 		elif [[ ${xopts[x]} = Match_member_sum ]]; then
 			do_count=1
 			while (($? == 0)); do
-				arr_match_on_msum[${#arr_match_on_msum[@]}]=$(wt_ibox \
+				arr_match_on_msum[${#arr_match_on_msum[@]}]=$(dia_ibox \
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'\nCancel to quit.")
 				if (($? == 0)); then
 					if ! is_compare_str "${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}"; then
@@ -631,13 +638,13 @@ if ((${#xopts[*]})); then
 		elif [[ ${xopts[x]} = Exclude_set ]]; then
 			exclude_set=1
 			while (($? == 0)); do
-				arr_sxclude[${#arr_sxclude[@]}]=$(wt_ibox \
+				arr_sxclude[${#arr_sxclude[@]}]=$(dia_ibox \
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nCancel to quit.")
 			done
 		elif [[ ${xopts[x]} = Exclude_header ]]; then
 			exclude_header=1 # don't show certain headers
 			while (($? == 0)); do
-				arr_hxclude[${#arr_hxclude[@]}]=$(wt_ibox \
+				arr_hxclude[${#arr_hxclude[@]}]=$(dia_ibox \
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`*:*'.\nCancel to quit.")
 				if (($? == 0)); then
 					if ! [[ ${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]} = *:* ]]; then
@@ -651,10 +658,10 @@ if ((${#xopts[*]})); then
 			done
 		elif [[ ${xopts[x]} = Glob_xclude_elem ]]; then
 			glob_xclude_element=1
-			str_xclude=( $(wt_ibox "Enter the glob expression for: ${xopts[x]}") )
+			str_xclude=( $(dia_ibox "Enter the glob expression for: ${xopts[x]}") )
 		elif [[ ${xopts[x]} = Regex_xclude_elem ]]; then
 			regex_xclude_element=1
-			str_xclude=( $(wt_ibox "Enter the regex expression for: ${xopts[x]}") )
+			str_xclude=( $(dia_ibox "Enter the regex expression for: ${xopts[x]}") )
 		elif [[ ${xopts[x]} = Exclude_elem_opt ]]; then
 			xclude_member_opts=1
 		elif [[ ${xopts[x]} = Count_sets ]]; then
@@ -670,7 +677,7 @@ if ((${#xopts[*]})); then
 		elif [[ ${xopts[x]} = Colorize ]]; then
 			colorize=1
 		elif [[ ${xopts[x]} = Delim ]]; then
-			delim=( $(wt_ibox \
+			delim=( $(dia_ibox \
 				"Enter the new delimiter character.\nPersistent until you reset it.\n\$'string' type escapes are not supported in interactive mode.") )
 			if ((${#delim} > 1)); then
 				ex_invalid_usage "only one character is allowed as delim"
@@ -1476,13 +1483,31 @@ all_sets=( "${arr_sets[@]}" )
 
 # ok, let's go!
 if ((iactive)); then # interactive mode
-	# check for whiptail program
-	while :; do
-		[[ -x ${whiptail:-$(command -v whiptail)} ]] && whiptail="$(command -v whiptail)" && break
-		[[ -x ${whiptail:=/usr/bin/whiptail} ]] && break
-		printf "whiptail binary \`%s' does not exist, or is not executable. check \`whiptail' variable\n" "$whiptail" >&2
-		exit 1
-	done
+	if ! [[ $dialog_prog ]]; then # see if and what dialog prog we have
+		while :; do
+			command -v dialog &>/dev/null && dialog_prog="$(command -v dialog)" && break
+			command -v whiptail &>/dev/null && dialog_prog="$(command -v whiptail)" && break
+		done
+		if ! [[ $dialog_prog ]]; then
+			printf "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH.\n"
+			exit 1
+		fi
+	else
+		if [[ $dialog_prog = @(dialog|whiptail) ]]; then # correctly defined, but available in $PATH?
+			if ! command -v $dialog_prog &>/dev/null; then
+				printf "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH.\n"
+				exit 1
+			fi
+		elif [[ $dialog_prog = */@(dialog|whiptail) ]]; then # correctly defined, but does it exist/executable?
+			if ! [[ -x $dialog_prog ]]; then
+				printf "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH.\n"
+				exit 1
+			fi
+		else
+			printf "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH.\n"
+			exit 1
+		fi
+	fi
 	# check for tput program
 	while :; do
 		[[ -x ${tput:-$(command -v tput)} ]] && tput="$(command -v tput)" && break
