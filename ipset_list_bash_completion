@@ -30,7 +30,7 @@
 # Requirements:
 #
 # The bash completion package version 2.0 or greater is recommended.
-# http://bash-completion.alioth.debian.org/
+# https://github.com/scop/bash-completion
 #
 # If the package is not available, things might not be so reliable.
 # Also the colon (if there) is removed from COMP_WORDBREAKS.
