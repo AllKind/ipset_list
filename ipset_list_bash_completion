@@ -141,7 +141,7 @@ local Iopts=(-d -r -s -To)
 local Hopts=(-Hi -Hr -Hs -Ht -Hv)
 local Topts=(-Tm -To -Ts)
 local Xopts=(-Xh -Xg -Xr -Xs -Xo)
-local arr_types=()
+local arr_types=() arr_tmp=()
 
 : ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
 
@@ -233,7 +233,7 @@ if ((set_index)); then
     # and also handles those who have the name of ipset_list options
     _ipset_list_show_sets
 else
-if [[ $prev = -@(\?|d|h|v|Fg|Fi|Fr|Hi|Ht|Oi|To|Xg|Xr) ]]; then
+if [[ $prev = -@(\?|d|h|v|Fg|Fi|Fr|Hi|Oi|To|Xg|Xr) ]]; then
     return 0
 elif [[ $prev = -Xs ]]; then
     # list sets if user does not want to enter a glob
@@ -250,12 +250,12 @@ elif [[ $prev = -Ht ]]; then i=0
         fi
     done < <(ipset help)
     for i in ${!arr_types[@]}; do # remove dupe entries
-        for ((x=i+1; x < ${#arr_types[@]}; x++)); do
-            if [[ ${arr_types[i]} = ${arr_types[x]} ]]; then
-                unset arr_types[x]
-            fi
-        done
+		for x in ${!arr_tmp[@]}; do
+			[[ ${arr_tmp[x]} = ${arr_types[i]} ]] && continue 2
+		done
+		arr_tmp[${#arr_tmp[@]}]="${arr_types[i]}"
     done
+	arr_types=( "${arr_tmp[@]}" )
     COMPREPLY=( $( compgen -W '${arr_types[@]}' -- "$cur" ) )
 elif [[ $prev = @(-Fh|-Xh) ]]; then
     # retrieve list of headers
@@ -281,7 +281,7 @@ elif [[ $prev = @(-@(Hr|Hs|Hv|Mc)) ]]; then
 elif [[ $cur = -* ]]; then
     # any option is requested
     case "$prev" in
-        @(-@(\?|d|h|v|Fg|Fh|Fi|Fr|Hi|Ht|Hr|Hs|Hv|Mc|Oi|To|Xg|Xh|Xr)))
+        -@(\?|d|h|v|Fg|Fh|Fi|Fr|Hi|Ht|Hr|Hs|Hv|Mc|Oi|To|Xg|Xh|Xr))
         # options that exclude any other option,
         # or need a value we can't predict
             return 0
