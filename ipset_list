@@ -779,8 +779,7 @@ fi
 main() { # well yes - what to say, it's main() :-)
 local str_name str_val str_op
 in_header=found_set=found_member_opt=found_hxclude=found_sxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=idx=0
-arr_sets=() arr_hcache=() arr_mcache=()
-arr_tmp=()
+arr_sets=() arr_hcache=() arr_mcache=() arr_tmp=()
 # option logic
 if ((names_only)); then
 	if ((headers_only||show_members||show_all||isolate||\
@@ -1549,29 +1548,24 @@ if ((iactive)); then # interactive mode
 			command -v whiptail &>/dev/null && dialog_prog="$(command -v whiptail)" && break
 		done
 		if ! [[ $dialog_prog ]]; then
-			printf "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH.\n"
-			exit 1
+			ex_invalid_usage "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
 		fi
 	else
 		if [[ $dialog_prog = @(dialog|whiptail) ]]; then # correctly defined, but available in $PATH?
 			if ! command -v $dialog_prog &>/dev/null; then
-				printf "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH.\n"
-				exit 1
+				ex_invalid_usage "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
 			fi
 		elif [[ $dialog_prog = */@(dialog|whiptail) ]]; then # correctly defined, but does it exist/executable?
 			if ! [[ -x $dialog_prog ]]; then
-				printf "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH.\n"
-				exit 1
+				ex_invalid_usage "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
 			fi
 		else
-			printf "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH.\n"
-			exit 1
+			ex_invalid_usage "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
 		fi
 	fi
 	if [[ $dialog_prog = *dialog ]]; then
 		if [[ $(dialog --version) = Version:+([[:blank:]])@(0.+([[:digit:]])|1.0|1.1)-* ]]; then
-			printf "Detected unsupported version of the dialog program! Please upgrade to at least 1.2, or use whiptail.\n"
-			exit 1
+			ex_invalid_usage "Detected unsupported version of the dialog program! Please upgrade to at least 1.2, or use whiptail."
 		fi
 	fi
 	# check for tput program
