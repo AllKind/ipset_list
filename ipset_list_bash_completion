@@ -174,7 +174,7 @@ fi
 # collect info of cmdline
 for ((i=1; i < ${#words[@]}-1; i++)); do
     case "${words[i]}" in
-		-) iactive=1 ;;
+		-)  ((set_index)) && break || iactive=1 ;;
         -a) ((set_index)) && break || show_all=1 ;;
         -i) ((set_index)) && break || isolate=1 Copts=(-Co) ;;
         -m) ((set_index)) && break || show_members=1 ;;
