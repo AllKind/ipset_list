@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen RNGSchema="http://www.oasis-open.org/docbook/xml/5.0/rng/docbook.rng" type="xml"?>
+<refentry xmlns="http://docbook.org/ns/docbook">
+    <info><author>
+            <personname>AllKind aka Mart Frauenlob</personname>
+            <email>AllKind@fastest.cc</email>
+            <personblurb>
+                <para>Some guy infront of a screen.</para>
+            </personblurb>
+            <uri type="homepage">
+                <link xmlns:ns1="http://www.w3.org/1999/xlink"
+                    ns1:href="http://sf.net/projects/ipset-list"> http://sf.net/projects/ipset-list
+                </link>
+            </uri>
+            <contrib>Thanks go to the open source community.</contrib>
+        </author>
+        <productname>ipset_list</productname>
+        <productnumber>3.4</productnumber>
+    </info>
+    <refmeta>
+        <refentrytitle>ipset_list manual</refentrytitle>
+        <manvolnum>8</manvolnum>
+        <refmiscinfo class="manual">ipset_list 3.4</refmiscinfo>
+    </refmeta>
+    <refnamediv>
+        <refdescriptor>ipset set listing wrapper script</refdescriptor>
+        <refname>ipset_list</refname>
+        <refpurpose>Match and display ipset (netfilter.org) sets in various ways</refpurpose>
+        <refclass> Scope = security, networking, system administration -- <application
+                class="software">linux - </application>
+            <application class="software">netfilter/ipset</application>
+        </refclass>
+    </refnamediv>
+    <refsynopsisdiv>
+        <cmdsynopsis>
+            <command>ipset_listy</command>
+            <arg choice="opt" rep="repeat">
+                <replaceable>option</replaceable>
+                <arg choice="opt">
+                    <replaceable>option_argument</replaceable>
+                </arg>
+            </arg>
+            <arg choice="opt" rep="repeat">
+                <replaceable>set-name-glob</replaceable>
+            </arg>
+        </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+        <title>Description</title>
+        <para>ipset_list is a wrapper script for listing sets of the netfilter
+                <command>ipset</command> program. It allows you to match and display sets, headers,
+            and elements in various ways. It includes an interactive wizard based mode utilizing a
+            dialog program (<command>dialog</command> or <command>whiptail</command> are supported).
+            Optionally the output can be colorized. It is written for the <command>bash</command>
+            shell. Some variables are available inside the script configuration header. Some of them
+            are mentioned here. For the others please read the according comments inside the script.
+            None of them is mandatory, unless you want to change default values. Some options
+            exclude each other. The script will complain if that is the case.</para>
+        <para>When run without arguments the names of all sets found are displayed with the prefix
+            `Name:'.</para>
+    </refsect1>
+    <refsect1>
+        <title>Options</title>
+        <para>All options are optional. Some require an argument, others do not. All options and
+            their arguments must be separated by blank(s). If an option can be used more than once,
+            it is mentioned explicitly. </para>
+        <para>
+            <itemizedlist xmlns:xi="http://www.w3.org/2001/XInclude"
+                xmlns:xlink="http://www.w3.org/1999/xlink" annotations="">
+                <listitem>
+                    <para>-h, -?</para>
+                    <para>Show usage instructions.</para>
+                </listitem>
+                <listitem>
+                    <para>-v</para>
+                    <para>Show version information.</para>
+                </listitem>
+                <listitem>
+                    <para>-</para>
+                    <para>Enter interactive mode. This wizard based way to select the options
+                        utilizes a dialog program. Which can either be <command>dialog</command> or
+                            <command>whiptail</command>. <command>dialog</command> is the preferred
+                        and default, if the variable <varname>dialog_prog</varname> is not
+                        defined.</para>
+                </listitem>
+                <listitem>
+                    <para>-a</para>
+                    <para>Show all information but with default delim (whitespace).</para>
+                </listitem>
+                <listitem>
+                    <para>-c</para>
+                    <para>Calculate the of set members and also the sum of members matching a
+                        criteria given by another option.</para>
+                </listitem>
+                <listitem>
+                    <para>-d delim</para>
+                    <para>Delimiter character used to separate member entries. By default
+                            <command>ipset</command> uses newline as delimiter.
+                            <command>ipset_list</command> by default uses a whitespace. Which can be
+                        changed permanently by editing the variable <varname>delim</varname> in the
+                        configuration header of ipset_list.</para>
+                </listitem>
+                <listitem>
+                    <para>-i</para>
+                    <para>Show only the members of a single set.</para>
+                </listitem>
+                <listitem>
+                    <para>-m</para>
+                    <para>Show the members of a set.</para>
+                </listitem>
+                <listitem>
+                    <para>-n</para>
+                    <para>Show set names only. No prefix is shown, as with running
+                            <command>ipset_list</command> without arguments</para>
+                </listitem>
+                <listitem>
+                    <para>-r</para>
+                    <para>Try to resolve ip addresses in the output (slow!).</para>
+                </listitem>
+                <listitem>
+                    <para>-s</para>
+                    <para>Print elements sorted (if supported by the set type).</para>
+                </listitem>
+                <listitem>
+                    <para>-t</para>
+                    <para>Show set headers only.</para>
+                </listitem>
+                <listitem>
+                    <para>-Ca</para>
+                    <para>Enable all counters (shortcut for -c -Cs -Ts -Tm).</para>
+                </listitem>
+                <listitem>
+                    <para>-Co</para>
+                    <para>Colorize the output. Requires the <command>cl</command> program. It can be
+                        downloaded from here: <link
+                            xlink:href="http://sf.net/projects/colorize-shell/"
+                            >http://sf.net/projects/colorize-shell/</link> or <link
+                            xlink:href="https://github.com/AllKind/cl"
+                            >https://github.com/AllKind/cl</link>.</para>
+                </listitem>
+                <listitem>
+                    <para>-Cs</para>
+                    <para>Count the amount of sets that matched the search criteria.</para>
+                </listitem>
+                <listitem>
+                    <para>-Fg pattern</para>
+                    <para>Match on members using a [ext]glob pattern.</para>
+                </listitem>
+                <listitem>
+                    <para>-Fr pattern</para>
+                    <para>Match on members using a regex pattern.</para>
+                </listitem>
+                <listitem>
+                    <para>-Fh header-glob:value-glob [...]</para>
+                    <para>Show sets containing one or more [ext]glob matching headers. This option
+                        can be used multiple times.</para>
+                </listitem>
+                <listitem>
+                    <para>-Fi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</para>
+                    <para>Show sets matching one or more integer valued header entries. This option
+                        can be used multiple times.</para>
+                </listitem>
+                <listitem>
+                    <para>-Hi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</para>
+                    <para>Match one or more integer valued headers `Header' entries (i.e. timeout).
+                        This option can be used multiple times.</para>
+                </listitem>
+                <listitem>
+                    <para>-Ht set-type-glob</para>
+                    <para>Match on the set type.</para>
+                </listitem>
+                <listitem>
+                    <para>-Hr [!|&lt;|>|&lt;=|>=]value</para>
+                    <para>Match on number of references. value=integer.</para>
+                </listitem>
+                <listitem>
+                    <para>-Hs [!|&lt;|>|&lt;=|>=]value</para>
+                    <para>Match on size in memory. value=integer.</para>
+                </listitem>
+                <listitem>
+                    <para>-Hv [!|&lt;|>|&lt;=|>=]value</para>
+                    <para>Match on revision number. value=integer.</para>
+                </listitem>
+                <listitem>
+                    <para>-Mc [!|&lt;|>|&lt;=|>=]value [...]</para>
+                    <para>Match on member count. value=integer.</para>
+                </listitem>
+                <listitem>
+                    <para>-Oi option-glob:[!|&lt;|>|&lt;=|>=]value [...]</para>
+                    <para>Enable or disable usage of ipset. This setting is globally. It disables
+                        builtin usage as well as the users ipset rules. This option can be used
+                        multiple times.</para>
+                </listitem>
+                <listitem>
+                    <para>-Tm</para>
+                    <para>Calculate total memory usage of all matching sets.</para>
+                </listitem>
+                <listitem>
+                    <para>-To</para>
+                    <para>Set timeout value (integer) in seconds for <command>read</command>. This
+                        affects the listing of sets, as well as how long the result is displayed in
+                        interactive mode, before returning to the main screen. The default value set
+                        by the <varname>TMOUT</varname> variable is 30. This command line option
+                        overrides this. Setting one of them to 0, disables the timeout.</para>
+                </listitem>
+                <listitem>
+                    <para>--Ts</para>
+                    <para>Count amount of traversed sets.</para>
+                </listitem>
+                <listitem>
+                    <para>-Xo</para>
+                    <para>Suppress the display of member options.</para>
+                </listitem>
+                <listitem>
+                    <para>-Xh header-glob:value-glob [...]</para>
+                    <para>Exclude one or more [ext]glob matching header entries. This option can be
+                        used multiple times.</para>
+                </listitem>
+                <listitem>
+                    <para>-Xg</para>
+                    <para>Pattern exclude members matching a [ext]glob pattern.</para>
+                </listitem>
+                <listitem>
+                    <para>-Xr pattern</para>
+                    <para>Exclude members matching a regex pattern.</para>
+                </listitem>
+                <listitem>
+                    <para>-Xs pattern</para>
+                    <para>Exclude sets matching a [ext]glob pattern.</para>
+                </listitem>
+                <listitem>
+                    <para>--</para>
+                    <para>Stop further option processing.</para>
+                </listitem>
+            </itemizedlist>
+        </para>
+    </refsect1>
+    <refsect1>
+        <title>See also</title>
+        <para>
+            <citerefentry>
+                <refentrytitle>ipset</refentrytitle>
+                <manvolnum>8</manvolnum>
+            </citerefentry>
+            <citerefentry>
+                <refentrytitle>dialog</refentrytitle>
+                <manvolnum>8</manvolnum>
+            </citerefentry>
+            <citerefentry>
+                <refentrytitle>whiptail</refentrytitle>
+                <manvolnum>8</manvolnum>
+            </citerefentry>
+            <citerefentry>
+                <refentrytitle>bash</refentrytitle>
+                <manvolnum>8</manvolnum>
+            </citerefentry>
+        </para>
+    </refsect1>
+</refentry>

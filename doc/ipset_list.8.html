@@ -1,0 +1,51 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>ipset_list manual</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.74.3-pre"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="refentry" lang="en"><a name="d0e2"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>ipset set listing wrapper script &#8212; Match and display ipset (netfilter.org) sets in various ways<p><b> Scope = security, networking, system administration -- <span class="application">linux - </span>
+            <span class="application">netfilter/ipset</span>
+        </b></p></p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">ipset_listy</code>  [
+                <em class="replaceable"><code>option</code></em>
+                 [
+                    <em class="replaceable"><code>option_argument</code></em>
+                ]
+            ...] [
+                <em class="replaceable"><code>set-name-glob</code></em>
+            ...]</p></div></div><div class="refsect1" lang="en"><a name="d0e67"></a><h2>Description</h2><p>ipset_list is a wrapper script for listing sets of the netfilter
+                <span class="command"><strong>ipset</strong></span> program. It allows you to match and display sets, headers,
+            and elements in various ways. It includes an interactive wizard based mode utilizing a
+            dialog program (<span class="command"><strong>dialog</strong></span> or <span class="command"><strong>whiptail</strong></span> are supported).
+            Optionally the output can be colorized. It is written for the <span class="command"><strong>bash</strong></span>
+            shell. Some variables are available inside the script configuration header. Some of them
+            are mentioned here. For the others please read the according comments inside the script.
+            None of them is mandatory, unless you want to change default values. Some options
+            exclude each other. The script will complain if that is the case.</p><p>When run without arguments the names of all sets found are displayed with the prefix
+            `Name:'.</p></div><div class="refsect1" lang="en"><a name="d0e86"></a><h2>Options</h2><p>All options are optional. Some require an argument, others do not. All options and
+            their arguments must be separated by blank(s). If an option can be used more than once,
+            it is mentioned explicitly. </p><p>
+            </p><div class="itemizedlist"><ul type="disc"><li><p>-h, -?</p><p>Show usage instructions.</p></li><li><p>-v</p><p>Show version information.</p></li><li><p>-</p><p>Enter interactive mode. This wizard based way to select the options
+                        utilizes a dialog program. Which can either be <span class="command"><strong>dialog</strong></span> or
+                            <span class="command"><strong>whiptail</strong></span>. <span class="command"><strong>dialog</strong></span> is the preferred
+                        and default, if the variable <code class="varname">dialog_prog</code> is not
+                        defined.</p></li><li><p>-a</p><p>Show all information but with default delim (whitespace).</p></li><li><p>-c</p><p>Calculate the of set members and also the sum of members matching a
+                        criteria given by another option.</p></li><li><p>-d delim</p><p>Delimiter character used to separate member entries. By default
+                            <span class="command"><strong>ipset</strong></span> uses newline as delimiter.
+                            <span class="command"><strong>ipset_list</strong></span> by default uses a whitespace. Which can be
+                        changed permanently by editing the variable <code class="varname">delim</code> in the
+                        configuration header of ipset_list.</p></li><li><p>-i</p><p>Show only the members of a single set.</p></li><li><p>-m</p><p>Show the members of a set.</p></li><li><p>-n</p><p>Show set names only. No prefix is shown, as with running
+                            <span class="command"><strong>ipset_list</strong></span> without arguments</p></li><li><p>-r</p><p>Try to resolve ip addresses in the output (slow!).</p></li><li><p>-s</p><p>Print elements sorted (if supported by the set type).</p></li><li><p>-t</p><p>Show set headers only.</p></li><li><p>-Ca</p><p>Enable all counters (shortcut for -c -Cs -Ts -Tm).</p></li><li><p>-Co</p><p>Colorize the output. Requires the <span class="command"><strong>cl</strong></span> program. It can be
+                        downloaded from here: <a class="link" href="http://sf.net/projects/colorize-shell/" target="_top">http://sf.net/projects/colorize-shell/</a> or <a class="link" href="https://github.com/AllKind/cl" target="_top">https://github.com/AllKind/cl</a>.</p></li><li><p>-Cs</p><p>Count the amount of sets that matched the search criteria.</p></li><li><p>-Fg pattern</p><p>Match on members using a [ext]glob pattern.</p></li><li><p>-Fr pattern</p><p>Match on members using a regex pattern.</p></li><li><p>-Fh header-glob:value-glob [...]</p><p>Show sets containing one or more [ext]glob matching headers. This option
+                        can be used multiple times.</p></li><li><p>-Fi header-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</p><p>Show sets matching one or more integer valued header entries. This option
+                        can be used multiple times.</p></li><li><p>-Hi header-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</p><p>Match one or more integer valued headers `Header' entries (i.e. timeout).
+                        This option can be used multiple times.</p></li><li><p>-Ht set-type-glob</p><p>Match on the set type.</p></li><li><p>-Hr [!|&lt;|&gt;|&lt;=|&gt;=]value</p><p>Match on number of references. value=integer.</p></li><li><p>-Hs [!|&lt;|&gt;|&lt;=|&gt;=]value</p><p>Match on size in memory. value=integer.</p></li><li><p>-Hv [!|&lt;|&gt;|&lt;=|&gt;=]value</p><p>Match on revision number. value=integer.</p></li><li><p>-Mc [!|&lt;|&gt;|&lt;=|&gt;=]value [...]</p><p>Match on member count. value=integer.</p></li><li><p>-Oi option-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</p><p>Enable or disable usage of ipset. This setting is globally. It disables
+                        builtin usage as well as the users ipset rules. This option can be used
+                        multiple times.</p></li><li><p>-Tm</p><p>Calculate total memory usage of all matching sets.</p></li><li><p>-To</p><p>Set timeout value (integer) in seconds for <span class="command"><strong>read</strong></span>. This
+                        affects the listing of sets, as well as how long the result is displayed in
+                        interactive mode, before returning to the main screen. The default value set
+                        by the <code class="varname">TMOUT</code> variable is 30. This command line option
+                        overrides this. Setting one of them to 0, disables the timeout.</p></li><li><p>--Ts</p><p>Count amount of traversed sets.</p></li><li><p>-Xo</p><p>Suppress the display of member options.</p></li><li><p>-Xh header-glob:value-glob [...]</p><p>Exclude one or more [ext]glob matching header entries. This option can be
+                        used multiple times.</p></li><li><p>-Xg</p><p>Pattern exclude members matching a [ext]glob pattern.</p></li><li><p>-Xr pattern</p><p>Exclude members matching a regex pattern.</p></li><li><p>-Xs pattern</p><p>Exclude sets matching a [ext]glob pattern.</p></li><li><p>--</p><p>Stop further option processing.</p></li></ul></div><p>
+        </p></div><div class="refsect1" lang="en"><a name="d0e309"></a><h2>See also</h2><p>
+            <span class="citerefentry"><span class="refentrytitle">ipset</span>(8)</span>
+            <span class="citerefentry"><span class="refentrytitle">dialog</span>(8)</span>
+            <span class="citerefentry"><span class="refentrytitle">whiptail</span>(8)</span>
+            <span class="citerefentry"><span class="refentrytitle">bash</span>(8)</span>
+        </p></div></div></body></html>
