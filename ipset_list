@@ -170,6 +170,8 @@ delim=" "
 
 # default read timeout (for reading sets - esp. with the -r switch).
 # the command line option -To overrides this.
+# this also effects in interactive mode, how long the result is displayed
+# before returning to the main screen
 TMOUT=30
 
 # colorize the output (bool 0/1).
@@ -222,6 +224,7 @@ col_highlight="white"
 
 # a dialog program is required for interactive mode
 # either dialog (default), or whiptail are supported
+# dialog version 1.2 or greater is required
 # variable can be either:
 # - empty (automatic retrieval if in PATH)
 # - dialog or whiptail
@@ -236,7 +239,6 @@ col_highlight="white"
 #tput="/usr/bin/tput"
 # find in path if not declared in parent environment
 : ${tput:=$(command -v tput)}
-
 
 # applies to the three window measure variables below:
 # if `0' and the `tput' program is available adjustment is done autmatically.
@@ -419,14 +421,14 @@ rdia --inputbox "$1" $w_height $w_with
 
 dia_clist() { # checklist
 if [[ $1 = --noitem ]]; then
-	local str_cmd="--noitem --checklist"
+	local str_cmd="--noitem --separate-output --checklist"
 	shift
 else
-	local str_cmd="--checklist"
+	local str_cmd="--separate-output --checklist"
 fi
 local str="$1"
 shift
-rdia --separate-output $str_cmd "$str" $w_height $w_with $l_height "$@"
+rdia $str_cmd "$str" $w_height $w_with $l_height "$@"
 }
 
 interactive_mode() { # interactive mode - wizard based composing of commands
@@ -486,7 +488,8 @@ fi
 # iterate over selected options
 if ((${#xopts[*]})); then
 	for ((x=0; x<=${#xopts[*]}; x++)); do
-		if [[ ${xopts[x]} = Select_sets ]]; then
+		if [[ -z ${xopts[x]} ]]; then continue
+		elif [[ ${xopts[x]} = Select_sets ]]; then
 			sopts=( $(dia_clist \
 				"Select the desired options (multiple choice)." \
 				"List" "Select from list" off "Glob" "Enter a search [ext]glob" off) )
