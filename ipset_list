@@ -1489,7 +1489,7 @@ if ((iactive)); then # interactive mode
 	if ! [[ $dialog_prog ]]; then # see if and what dialog prog we have
 		while :; do
 			command -v dialog &>/dev/null && \
-				[[ $(dialog --version) != Version:+([[:blank:]])@(0.|1.0|1.1)* ]] && \
+				[[ $(dialog --version) != Version:+([[:blank:]])@(0.+([[:digit:]])|1.0|1.1)-* ]] && \
 				dialog_prog="$(command -v dialog)" && break
 			command -v whiptail &>/dev/null && dialog_prog="$(command -v whiptail)" && break
 		done
@@ -1514,7 +1514,7 @@ if ((iactive)); then # interactive mode
 		fi
 	fi
 	if [[ $dialog_prog = *dialog ]]; then
-		if [[ $(dialog --version) = Version:+([[:blank:]])@(0.|1.0|1.1)* ]]; then
+		if [[ $(dialog --version) = Version:+([[:blank:]])@(0.+([[:digit:]])|1.0|1.1)-* ]]; then
 			printf "Detected unsupported version of the dialog program! Please upgrade to at least 1.2, or use whiptail.\n"
 			exit 1
 		fi
