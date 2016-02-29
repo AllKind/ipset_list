@@ -222,6 +222,13 @@
                 </listitem>
             </varlistentry>
             <varlistentry>
+                <term>-G</term>
+                <listitem>
+                    <para>When in interactive mode, generate the <command>ipset_list</command>
+                        command-line, as used in 'normal' mode.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
                 <term>-Hi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
                     <para>Match one or more integer valued headers `Header' entries (i.e. timeout).

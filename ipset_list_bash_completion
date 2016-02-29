@@ -137,7 +137,7 @@ local sets=( $("${ipset_list:-ipset_list}" -n) )
 local opts=(- -- -? -a -c -d -h -i -m -n -r -s -t -v)
 local Copts=(-Ca -Cs -Co)
 local Fopts=(-Fh -Fi -Fg -Fr -Oi)
-local Iopts=(-d -r -s -To)
+local Iopts=(-- -d -r -s -G -To)
 local Hopts=(-Hi -Hr -Hs -Ht -Hv)
 local Topts=(-Tm -To -Ts)
 local Xopts=(-Xh -Xg -Xr -Xs -Xo)
@@ -174,7 +174,7 @@ fi
 # collect info of cmdline
 for ((i=1; i < ${#words[@]}-1; i++)); do
     case "${words[i]}" in
-		-)  ((set_index)) && break || iactive=1 ;;
+        -)  ((set_index)) && break || iactive=1 ;;
         -a) ((set_index)) && break || show_all=1 ;;
         -i) ((set_index)) && break || isolate=1 Copts=(-Co) ;;
         -m) ((set_index)) && break || show_members=1 ;;
@@ -250,12 +250,12 @@ elif [[ $prev = -Ht ]]; then i=0
         fi
     done < <(ipset help)
     for i in ${!arr_types[@]}; do # remove dupe entries
-		for x in ${!arr_tmp[@]}; do
-			[[ ${arr_tmp[x]} = ${arr_types[i]} ]] && continue 2
-		done
-		arr_tmp[${#arr_tmp[@]}]="${arr_types[i]}"
+        for x in ${!arr_tmp[@]}; do
+            [[ ${arr_tmp[x]} = ${arr_types[i]} ]] && continue 2
+        done
+        arr_tmp[${#arr_tmp[@]}]="${arr_types[i]}"
     done
-	arr_types=( "${arr_tmp[@]}" )
+    arr_types=( "${arr_tmp[@]}" )
     COMPREPLY=( $( compgen -W '${arr_types[@]}' -- "$cur" ) )
 elif [[ $prev = @(-Fh|-Xh) ]]; then
     # retrieve list of headers
@@ -281,14 +281,14 @@ elif [[ $prev = @(-@(Hr|Hs|Hv|Mc)) ]]; then
 elif [[ $cur = -* ]]; then
     # any option is requested
     case "$prev" in
-        -@(\?|d|h|v|Fg|Fh|Fi|Fr|Hi|Ht|Hr|Hs|Hv|Mc|Oi|To|Xg|Xh|Xr))
+        -@(-|\?|d|h|v|Fg|Fh|Fi|Fr|Hi|Ht|Hr|Hs|Hv|Mc|Oi|To|Xg|Xh|Xr))
         # options that exclude any other option,
         # or need a value we can't predict
             return 0
         ;;
     esac
-    # these options don't allow any other
     if ((${#words[@]} > 2)); then
+        # these options don't allow any other - remove them
         opts=("${opts[@]/@(-v|-h|-\?)/}")
     fi
     # some options allow only a subset of other options
@@ -347,10 +347,10 @@ elif [[ $cur = -* ]]; then
 elif [[ $cur = * ]]; then
     # non option request
     # default to sets listing
-	# except we are in interactive mode
-	if ! ((iactive)); then
-		_ipset_list_show_sets
-	fi
+    # except we are in interactive mode
+    if ! ((iactive)); then
+        _ipset_list_show_sets
+    fi
 fi
 fi
 

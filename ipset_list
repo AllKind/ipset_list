@@ -284,6 +284,7 @@ declare -i exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xc
 declare -i i=x=y=idx=0
 declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
 declare -i iactive=0 # en/disable interactive mode
+declare -i generate_cmdline=0 # generate command line in iactive mode
 declare -a arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
 declare -a arr_hxclude=() arr_sxclude=() arr_par=() all_sets=() arr_tmp=()
 
@@ -432,8 +433,8 @@ rdia $str_cmd "$str" $w_height $w_with $l_height "$@"
 }
 
 interactive_mode() { # interactive mode - wizard based composing of commands
-# some global variables need to set on each run
 iactive=2 # -ge 1 means we are in interactive mode
+# some global variables need to set on each run
 i=x=0
 show_all=show_count=show_members=headers_only=isolate=calc_mem=count_sets=sets_total=0
 match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
@@ -485,6 +486,7 @@ if (($?)); then
 	return 1
 fi
 
+local -a arr_cmdline=()
 # iterate over selected options
 if ((${#xopts[*]})); then
 	for ((x=0; x<=${#xopts[*]}; x++)); do
@@ -509,15 +511,14 @@ if ((${#xopts[*]})); then
 				done
 			fi
 		elif [[ ${xopts[x]} = Show_header ]]; then
-			headers_only=1
+			headers_only=1 arr_cmdline[${#arr_cmdline[@]}]="-t"
 		elif [[ ${xopts[x]} = Show_members ]]; then
-			show_members=1
+			show_members=1 arr_cmdline[${#arr_cmdline[@]}]="-m"
 		elif [[ ${xopts[x]} = Show_all ]]; then
-			show_all=1
+			show_all=1 arr_cmdline[${#arr_cmdline[@]}]="-a"
 		elif [[ ${xopts[x]} = Members_only ]]; then
-			isolate=1
-		elif [[ ${xopts[x]} = Header_search ]]; then
-			let match_on_header+=1 # show only sets, which contain a matching header entry
+			isolate=1 arr_cmdline[${#arr_cmdline[@]}]="-i"
+		elif [[ ${xopts[x]} = Header_search ]]; then # show only sets, which contain a matching header entry
 			while (($? == 0)); do
 				arr_hsearch[${#arr_hsearch[@]}]=$(dia_ibox \
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`*:*'\nCancel to quit.")
@@ -526,13 +527,15 @@ if ((${#xopts[*]})); then
 						ex_invalid_usage "invalid format of header descriptor: \`${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]}'. expecting: \`*:*'"
 						return 0
 					fi
+					let match_on_header+=1
+					arr_cmdline[${#arr_cmdline[@]}]="-Fh"
+					arr_cmdline[${#arr_cmdline[@]}]="\"${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]}\"" #"
 				else
 					((${#arr_hsearch[@]})) && unset arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]
 					break
 				fi
 			done
-		elif [[ ${xopts[x]} = Header_int_search ]]; then
-			let match_on_header+=1 # show only sets, containing a matching (int compare) header entry
+		elif [[ ${xopts[x]} = Header_int_search ]]; then # show only sets, containing a matching (int compare) header entry
 			while (($? == 0)); do
 				arr_hsearch_int[${#arr_hsearch_int[@]}]=$(dia_ibox \
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit.")
@@ -541,13 +544,16 @@ if ((${#xopts[*]})); then
 						ex_invalid_usage "invalid format of header descriptor: \`${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
 						return 0
 					fi
+					let match_on_header+=1
+					arr_cmdline[${#arr_cmdline[@]}]="-Fi"
+					arr_cmdline[${#arr_cmdline[@]}]="\"$(printf "%q\n" ${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]} )\"" #"
 				else
 					((${#arr_hsearch_int[@]})) && unset arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]
 					break
 				fi
 			done
 		elif [[ ${xopts[x]} = Header_option_int ]]; then
-			let match_on_header+=1 # match on name + integer (digit & xdigit) inside of headers 'Header' flag
+			# match on name + integer (digit & xdigit) inside of headers 'Header' flag
 			while (($? == 0)); do
 				arr_hsearch_xint[${#arr_hsearch_xint[@]}]=$(dia_ibox \
 					"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit.")
@@ -556,59 +562,77 @@ if ((${#xopts[*]})); then
 						ex_invalid_usage "invalid format of headers \'Header' flag descriptor: \`${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
 						return 0
 					fi
+					let match_on_header+=1
+					arr_cmdline[${#arr_cmdline[@]}]="-Hi"
+					arr_cmdline[${#arr_cmdline[@]}]="$(printf "%q\n" ${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]} )"
 				else
 					((${#arr_hsearch_xint[@]})) && unset arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]
 					break
 				fi
 			done
-		elif [[ ${xopts[x]} = Match_memsize ]]; then
-			let match_on_header+=1 # shortcut for -Fi "Size in Memory:..."
+		elif [[ ${xopts[x]} = Match_memsize ]]; then # shortcut for -Fi "Size in Memory:..."
 			str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
 					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
 					return 0
 				fi
+				let match_on_header+=1
 				arr_hsearch_int[${#arr_hsearch_int[@]}]="Size in memory:$str_tmp"
+				arr_cmdline[${#arr_cmdline[@]}]="-Hs"
+				arr_cmdline[${#arr_cmdline[@]}]="$(printf "%q\n" $str_tmp)"
 			fi
-		elif [[ ${xopts[x]} = Match_references ]]; then
-			let match_on_header+=1 # shortcut for -Fi References:...
+		elif [[ ${xopts[x]} = Match_references ]]; then # shortcut for -Fi References:...
 			str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
 					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
 					return 0
 				fi
+				let match_on_header+=1
 				arr_hsearch_int[${#arr_hsearch_int[@]}]="References:$str_tmp"
+				arr_cmdline[${#arr_cmdline[@]}]="-Hr"
+				arr_cmdline[${#arr_cmdline[@]}]="$(printf "%q\n" $str_tmp)"
 			fi
-		elif [[ ${xopts[x]} = Match_revision ]]; then
-			let match_on_header+=1 # shortcut for -Fi Revision:...
+		elif [[ ${xopts[x]} = Match_revision ]]; then # shortcut for -Fi Revision:...
 			str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
 					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
 					return 0
 				fi
+				let match_on_header+=1
 				arr_hsearch_int[${#arr_hsearch_int[@]}]="Revision:$str_tmp"
+				arr_cmdline[${#arr_cmdline[@]}]="-Hv"
+				arr_cmdline[${#arr_cmdline[@]}]="$(printf "%q\n" $str_tmp)"
 			fi
-		elif [[ ${xopts[x]} = Match_type ]]; then
-			let match_on_header+=1 # shortcut for -Fh Type:x:y
+		elif [[ ${xopts[x]} = Match_type ]]; then # shortcut for -Fh Type:x:y
 			str_tmp=$(dia_ibox "Enter glob expression for: ${xopts[x]}.\nExpected input: \`*:*'")
 			if (($? == 0)); then
 				if ! [[ $str_tmp = *:* ]]; then
 					ex_invalid_usage "invalid format of set type descriptor: \`$str_tmp'. expecting: \`*:*'."
 					return 0
 				fi
+				let match_on_header+=1
 				arr_hsearch[${#arr_hsearch[@]}]="Type:$str_tmp"
+				arr_cmdline[${#arr_cmdline[@]}]="-Ht"
+				arr_cmdline[${#arr_cmdline[@]}]="\"$str_tmp\"" #"
 			fi
 		elif [[ ${xopts[x]} = Glob_search ]]; then
-			glob_search=1
 			str_search=( $(dia_ibox "Enter the glob expression for: ${xopts[x]}") )
+			if (($? == 0)); then
+				glob_search=1
+				arr_cmdline[${#arr_cmdline[@]}]="-Fg"
+				arr_cmdline[${#arr_cmdline[@]}]="\"$str_search\"" #"
+			fi
 		elif [[ ${xopts[x]} = Regex_search ]]; then
-			regex_search=1
 			str_search=( $(dia_ibox "Enter the regex expression for: ${xopts[x]}") )
+			if (($? == 0)); then
+				regex_search=1
+				arr_cmdline[${#arr_cmdline[@]}]="-Fr"
+				arr_cmdline[${#arr_cmdline[@]}]="\"$str_search\"" #"
+			fi
 		elif [[ ${xopts[x]} = Opt_int_search ]]; then
-			let opt_int_search+=1
 			while (($? == 0)); do
 				arr_opt_int_search[${#arr_opt_int_search[@]}]=$(dia_ibox \
 					"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nvalue = int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex\nCancel to quit.")
@@ -618,34 +642,45 @@ if ((${#xopts[*]})); then
 						ex_invalid_usage "invalid format of header descriptor: \`${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
 						return 0
 					fi
+					let opt_int_search+=1
+					arr_cmdline[${#arr_cmdline[@]}]="-Oi"
+					arr_cmdline[${#arr_cmdline[@]}]="$(printf "%q\n" ${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]} )"
 				else
 					((${#arr_opt_int_search[@]})) && unset arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]
 					break
 				fi
 			done
 		elif [[ ${xopts[x]} = Match_member_sum ]]; then
-			do_count=1
 			while (($? == 0)); do
 				arr_match_on_msum[${#arr_match_on_msum[@]}]=$(dia_ibox \
-					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'\nCancel to quit.")
+					"Enter one or more compare expression(s) for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'\nCancel to quit.")
 				if (($? == 0)); then
 					if ! is_compare_str "${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}"; then
 						ex_invalid_usage "invalid format of match on member count value: \`${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}'. expecting: \`[!|<|>|<=|>=]value'"
 						return 0
 					fi
+					do_count=1
+					arr_cmdline[${#arr_cmdline[@]}]="-Mc"
+					arr_cmdline[${#arr_cmdline[@]}]="$(printf "%q\n" ${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]} )"
 				else
 					((${#arr_match_on_msum[@]})) && unset arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]
 					break
 				fi
 			done
 		elif [[ ${xopts[x]} = Exclude_set ]]; then
-			exclude_set=1
 			while (($? == 0)); do
 				arr_sxclude[${#arr_sxclude[@]}]=$(dia_ibox \
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nCancel to quit.")
+				if (($? == 0)); then
+					exclude_set=1
+					arr_cmdline[${#arr_cmdline[@]}]="-Xs"
+					arr_cmdline[${#arr_cmdline[@]}]="\"${arr_sxclude[$(( ${#arr_sxclude[@]} - 1 ))]}\"" #"
+				else
+					((${#arr_sxclude[@]})) && unset arr_sxclude[$(( ${#arr_sxclude[@]} - 1 ))]
+					break
+				fi
 			done
-		elif [[ ${xopts[x]} = Exclude_header ]]; then
-			exclude_header=1 # don't show certain headers
+		elif [[ ${xopts[x]} = Exclude_header ]]; then # don't show certain headers
 			while (($? == 0)); do
 				arr_hxclude[${#arr_hxclude[@]}]=$(dia_ibox \
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`*:*'.\nCancel to quit.")
@@ -654,31 +689,43 @@ if ((${#xopts[*]})); then
 						ex_invalid_usage "invalid format of header descriptor: \`${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]}'. expecting: \`*:*'"
 						return 0
 					fi
+					exclude_header=1
+					arr_cmdline[${#arr_cmdline[@]}]="-Xh"
+					arr_cmdline[${#arr_cmdline[@]}]="\"${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]}\"" #"
 				else
 					((${#arr_hxclude[@]})) && unset arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]
 					break
 				fi
 			done
 		elif [[ ${xopts[x]} = Glob_xclude_elem ]]; then
-			glob_xclude_element=1
 			str_xclude=( $(dia_ibox "Enter the glob expression for: ${xopts[x]}") )
+			if (($? == 0)); then
+				glob_xclude_element=1
+				arr_cmdline[${#arr_cmdline[@]}]="-Xg"
+				arr_cmdline[${#arr_cmdline[@]}]="\"$str_xclude\"" #"
+			fi
 		elif [[ ${xopts[x]} = Regex_xclude_elem ]]; then
-			regex_xclude_element=1
 			str_xclude=( $(dia_ibox "Enter the regex expression for: ${xopts[x]}") )
+			if (($? == 0)); then
+				regex_xclude_element=1
+				arr_cmdline[${#arr_cmdline[@]}]="-Xr"
+				arr_cmdline[${#arr_cmdline[@]}]="\"$str_xclude\"" #"
+			fi
 		elif [[ ${xopts[x]} = Exclude_elem_opt ]]; then
-			xclude_member_opts=1
+			xclude_member_opts=1 arr_cmdline[${#arr_cmdline[@]}]="-Xo"
 		elif [[ ${xopts[x]} = Count_sets ]]; then
-			count_sets=1
+			count_sets=1 arr_cmdline[${#arr_cmdline[@]}]="-Cs"
 		elif [[ ${xopts[x]} = Count_members ]]; then
-			show_count=1
+			show_count=1 arr_cmdline[${#arr_cmdline[@]}]="-c"
 		elif [[ ${xopts[x]} = Calc_mem ]]; then
-			calc_mem=1
+			calc_mem=1 arr_cmdline[${#arr_cmdline[@]}]="-Tm"
 		elif [[ ${xopts[x]} = Count_sets_total ]]; then
-			sets_total=1
+			sets_total=1 arr_cmdline[${#arr_cmdline[@]}]="-Ts"
 		elif [[ ${xopts[x]} = All_counters ]]; then
 			show_count=1 count_sets=1 calc_mem=1 sets_total=1
+			arr_cmdline[${#arr_cmdline[@]}]="-Ca"
 		elif [[ ${xopts[x]} = Colorize ]]; then
-			colorize=1
+			colorize=1 arr_cmdline[${#arr_cmdline[@]}]="-Co"
 		elif [[ ${xopts[x]} = Delim ]]; then
 			delim=( $(dia_ibox \
 				"Enter the new delimiter character.\nPersistent until you reset it.\n\$'string' type escapes are not supported in interactive mode.") )
@@ -686,6 +733,8 @@ if ((${#xopts[*]})); then
 				ex_invalid_usage "only one character is allowed as delim"
 				return 0
 			fi
+			arr_cmdline[${#arr_cmdline[@]}]="-d"
+			arr_cmdline[${#arr_cmdline[@]}]="\"$delim\"" #"
 		elif [[ ${xopts[x]} = Resolve ]]; then str_tmp=0
 			if ((${#arr_par[@]})); then
 				for i in ${!arr_par[@]}; do
@@ -715,6 +764,11 @@ fi
 # run main with set glob as optional option
 main "${setglob[@]}"
 printf "\n"
+if ((generate_cmdline && ${#arr_cmdline[@]})); then
+	printf "Composed command line:\n"
+	printf "%s\n" "$me ${arr_par[*]} ${arr_cmdline[*]} ${setglob[@]}"
+	printf "\n"
+fi
 read -N 1 -p " Press \`ENTER' to continue, or \`ESC' to return to the shell."
 if [[ $REPLY = $'\E' ]]; then
 	printf "\n" # avoid moving the shell prompt
@@ -1207,8 +1261,7 @@ ipset_list [-n|-c|-Ca|-Co|-Cs|-Tm|-Ts|-Xs] [-To value]
 ipset_list [-t|-c|-Ca|-Co|-Cs|-Tm|-Ts] [-To value]
     [-Fh header-glob:value-glob] [...]
     [-Fi header-glob:[!|<|>|<=|>=]value] [...]
-    [-Fg|-Fr pattern] [-Ht type-glob]
-    [-Hi glob:[!|<|>|<=|>=]value] [...]
+    [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...]
     [-Xh header-glob:value-glob] [...]
@@ -1216,13 +1269,12 @@ ipset_list [-t|-c|-Ca|-Co|-Cs|-Tm|-Ts] [-To value]
 ipset_list [-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-Tm|-Ts|-Xo] [-d char] [-To value]
     [-Fh header-glob:value-glob] [...]
     [-Fi header-glob:[!|<|>|<=|>=]value] [...]
-    [-Fg|-Fr pattern] [-Ht type-glob]
-    [-Hi glob:[!|<|>|<=|>=]value] [...]
+    [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...]
     [-Xh header-glob:value-glob] [...]
     [-Xg|-Xr pattern] [-Xs set-name-glob] [...] -- [set-name-glob] [...]
-ipset_list - [-r|-s] [-d delim] [-To value]
+ipset_list - [-r|-s|-G] [-d delim] [-To value] --
 
 options:
 -            interactive mode.
@@ -1246,6 +1298,7 @@ options:
     show sets containing one or more [ext]glob matching headers.
 -Fi header-glob:[!|<|>|<=|>=]value [...]
     show sets matching one or more integer valued header entries.
+-G           when in interactive mode, generate command-line.
 -Hi header-glob:[!|<|>|<=|>=]value [...]
     match one or more integer valued headers \`Header' entries.
 -Ht set-type-glob       match on set type.
@@ -1312,6 +1365,8 @@ options:
 			[[ $2 ]] || ex_miss_optarg $1 "regex pattern"
 			str_search="$2"
 			shift
+		;;
+		-G) generate_cmdline=1
 		;;
 		-Oi) let opt_int_search+=1 # match member option values
 			[[ $2 ]] || ex_miss_optarg $1 "pattern"
