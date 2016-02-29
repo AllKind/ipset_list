@@ -279,7 +279,7 @@ declare -a arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_ms
 declare -a arr_hxclude=() arr_sxclude=() arr_par=() all_sets=() arr_tmp=()
 
 # simple trap
-trap "echo trap activated - exiting; enable exit; exit 111" ERR HUP INT QUIT STOP TERM
+trap "echo trap activated - exiting; enable exit; exit 111" HUP INT QUIT STOP TERM
 
 # -----------------------------------------------------------------
 # functions
@@ -1259,7 +1259,7 @@ options:
 "
 			exit 0
 		;;
-		-) iactive=1
+		-) iactive=1 # interactive mode
 		;;
 		-a) show_all=1 # like `ipset list', but with $delim as delim
 		;;
@@ -1304,7 +1304,7 @@ options:
 			str_search="$2"
 			shift
 		;;
-		-Oi) let opt_int_search+=1
+		-Oi) let opt_int_search+=1 # match member option values
 			[[ $2 ]] || ex_miss_optarg $1 "pattern"
 			if [[ $2 = *:* ]] && is_compare_str_complex "${2#*:}"; then
 				arr_opt_int_search[y++]="$2"
