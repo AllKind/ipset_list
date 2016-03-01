@@ -284,9 +284,9 @@ declare -i exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xc
 declare -i i=x=y=idx=0
 declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
 declare -i iactive=0 # en/disable interactive mode
-declare -i generate_cmdline=0 # generate command line in iactive mode
+declare -i generate_cmdline=global_gen_cmd=0 # generate command line in iactive mode
 declare -a arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
-declare -a arr_hxclude=() arr_sxclude=() arr_par=() all_sets=() arr_tmp=()
+declare -a arr_hxclude=() arr_sxclude=() arr_par=() all_sets=() arr_cmdline=() arr_tmp=()
 
 # simple trap
 trap "echo trap activated - exiting; enable exit; exit 111" HUP INT QUIT STOP TERM
@@ -444,6 +444,7 @@ i=x=0
 show_all=show_count=show_members=headers_only=isolate=calc_mem=count_sets=sets_total=0
 match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
 exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
+generate_cmdline=$global_gen_cmd
 arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 local str_tmp
 local -a xopts sopts setglob=() arr_iopts=()
@@ -478,6 +479,7 @@ local -ar arr_opts=(
 "Delim" "Delimiter character for separating members (-d)" off
 "Resolve" "Resolve ip addresses in the output (slow!) (-r)" off
 "Sort" "Print elements sorted (if supported) (-s)" off
+"Generate_cmd" "Generate the $me command line (-G)" off
 )
 
 # main screen: checklist with all options
@@ -766,6 +768,8 @@ if ((${#xopts[*]})); then
 			if ! ((str_tmp)); then
 				arr_par[${#arr_par[@]}]="-s"
 			fi
+		elif [[ ${xopts[x]} = Generate_cmd ]]; then # generate ipset_list cmd-line
+			generate_cmdline=1
 		fi
 	done
 fi
@@ -1381,7 +1385,7 @@ options:
 			str_search="$2"
 			shift
 		;;
-		-G) generate_cmdline=1 # in interactive mode generate the cmd-line for ipset_list
+		-G) generate_cmdline=1 global_gen_cmd=1 # in interactive mode generate the cmd-line for ipset_list
 		;;
 		-Oi) let opt_int_search+=1 # match member option values
 			[[ $2 ]] || ex_miss_optarg $1 "pattern"
