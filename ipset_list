@@ -300,7 +300,7 @@ printf "%s of option \`%s' is missing\n" "$2" "$1" >&2
 exit 2
 }
 
-ex_invalid_usage() {
+ex_err() {
 if ((iactive > 1)); then
 	rdia --msgbox "ERROR: $*" $w_height $w_with
 else
@@ -403,7 +403,7 @@ elif ((regex_xclude_element)); then # exclude matching members
 		return 0
 	else
 		if (($? == 2)); then
-			ex_invalid_usage "Invalid regex pattern \`$str_xclude'."
+			ex_err "Invalid regex pattern \`$str_xclude'."
 			((iactive > 1)) && return 2
 		fi
 	fi
@@ -524,7 +524,7 @@ if ((${#xopts[*]})); then
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`*:*'\nCancel to quit.")
 				if (($? == 0)); then
 					if ! [[ ${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]} = *:* ]]; then
-						ex_invalid_usage "invalid format of header descriptor: \`${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]}'. expecting: \`*:*'"
+						ex_err "invalid format of header descriptor: \`${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]}'. expecting: \`*:*'"
 						return 0
 					fi
 					let match_on_header+=1
@@ -541,7 +541,7 @@ if ((${#xopts[*]})); then
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit.")
 				if (($? == 0)); then
 					if ! is_compare_str "${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]#*:}"; then
-						ex_invalid_usage "invalid format of header descriptor: \`${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+						ex_err "invalid format of header descriptor: \`${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
 						return 0
 					fi
 					let match_on_header+=1
@@ -559,7 +559,7 @@ if ((${#xopts[*]})); then
 					"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit.")
 				if (($? == 0)); then
 					if ! [[ ${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]} = *:* ]]; then
-						ex_invalid_usage "invalid format of headers \'Header' flag descriptor: \`${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+						ex_err "invalid format of headers \'Header' flag descriptor: \`${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
 						return 0
 					fi
 					let match_on_header+=1
@@ -574,7 +574,7 @@ if ((${#xopts[*]})); then
 			str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
-					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+					ex_err "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
 					return 0
 				fi
 				let match_on_header+=1
@@ -586,7 +586,7 @@ if ((${#xopts[*]})); then
 			str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
-					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+					ex_err "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
 					return 0
 				fi
 				let match_on_header+=1
@@ -598,7 +598,7 @@ if ((${#xopts[*]})); then
 			str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 			if (($? == 0)); then
 				if ! is_compare_str "$str_tmp"; then
-					ex_invalid_usage "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+					ex_err "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
 					return 0
 				fi
 				let match_on_header+=1
@@ -610,7 +610,7 @@ if ((${#xopts[*]})); then
 			str_tmp=$(dia_ibox "Enter glob expression for: ${xopts[x]}.\nExpected input: \`*:*'")
 			if (($? == 0)); then
 				if ! [[ $str_tmp = *:* ]]; then
-					ex_invalid_usage "invalid format of set type descriptor: \`$str_tmp'. expecting: \`*:*'."
+					ex_err "invalid format of set type descriptor: \`$str_tmp'. expecting: \`*:*'."
 					return 0
 				fi
 				let match_on_header+=1
@@ -639,7 +639,7 @@ if ((${#xopts[*]})); then
 				if (($? == 0)); then
 					if ! ( [[ ${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]} = *:* ]] && is_compare_str_complex "${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]#*:}" )
 					then
-						ex_invalid_usage "invalid format of header descriptor: \`${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+						ex_err "invalid format of header descriptor: \`${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
 						return 0
 					fi
 					let opt_int_search+=1
@@ -656,7 +656,7 @@ if ((${#xopts[*]})); then
 					"Enter one or more compare expression(s) for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'\nCancel to quit.")
 				if (($? == 0)); then
 					if ! is_compare_str "${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}"; then
-						ex_invalid_usage "invalid format of match on member count value: \`${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}'. expecting: \`[!|<|>|<=|>=]value'"
+						ex_err "invalid format of match on member count value: \`${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}'. expecting: \`[!|<|>|<=|>=]value'"
 						return 0
 					fi
 					do_count=1
@@ -686,7 +686,7 @@ if ((${#xopts[*]})); then
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`*:*'.\nCancel to quit.")
 				if (($? == 0)); then
 					if ! [[ ${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]} = *:* ]]; then
-						ex_invalid_usage "invalid format of header descriptor: \`${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]}'. expecting: \`*:*'"
+						ex_err "invalid format of header descriptor: \`${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]}'. expecting: \`*:*'"
 						return 0
 					fi
 					exclude_header=1
@@ -730,7 +730,7 @@ if ((${#xopts[*]})); then
 			delim=( $(dia_ibox \
 				"Enter the new delimiter character.\nPersistent until you reset it.\n\$'string' type escapes are not supported in interactive mode.") )
 			if ((${#delim} > 1)); then
-				ex_invalid_usage "only one character is allowed as delim"
+				ex_err "only one character is allowed as delim"
 				return 0
 			fi
 			arr_cmdline[${#arr_cmdline[@]}]="-d"
@@ -785,54 +785,54 @@ if ((names_only)); then
 	if ((headers_only||show_members||show_all||isolate||\
 		glob_xclude_element||regex_xclude_element||xclude_member_opts))
    	then
-		ex_invalid_usage "option -n does not allow this combination of options"
+		ex_err "option -n does not allow this combination of options"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((headers_only)); then
 	if ((show_members || show_all || isolate)); then
-		ex_invalid_usage "options -t and -a|-i|-m are mutually exclusive"
+		ex_err "options -t and -a|-i|-m are mutually exclusive"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((headers_only)); then
 	if ((xclude_member_opts||glob_xclude_element||regex_xclude_element)); then
-		ex_invalid_usage "options -t and -Xg|-Xr|-Xo are mutually exclusive"
+		ex_err "options -t and -Xg|-Xr|-Xo are mutually exclusive"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((isolate)); then
 	if ((show_count||show_all||calc_mem||count_sets||sets_total||exclude_set)); then
-		ex_invalid_usage "options -i and -a|-c|-Ca|-Cs|-Tm|-Ts|-Xs are mutually exclusive"
+		ex_err "options -i and -a|-c|-Ca|-Cs|-Tm|-Ts|-Xs are mutually exclusive"
 		((iactive > 1)) && return 0
 	fi
 	if ((match_on_header)); then
-		ex_invalid_usage "option -i does not allow matching on header entries"
+		ex_err "option -i does not allow matching on header entries"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((glob_search || regex_search)); then
 	if ((glob_search && regex_search)); then
-		ex_invalid_usage "options -Fg and -Fr are mutually exclusive"
+		ex_err "options -Fg and -Fr are mutually exclusive"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((exclude_header)); then
 	if ! ((headers_only || show_all)); then
-		ex_invalid_usage "option -Xh requires -a or -t"
+		ex_err "option -Xh requires -a or -t"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((glob_xclude_element || regex_xclude_element)); then
 	if ! ((show_members || show_all || isolate)); then
-		ex_invalid_usage "options -Xg|-Xr require any of -a|-i|-m"
+		ex_err "options -Xg|-Xr require any of -a|-i|-m"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((colorize)); then
 	if ! [[ -x ${cl:=/usr/local/bin/cl} ]]; then
 		if ((iactive > 1)); then
-			ex_invalid_usage "cl program \`$cl' does not exist, or is not executable. \
+			ex_err "cl program \`$cl' does not exist, or is not executable. \
 If you do not have the program, you can download it from: \
 http://sourceforge.net/projects/colorize-shell/ or \
 https://github.com/AllKind/cl"
@@ -862,7 +862,7 @@ https://github.com/AllKind/cl"
 	   	col_set_count col_set_total col_highlight
 	do
 		if ! ("$cl" "${!opt}"); then
-			ex_invalid_usage "variable \`$opt' has an invalid color value: \`${!opt}'"
+			ex_err "variable \`$opt' has an invalid color value: \`${!opt}'"
 			return 1
 		fi
 	done
@@ -879,24 +879,24 @@ if [[ $1 ]]; then # there are remaining arg(s)
 			fi
 		done
 		if ! ((found_set)); then
-			ex_invalid_usage "\`$opt' is not a valid option nor an existing set name"
+			ex_err "\`$opt' is not a valid option nor an existing set name"
 			((iactive > 1)) && return 0
 		fi
 	done
 	if ((isolate)); then
 		if (($# != 1)); then
-			ex_invalid_usage "option -i is only valid for a single set"
+			ex_err "option -i is only valid for a single set"
 			((iactive > 1)) && return 0
 		fi
 	fi
 	arr_sets=("${arr_tmp[@]}") # reassign matched sets
 	if ((isolate && ${#arr_sets[@]} > 1)); then
-		ex_invalid_usage "option -i is only valid for a single set"
+		ex_err "option -i is only valid for a single set"
 		((iactive > 1)) && return 0
 	fi
 else
 	if ((isolate)); then
-		ex_invalid_usage "option -i is only valid for a single set"
+		ex_err "option -i is only valid for a single set"
 		((iactive > 1)) && return 0
 	fi
 	arr_sets=( "${all_sets[@]}" )
@@ -1087,7 +1087,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 									fi
 								else
 									if (($? == 2)); then
-										ex_invalid_usage "Invalid regex pattern \`$str_search."
+										ex_err "Invalid regex pattern \`$str_search."
 										((iactive > 1)) && return 0
 									fi
 								fi
@@ -1108,7 +1108,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 									let xclude_count+=1
 								else
 									if (($? == 2)); then
-										ex_invalid_usage "Invalid regex pattern \`$str_xclude."
+										ex_err "Invalid regex pattern \`$str_xclude."
 										((iactive > 1)) && return 0
 									fi
 									add_search_to_member_cache
@@ -1339,13 +1339,13 @@ options:
 		-d) # delimiter char for separating member entries
 			[[ $2 ]] || ex_miss_optarg $1 "delim character"
 			if ((${#2} > 1)); then
-				ex_invalid_usage "only one character is allowed as delim"
+				ex_err "only one character is allowed as delim"
 			fi
 			delim="$2"
 			shift
 		;;
 		-o) if [[ $2 != plain ]]; then
-				ex_invalid_usage "only plain output is supported"
+				ex_err "only plain output is supported"
 			fi
 		;;
 		-Ca) # shortcut for -c -Cs -Ts -Tm
@@ -1373,7 +1373,7 @@ options:
 				arr_opt_int_search[y++]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of header descriptor: \`$2'. expecting: \`glob:[!|<|>|<=|>=]value'"
+				ex_err "invalid format of header descriptor: \`$2'. expecting: \`glob:[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Fh) let match_on_header+=1 # show only sets, which contain a matching header entry
@@ -1382,7 +1382,7 @@ options:
 				arr_hsearch[x++]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of header descriptor: \`$2'. expecting: \`*:*'"
+				ex_err "invalid format of header descriptor: \`$2'. expecting: \`*:*'"
 			fi
 		;;
 		-Fi) let match_on_header+=1 # show only sets, containing a matching (int compare) header entry
@@ -1391,7 +1391,7 @@ options:
 				arr_hsearch_int[idx++]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of header descriptor: \`$2'. expecting: \`name:[!|<|>|<=|>=]value'"
+				ex_err "invalid format of header descriptor: \`$2'. expecting: \`name:[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Hi) let match_on_header+=1 # match on name + integer (digit & xdigit) inside of headers 'Header' flag
@@ -1400,7 +1400,7 @@ options:
 				arr_hsearch_xint[${#arr_hsearch_xint[@]}]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of headers \'Header' flag descriptor: \`$2'. expecting: \`name:[!|<|>|<=|>=]value'"
+				ex_err "invalid format of headers \'Header' flag descriptor: \`$2'. expecting: \`name:[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Hr) let match_on_header+=1 # shortcut for -Fi References:...
@@ -1409,7 +1409,7 @@ options:
 				arr_hsearch_int[idx++]="References:$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of references header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
+				ex_err "invalid format of references header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Hs) let match_on_header+=1 # shortcut for -Fi "Size in Memory:..."
@@ -1418,7 +1418,7 @@ options:
 				arr_hsearch_int[idx++]="Size in memory:$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of memsize header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
+				ex_err "invalid format of memsize header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Ht) let match_on_header+=1 # shortcut for -Fh Type:x:y
@@ -1427,7 +1427,7 @@ options:
 				arr_hsearch[x++]="Type:$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of set type descriptor: \`$2'. expecting: \`*:*'."
+				ex_err "invalid format of set type descriptor: \`$2'. expecting: \`*:*'."
 			fi
 		;;
 		-Hv) let match_on_header+=1 # shortcut for -Fi Revision:...
@@ -1436,7 +1436,7 @@ options:
 				arr_hsearch_int[idx++]="Revision:$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of revision header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
+				ex_err "invalid format of revision header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Mc) do_count=1 # match on the count of members
@@ -1445,7 +1445,7 @@ options:
 				arr_match_on_msum[${#arr_match_on_msum[@]}]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of match on member count value: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
+				ex_err "invalid format of match on member count value: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-To) # set the timeout for read (limited to integer)
@@ -1463,7 +1463,7 @@ options:
 				arr_hxclude[${#arr_hxclude[@]}]="$2"
 				shift
 			else
-				ex_invalid_usage "invalid format of header descriptor: \`$2'. expecting: \`*:*'"
+				ex_err "invalid format of header descriptor: \`$2'. expecting: \`*:*'"
 			fi
 		;;
 		-Xg) glob_xclude_element=1 # suppress printing of matching members using a globbing pattern
@@ -1483,7 +1483,7 @@ options:
 			arr_sxclude[${#arr_sxclude[@]}]="$2"
 			shift
 		;;
-		-\!|-f) ex_invalid_usage "unsupported option: \`$1'"
+		-\!|-f) ex_err "unsupported option: \`$1'"
 		;;
 		-v) printf "%s version %s\n" "$me" "$version"
 			exit 0
@@ -1497,12 +1497,12 @@ done
 
 # validate value of colorize
 if [[ ${colorize:=0} != [01] ]]; then
-	ex_invalid_usage "value of variable \`colorize' \`$colorize' is not 0 or 1"
+	ex_err "value of variable \`colorize' \`$colorize' is not 0 or 1"
 fi
 
 # validate TMOUT variable
 if [[ $TMOUT ]] && ! is_int "$TMOUT"; then
-	ex_invalid_usage "timeout value \`$TMOUT' is not an integer"
+	ex_err "timeout value \`$TMOUT' is not an integer"
 fi
 
 # check for ipset program and version
@@ -1548,24 +1548,24 @@ if ((iactive)); then # interactive mode
 			command -v whiptail &>/dev/null && dialog_prog="$(command -v whiptail)" && break
 		done
 		if ! [[ $dialog_prog ]]; then
-			ex_invalid_usage "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
+			ex_err "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
 		fi
 	else
 		if [[ $dialog_prog = @(dialog|whiptail) ]]; then # correctly defined, but available in $PATH?
 			if ! command -v $dialog_prog &>/dev/null; then
-				ex_invalid_usage "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
+				ex_err "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
 			fi
 		elif [[ $dialog_prog = */@(dialog|whiptail) ]]; then # correctly defined, but does it exist/executable?
 			if ! [[ -x $dialog_prog ]]; then
-				ex_invalid_usage "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
+				ex_err "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
 			fi
 		else
-			ex_invalid_usage "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
+			ex_err "No dialog program found! Check \`dialog_prog' variable, or make sure either dialog, or whiptail can be found in PATH."
 		fi
 	fi
 	if [[ $dialog_prog = *dialog ]]; then
 		if [[ $(dialog --version) = Version:+([[:blank:]])@(0.+([[:digit:]])|1.0|1.1)-* ]]; then
-			ex_invalid_usage "Detected unsupported version of the dialog program! Please upgrade to at least 1.2, or use whiptail."
+			ex_err "Detected unsupported version of the dialog program! Please upgrade to at least 1.2, or use whiptail."
 		fi
 	fi
 	# check for tput program
@@ -1582,7 +1582,7 @@ if ((iactive)); then # interactive mode
 	# check for int values
 	for opt in w_height w_with l_height; do
 		if ! is_int "${!opt}"; then
-			ex_invalid_usage "value of \`$opt' is not an integer"
+			ex_err "value of \`$opt' is not an integer"
 		fi
 	done
 	# if 0 and tput is present, adjust window measures automatically
