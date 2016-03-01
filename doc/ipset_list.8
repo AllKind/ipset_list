@@ -236,9 +236,11 @@ Calculate the total memory usage of all matching sets\&.
 \-To
 .RS 4
 Set timeout value (integer) in seconds for
-\fBread\fR\&. This affects the listing of sets, as well as how long the result is displayed in interactive mode, before returning to the main screen\&. The default value of the
+\fBread\fR\&. This affects the listing of sets\&. The default value of the
 \fITMOUT\fR
-variable, set in the configuration header of the script, is 30\&. This command line option overrides it\&. Setting one of them to 0, disables the timeout\&.
+variable, which can be set in the configuration header of the script, is 30\&. This command line option overrides it\&. Setting it to 0, disables the timeout\&. To influence for how long the result is displayed in interactive mode, before returning to the main screen, set the environment variable
+\fIiactive_tmout\fR
+to the desired value\&.
 .RE
 .PP
 \-Ts

@@ -236,8 +236,8 @@
             <varlistentry>
                 <term>-Hi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
-                    <para>Match on integer valued  entries of the `Header' header. i.e. timeout.
-                        This option can be used multiple times.</para>
+                    <para>Match on integer valued entries of the `Header' header. i.e. timeout. This
+                        option can be used multiple times.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -290,12 +290,14 @@
                     <para>Set timeout value (integer) in seconds for <command
                             xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink">read</command>. This affects
-                        the listing of sets, as well as how long the result is displayed in
-                        interactive mode, before returning to the main screen. The default value of
-                        the <varname xmlns:xi="http://www.w3.org/2001/XInclude"
-                            xmlns:xlink="http://www.w3.org/1999/xlink">TMOUT</varname> variable, set
-                        in the configuration header of the script, is 30. This command line option
-                        overrides it. Setting one of them to 0, disables the timeout.</para>
+                        the listing of sets. The default value of the <varname
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">TMOUT</varname> variable,
+                        which can be set in the configuration header of the script, is 30. This
+                        command line option overrides it. Setting it to 0, disables the timeout. To
+                        influence for how long the result is displayed in interactive mode, before
+                        returning to the main screen, set the environment variable
+                            <varname>iactive_tmout</varname> to the desired value.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
