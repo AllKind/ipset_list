@@ -75,4 +75,5 @@ Examples:
 - `ipset_list -Hi "markmask:>=0x0000beef" -Hi timeout:\!10000`    - show only sets with the header 'Header' fields containing a markmask greater or equal to 0x0000beef and a timeout which is not 10000.
 - `ipset_list - -d $'\n'`  - enter interactive mode, globally set delim to newline.
 - `ipset_list - >/tmp/data`  - enter interactive mode and redirect the output to a file.
+- `ipset_list - -G`  - enter interactive mode, show generated command line.
 
