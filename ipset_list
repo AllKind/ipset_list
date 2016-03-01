@@ -913,8 +913,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 			"") : ;;
 			Name:*) # header opened (set found)
 				if ((in_header)); then
-					printf "unexpected entry: \`%s' - header not closed?\n" "$REPLY" >&2
-					exit 1
+					ex_err "unexpected entry: \`$REPLY' - header not closed?"
 				fi
 				let sets_sum+=1
 				if ((exclude_set)); then # don't show certain sets
