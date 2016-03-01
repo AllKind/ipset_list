@@ -281,7 +281,7 @@ readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_xclude="" global_delim="${delim:= }" opt
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
 declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
-declare -i exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
+declare -i exclude_header=glob_xclude_element=regex_xclude_element=exclude_set=xclude_member_opts=0
 declare -i i=x=y=idx=0
 declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
 declare -i iactive=0 # en/disable interactive mode
@@ -320,11 +320,19 @@ is_digit_or_xigit() {
 }
 
 is_compare_str() {
-	[[ $1 = ?(\!|<|>|<=|>=)@(+([[:digit:]])|0[x|X]+([[:xdigit:]])) ]]
+[[ $1 = ?(\!|<|>|<=|>=)@(+([[:digit:]])|0[x|X]+([[:xdigit:]])) ]]
 }
 
 is_compare_str_complex() {
-	[[ $1 = ?(\!|<|>|<=|>=)@(+([[:digit:]])|0@(x|X)+([[:xdigit:]])?(/0@(x|X)+([[:xdigit:]]))|+([[:xdigit:]]):?(\!|<|>|<=|>=)+([[:xdigit:]])) ]]
+[[ $1 = ?(\!|<|>|<=|>=)@(+([[:digit:]])|0@(x|X)+([[:xdigit:]])?(/0@(x|X)+([[:xdigit:]]))|+([[:xdigit:]]):?(\!|<|>|<=|>=)+([[:xdigit:]])) ]]
+}
+
+test_regex() { # check if a regex expression is valid
+[[ x =~ $1 ]]
+if (($? == 2)); then
+	return 1
+fi
+return 0
 }
 
 add_search_to_member_cache() {
@@ -445,7 +453,7 @@ iactive=2 # -ge 1 means we are in interactive mode
 i=x=0
 show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
 match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
-exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
+exclude_header=glob_xclude_element=regex_xclude_element=exclude_set=xclude_member_opts=0
 generate_cmdline=$global_gen_cmd colorize=$global_colorize delim="$global_delim"
 arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 local str_tmp
@@ -645,6 +653,10 @@ if ((${#xopts[*]})); then
 		elif [[ ${xopts[x]} = Regex_search ]]; then # regex match members
 			str_search=( $(dia_ibox "Enter the regex expression for: ${xopts[x]}") )
 			if (($? == 0)); then
+				if ! test_regex "$str_search"; then
+					ex_err "Invalid regex pattern \`$str_search'."
+					return 0
+				fi
 				regex_search=1
 				arr_cmdline[${#arr_cmdline[@]}]="-Fr"
 				arr_cmdline[${#arr_cmdline[@]}]="\"$str_search\"" #"
@@ -724,6 +736,10 @@ if ((${#xopts[*]})); then
 		elif [[ ${xopts[x]} = Regex_xclude_elem ]]; then # exclude members matching a regex pattern
 			str_xclude=( $(dia_ibox "Enter the regex expression for: ${xopts[x]}") )
 			if (($? == 0)); then
+				if ! test_regex "$str_xclude"; then
+					ex_err "Invalid regex pattern \`$str_xclude'."
+					return 0
+				fi
 				regex_xclude_element=1
 				arr_cmdline[${#arr_cmdline[@]}]="-Xr"
 				arr_cmdline[${#arr_cmdline[@]}]="\"$str_xclude\"" #"
@@ -1388,6 +1404,9 @@ options:
 		;;
 		-Fr) regex_search=1 # find entry with regex pattern
 			[[ $2 ]] || ex_miss_optarg $1 "regex pattern"
+			if ! test_regex "$2"; then
+				ex_err "Invalid regex pattern \`$2'."
+			fi
 			str_search="$2"
 			shift
 		;;
@@ -1499,6 +1518,9 @@ options:
 		;;
 		-Xr) regex_xclude_element=1 # suppress printing of matching members using a regex pattern
 			[[ $2 ]] || ex_miss_optarg $1 "regex pattern"
+			if ! test_regex "$2"; then
+				ex_err "Invalid regex pattern \`$2'."
+			fi
 			str_xclude="$2"
 			shift
 		;;
