@@ -453,6 +453,7 @@ local -ar arr_opts=(
 "Show_header" "Show the set header (-t)" off
 "Show_members" "Show the set members (-m)" off
 "Show_all" "Show set header and members (-a)" off
+"Names_only" "Show only the set names (not prefixed) (-n)" off
 "Members_only" "Show only the set members (-i)" off
 "Header_search" "Match [ext]glob matching headers (-Fh)" off
 "Header_int_search" "Match integer valued header entries (-Fi)" off
@@ -527,6 +528,8 @@ if ((${#xopts[*]})); then
 			show_members=1 arr_cmdline[${#arr_cmdline[@]}]="-m"
 		elif [[ ${xopts[x]} = Show_all ]]; then # show header and members
 			show_all=1 arr_cmdline[${#arr_cmdline[@]}]="-a"
+		elif [[ ${xopts[x]} = Names_only ]]; then # show only not prefixed set names
+			names_only=1 arr_cmdline[${#arr_cmdline[@]}]="-n"
 		elif [[ ${xopts[x]} = Members_only ]]; then # isolate members of a single set
 			isolate=1 arr_cmdline[${#arr_cmdline[@]}]="-i"
 		elif [[ ${xopts[x]} = Header_search ]]; then # show only sets, which contain a matching header entry
