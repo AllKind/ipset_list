@@ -167,61 +167,61 @@
 # default delimiter character for set members (elements).
 # defaults to whitespace if unset.
 # use delim=$'\n' to use the ipset default newline as delimiter.
-delim=" "
+#delim=" "
 
 # default read timeout (for reading sets - esp. with the -r switch).
 # the command line option -To overrides this.
-# this also effects in interactive mode, how long the result is displayed
-# before returning to the main screen
-TMOUT=30
+# to influence the timeout of the result screen in interactive mode,
+# set the environment variable `iactive_tmout' to the desired value.
+#TMOUT=30
 
-# colorize the output (bool 0/1).
-colorize=0
+# colorize the output (bool 0/1). default 0.
+#colorize=0
 
 # path to cl (to colorize the output).
 # http://sourceforge.net/projects/colorize-shell/ or
 # https://github.com/AllKind/cl
 # defaults to `/usr/local/bin/cl' if unset.
-cl="/usr/local/bin/cl"
+#cl="/usr/local/bin/cl"
 
 # define colors
 # run `cl --list' to retrieve the valid color names
 #
 # default foreground color
 # defaults to: white
-col_fg="white"
+#col_fg="white"
 
 # default background color
 # defaults to: black
-col_bg="black"
+#col_bg="black"
 
 # color for headers
 # defaults to: cyan
-col_headers="cyan"
+#col_headers="cyan"
 
 # color for members
 # defaults to: yellow
-col_members="yellow"
+#col_members="yellow"
 
 # color for matches
 # defaults to: red
-col_match="red"
+#col_match="red"
 
 # color for displaying of memsize
 # defaults to: green
-col_memsize="green"
+#col_memsize="green"
 
 # color for counting of matched sets
 # defaults to: magenta
-col_set_count="magenta"
+#col_set_count="magenta"
 
 # color for counting of traversed sets
 # defaults to: blue
-col_set_total="blue"
+#col_set_total="blue"
 
 # general higlightning color
 # defaults to: white
-col_highlight="white"
+#col_highlight="white"
 
 # a dialog program is required for interactive mode
 # either dialog (default), or whiptail are supported
@@ -248,13 +248,13 @@ col_highlight="white"
 # with the downside of fixed size.
 
 # window height for interactive mode
-w_height=0
+#w_height=0
 
 # window with for interactive mode
-w_with=0
+#w_with=0
 
 # list height for interactive mode
-l_height=0
+#l_height=0
 
 # -----------------------------------------------------------------
 # DO NOT MODIFY ANYTHING BEYOND THIS LINE!
@@ -278,7 +278,7 @@ export LC_ALL=C
 readonly version=3.3
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
-declare ips_version="" str_search="" str_xclude="" global_delim="${delim:= }" opt
+declare ips_version="" str_search="" str_xclude="" opt
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
 declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
 declare -i exclude_header=glob_xclude_element=regex_xclude_element=exclude_set=xclude_member_opts=0
@@ -286,7 +286,8 @@ declare -i i=x=y=idx=0
 declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
 declare -i iactive=0 # en/disable interactive mode
 declare -i generate_cmdline=global_gen_cmd=0 # generate command line in iactive mode
-declare -i global_colorize=${colorize:=0}
+declare -i global_colorize=${colorize:=0} global_tmout="${TMOUT:=30}"
+declare global_delim="${delim:=" "}"
 declare -a arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
 declare -a arr_hxclude=() arr_sxclude=() arr_par=() all_sets=() arr_cmdline=() arr_tmp=()
 
@@ -454,7 +455,7 @@ i=x=0
 show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
 match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
 exclude_header=glob_xclude_element=regex_xclude_element=exclude_set=xclude_member_opts=0
-generate_cmdline=$global_gen_cmd colorize=$global_colorize delim="$global_delim"
+generate_cmdline=$global_gen_cmd colorize=$global_colorize delim="$global_delim" TMOUT=$global_tmout
 arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 local str_tmp
 local -a xopts sopts setglob=() arr_iopts=()
@@ -491,6 +492,7 @@ local -ar arr_opts=(
 "Resolve" "Resolve ip addresses in the output (slow!) (-r)" off
 "Sort" "Print elements sorted (if supported) (-s)" off
 "Generate_cmd" "Generate the $me command line (-G)" off
+"Timeout" "Timeout for reading sets (-To)" off
 )
 
 # main screen: checklist with all options
@@ -792,6 +794,15 @@ if ((${#xopts[*]})); then
 			fi
 		elif [[ ${xopts[x]} = Generate_cmd ]]; then # generate ipset_list cmd-line
 			generate_cmdline=1
+		elif [[ ${xopts[x]} = Timeout ]]; then # timeout for reading sets
+			TMOUT=( $(dia_ibox "Enter the timeout value (integer): ${xopts[x]}") )
+			if (($? == 0)); then
+				if ! is_int "$TMOUT"; then
+					rdia --msgbox "Timeout value \`$TMOUT' is not an integer." $w_height $w_with
+				fi
+				arr_cmdline[${#arr_cmdline[@]}]="-To"
+				arr_cmdline[${#arr_cmdline[@]}]="$TMOUT"
+			fi
 		fi
 	done
 fi
@@ -812,7 +823,7 @@ if ((generate_cmdline)); then # generate the ipset_list cmd-line
 	printf "    %s\n" "${arr_cmdline[*]}"
 	printf "\n"
 fi
-read -N 1 -p " Press \`ENTER' to continue, or \`ESC' to return to the shell."
+read -t ${iactive_tmout:-9999999999} -N 1 -p " Press \`ENTER' to continue, or \`ESC' to return to the shell."
 if [[ $REPLY = $'\E' ]]; then
 	printf "\n" # avoid moving the shell prompt
 	return 1
@@ -873,7 +884,7 @@ if ((glob_xclude_element || regex_xclude_element)); then
 	fi
 fi
 if ((colorize)); then
-	if ! [[ -x ${cl:=/usr/local/bin/cl} ]]; then
+	if ! [[ -x ${cl:=$(command -v cl || printf "%s\n" /usr/local/bin/cl)} ]]; then
 		if ((iactive > 1)); then
 			ex_err "Cannot colorize the output. cl program \`$cl' does not exist, or is not executable. \
 If you do not have the program, you can download it from: \
@@ -1495,7 +1506,7 @@ options:
 		;;
 		-To) # set the timeout for read (limited to integer)
 			[[ $2 ]] || ex_miss_optarg $1 "value"
-			TMOUT=$2
+			TMOUT="$2" global_tmout="$2"
 			shift
 		;;
 		-Tm) calc_mem=1 # caculate total memory usage of all matching sets
@@ -1548,10 +1559,12 @@ if [[ ${colorize:=0} != [01] ]]; then
 	ex_err "value of variable \`colorize' \`$colorize' is not 0 or 1"
 fi
 
-# validate TMOUT variable
-if [[ $TMOUT ]] && ! is_int "$TMOUT"; then
-	ex_err "timeout value \`$TMOUT' is not an integer"
-fi
+# validate TMOUT and iactive_tmout variables
+for opt in TMOUT iactive_tmout; do
+	if ! is_int "${!opt:-0}"; then
+		ex_err "value \`${!opt}' of variable \`$opt' is not an integer"
+	fi
+done
 
 # check for ipset program and version
 while :; do
