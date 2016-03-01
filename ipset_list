@@ -278,7 +278,7 @@ export LC_ALL=C
 readonly version=3.3
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
-declare ips_version="" str_search="" str_xclude="" opt
+declare ips_version="" str_search="" str_xclude="" global_delim="${delim:= }" opt
 declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
 declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
 declare -i exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
@@ -443,10 +443,10 @@ interactive_mode() { # interactive mode - wizard based composing of commands
 iactive=2 # -ge 1 means we are in interactive mode
 # some global variables need to set on each run
 i=x=0
-show_all=show_count=show_members=headers_only=isolate=calc_mem=count_sets=sets_total=0
+show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
 match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
 exclude_header=glob_xclude_element=glob_xclude_element=exclude_set=xclude_member_opts=0
-generate_cmdline=$global_gen_cmd colorize=$global_colorize
+generate_cmdline=$global_gen_cmd colorize=$global_colorize delim="$global_delim"
 arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 local str_tmp
 local -a xopts sopts setglob=() arr_iopts=()
@@ -1367,7 +1367,7 @@ options:
 			if ((${#2} > 1)); then
 				ex_err "only one character is allowed as delim"
 			fi
-			delim="$2"
+			delim="$2" global_delim="$2"
 			shift
 		;;
 		-o) if [[ $2 != plain ]]; then
