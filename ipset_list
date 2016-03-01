@@ -858,13 +858,13 @@ fi
 if ((colorize)); then
 	if ! [[ -x ${cl:=/usr/local/bin/cl} ]]; then
 		if ((iactive > 1)); then
-			ex_err "cl program \`$cl' does not exist, or is not executable. \
+			ex_err "Cannot colorize the output. cl program \`$cl' does not exist, or is not executable. \
 If you do not have the program, you can download it from: \
 http://sourceforge.net/projects/colorize-shell/ or \
 https://github.com/AllKind/cl"
-			return 1
+			return 0
 		else
-			printf "\ncl program \`%s' does not exist, or is not executable.\ncheck \`cl' variable.\n\n" "$cl" >&2
+			printf "\nCannot colorize the output.\ncl program \`%s' does not exist, or is not executable.\ncheck \`cl' variable.\n\n" "$cl" >&2
 			printf "If you do not have the program, you can download it from:\n"
 			printf "%s\n" "http://sourceforge.net/projects/colorize-shell/" \
 				"https://github.com/AllKind/cl" >&2
