@@ -491,7 +491,7 @@ if (($?)); then
 	return 1
 fi
 
-local -a arr_cmdline=()
+local -a arr_cmdline=( "$me" )
 # iterate over selected options
 if ((${#xopts[*]})); then
 	for ((x=0; x<=${#xopts[*]}; x++)); do
@@ -773,9 +773,17 @@ fi
 # run main with set glob as optional option
 main "${setglob[@]}"
 printf "\n"
-if ((generate_cmdline && ${#arr_cmdline[@]})); then
+if ((generate_cmdline)); then # generate the ipset_list cmd-line
+	if ((${#arr_par[@]})); then
+		arr_cmdline[${#arr_cmdline[@]}]="${arr_par[*]}"
+	fi
+	if ((${#setglob[@]})); then
+		for i in ${!setglob[@]}; do
+			arr_cmdline[${#arr_cmdline[@]}]="\"${setglob[i]}\"" #"
+		done
+	fi
 	printf "Composed command line:\n"
-	printf "%s\n" "$me ${arr_par[*]} ${arr_cmdline[*]} ${setglob[@]}"
+	printf "    %s\n" "${arr_cmdline[*]}"
 	printf "\n"
 fi
 read -N 1 -p " Press \`ENTER' to continue, or \`ESC' to return to the shell."
