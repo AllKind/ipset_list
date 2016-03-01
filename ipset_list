@@ -502,6 +502,7 @@ if ((${#xopts[*]})); then
 		elif [[ ${xopts[x]} = Select_sets ]]; then
 			if ((${#all_sets[@]} == 1)); then
 				rdia --msgbox "There is only one set present. Automatically selecting it." $w_height $w_with
+				setglob=( ${all_sets[*]} )
 				continue
 			fi
 			sopts=( $(dia_clist \
