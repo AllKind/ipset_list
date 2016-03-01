@@ -42,7 +42,7 @@ It is written for the
 \fBbash\fR
 shell\&.
 .PP
-It includes an interactive wizard based mode utilizing a dialog program (\fBdialog\fR
+It includes an interactive wizard based mode, that utilizes a dialog program (\fBdialog\fR
 or
 \fBwhiptail\fR
 are supported)\&.
@@ -89,12 +89,14 @@ is not defined\&. Only dialog versions greater or equal to 1\&.2 are supported\&
 .PP
 \-a
 .RS 4
-Show all information but with default delim (whitespace)\&.
+Show all information (header and members) but with default
+\fIdelim\fR
+(whitespace)\&.
 .RE
 .PP
 \-c
 .RS 4
-Calculate the of set members and also the sum of members matching a criteria given by another option\&.
+Calculate the total amout of set members and also the sum of members matching a criteria given by another option\&.
 .RE
 .PP
 \-d delim
@@ -120,9 +122,9 @@ Show the members of a set\&.
 .PP
 \-n
 .RS 4
-Show set names only\&. No prefix is shown, as when running
+Show the set names only\&. No prefix is shown, as when running
 \fBipset_list\fR
-without arguments
+without arguments\&.
 .RE
 .PP
 \-r
@@ -152,7 +154,10 @@ Colorize the output\&. Requires the
 program\&. It can be downloaded from here:
 \m[blue]\fBhttp://sf\&.net/projects/colorize\-shell/\fR\m[]
 or
-\m[blue]\fBhttps://github\&.com/AllKind/cl\fR\m[]\&.
+\m[blue]\fBhttps://github\&.com/AllKind/cl\fR\m[]\&. Configuration variables are available to adjust the color settings\&. Their names are prefixed with col_*\&. The list of valid color names can be retrieved by running
+\fBcl \-\-list\fR\&. The default is not to use colored output\&. That can be changed by setting the
+\fIcolorize\fR
+variable to `1\*(Aq\&.
 .RE
 .PP
 \-Cs
@@ -184,12 +189,12 @@ Show sets matching one or more integer valued header entries\&. This option can 
 .RS 4
 When in interactive mode, generate the
 \fBipset_list\fR
-command\-line, as used in \*(Aqnormal\*(Aq mode\&.
+command\-line, as for use in \*(Aqnormal\*(Aq mode\&.
 .RE
 .PP
 \-Hi header\-glob:[!|<|>|<=|>=]value [\&.\&.\&.]
 .RS 4
-Match one or more integer valued headers `Header\*(Aq entries (i\&.e\&. timeout)\&. This option can be used multiple times\&.
+Match on integer valued entries of the `Header\*(Aq header\&. i\&.e\&. timeout\&. This option can be used multiple times\&.
 .RE
 .PP
 \-Ht set\-type\-glob
@@ -214,18 +219,18 @@ Match on revision number\&. value=integer\&.
 .PP
 \-Mc [!|<|>|<=|>=]value [\&.\&.\&.]
 .RS 4
-Match on member count\&. value=integer\&.
+Match on the member count\&. value=integer\&.
 .RE
 .PP
 \-Oi option\-glob:[!|<|>|<=|>=]value [\&.\&.\&.]
 .RS 4
-Match member options\&. i\&.e\&. timeout\&.
+Match values of member options\&. i\&.e\&. timeout\&.
 value=int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex\&. This option can be used multiple times\&.
 .RE
 .PP
 \-Tm
 .RS 4
-Calculate total memory usage of all matching sets\&.
+Calculate the total memory usage of all matching sets\&.
 .RE
 .PP
 \-To
@@ -238,7 +243,7 @@ variable, set in the configuration header of the script, is 30\&. This command l
 .PP
 \-Ts
 .RS 4
-Count amount of traversed sets\&.
+Count the amount of traversed sets\&.
 .RE
 .PP
 \-Xo
@@ -253,7 +258,7 @@ Exclude one or more [ext]glob matching header entries\&. This option can be used
 .PP
 \-Xg pattern
 .RS 4
-Pattern exclude members matching a [ext]glob pattern\&.
+Exclude members matching a [ext]glob pattern\&.
 .RE
 .PP
 \-Xr pattern

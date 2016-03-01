@@ -51,7 +51,7 @@
                 <command>ipset</command> program. It allows you to match and display sets, headers,
             and elements in various ways.</para>
         <para>It is written for the <command>bash</command> shell.</para>
-        <para>It includes an interactive wizard based mode utilizing a dialog program
+        <para>It includes an interactive wizard based mode, that utilizes a dialog program
                 (<command>dialog</command> or <command>whiptail</command> are supported).</para>
         <para>Optionally the output can be colorized.</para>
         <para>Some variables are available inside the script configuration header. Some of them are
@@ -103,14 +103,15 @@
             <varlistentry>
                 <term>-a</term>
                 <listitem>
-                    <para>Show all information but with default delim (whitespace).</para>
+                    <para>Show all information (header and members) but with default
+                            <varname>delim</varname> (whitespace).</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
                 <term>-c</term>
                 <listitem>
-                    <para>Calculate the of set members and also the sum of members matching a
-                        criteria given by another option.</para>
+                    <para>Calculate the total amout of set members and also the sum of members
+                        matching a criteria given by another option.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -142,10 +143,10 @@
             <varlistentry>
                 <term>-n</term>
                 <listitem>
-                    <para>Show set names only. No prefix is shown, as when running <command
+                    <para>Show the set names only. No prefix is shown, as when running <command
                             xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink">ipset_list</command> without
-                        arguments</para>
+                        arguments.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -186,7 +187,11 @@
                             xlink:href="https://github.com/AllKind/cl"
                             xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink"
-                            >https://github.com/AllKind/cl</link>.</para>
+                            >https://github.com/AllKind/cl</link>. Configuration variables are
+                        available to adjust the color settings. Their names are prefixed with col_*.
+                        The list of valid color names can be retrieved by running <command>cl
+                            --list</command>. The default is not to use colored output. That can be
+                        changed by setting the <varname>colorize</varname> variable to `1'.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -225,13 +230,13 @@
                 <term>-G</term>
                 <listitem>
                     <para>When in interactive mode, generate the <command>ipset_list</command>
-                        command-line, as used in 'normal' mode.</para>
+                        command-line, as for use in 'normal' mode.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
                 <term>-Hi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
-                    <para>Match one or more integer valued headers `Header' entries (i.e. timeout).
+                    <para>Match on integer valued  entries of the `Header' header. i.e. timeout.
                         This option can be used multiple times.</para>
                 </listitem>
             </varlistentry>
@@ -262,21 +267,21 @@
             <varlistentry>
                 <term>-Mc [!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
-                    <para>Match on member count. value=integer.</para>
+                    <para>Match on the member count. value=integer.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
                 <term>-Oi option-glob:[!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
-                    <para>Match member options. i.e. timeout. <code>value=int | 0xhex[/0xhex] |
-                            hex:[!|&lt;|>|&lt;=|>=]hex</code>. This option can be used multiple
-                        times.</para>
+                    <para>Match values of member options. i.e. timeout. <code>value=int |
+                            0xhex[/0xhex] | hex:[!|&lt;|>|&lt;=|>=]hex</code>. This option can be
+                        used multiple times.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
                 <term>-Tm</term>
                 <listitem>
-                    <para>Calculate total memory usage of all matching sets.</para>
+                    <para>Calculate the total memory usage of all matching sets.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -296,7 +301,7 @@
             <varlistentry>
                 <term>-Ts</term>
                 <listitem>
-                    <para>Count amount of traversed sets.</para>
+                    <para>Count the amount of traversed sets.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -315,7 +320,7 @@
             <varlistentry>
                 <term>-Xg pattern</term>
                 <listitem>
-                    <para>Pattern exclude members matching a [ext]glob pattern.</para>
+                    <para>Exclude members matching a [ext]glob pattern.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
