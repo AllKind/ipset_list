@@ -305,7 +305,7 @@ if ((iactive > 1)); then
 	rdia --msgbox "ERROR: $*" $w_height $w_with
 else
 	printf "%s\n" "$*" >&2
-	exit 2
+	exit 1
 fi
 }
 
@@ -360,22 +360,28 @@ for y in ${!arr_opt_int_search[@]}; do
 	shift
 	while (($# > 1)); do # cycle through options
 		if [[ $1 = ${arr_opt_int_search[y]%%:*} ]]; then str_opt_val="$2"
-			if [[ $str_val = @(+([[:digit:]])|$str_xdig) && $str_opt_val = @(+([[:digit:]])|$str_xdig) ]]; then # i.e. timeout or skbqueue
+			if [[ $str_val = @(+([[:digit:]])|$str_xdig) && $str_opt_val = @(+([[:digit:]])|$str_xdig) ]]
+			then # i.e. timeout or skbqueue
 				if (( $str_opt_val $str_op $str_val )); then
 					let found_member_opt+=1
 				fi
 				shift
-			elif [[ $str_val = $str_xdig && $str_opt_val = ${str_xdig}/$str_xdig ]]; then # i.e. skbmark
-				if (( $str_opt_val $str_op $(( ${str_val%/*} & ${str_val#*/} )) )); then # logicaly AND mark/mask
+			elif [[ $str_val = $str_xdig && $str_opt_val = ${str_xdig}/$str_xdig ]]
+			then # i.e. skbmark
+				if (( $str_opt_val $str_op $(( ${str_val%/*} & ${str_val#*/} )) )) # logicaly AND mark/mask
+				then
 					let found_member_opt+=1
 				fi
 				shift
-			elif [[ $str_val = ${str_xdig}/$str_xdig && $str_opt_val = ${str_xdig}/$str_xdig ]]; then # i.e. skbmark
-				if (( $(( ${str_opt_val%/*} & ${str_opt_val#*/} )) $str_op $(( ${str_val%/*} & ${str_val#*/} )) )); then # logicaly AND mark/mask
+			elif [[ $str_val = ${str_xdig}/$str_xdig && $str_opt_val = ${str_xdig}/$str_xdig ]]
+			then # i.e. skbmark
+				if (( $(( ${str_opt_val%/*} & ${str_opt_val#*/} )) $str_op $(( ${str_val%/*} & ${str_val#*/} )) )) # logicaly AND mark/mask
+				then
 					let found_member_opt+=1
 				fi
 				shift
-			elif [[ $str_val = +([[:xdigit:]]):${str_cg}+([[:xdigit:]]) && $str_opt_val = +([[:xdigit:]]):+([[:xdigit:]]) ]]; then # i.e. skbprio
+			elif [[ $str_val = +([[:xdigit:]]):${str_cg}+([[:xdigit:]]) && $str_opt_val = +([[:xdigit:]]):+([[:xdigit:]]) ]]
+			then # i.e. skbprio
 				if (( ${str_opt_val%:*} $str_op ${str_val%:*} && ${str_opt_val#*:} $str_op2 $str_val2 )); then
 					let found_member_opt+=1
 				fi
@@ -412,8 +418,7 @@ return 1
 }
 
 rdia() { # run dialog program
-local -a arr_title=( --title "ipset_list interactive mode" )
-"$dialog_prog" "${arr_title[@]}" "$@" 2>&1 > /dev/tty
+"$dialog_prog" --title "ipset_list interactive mode" "$@" 2>&1 > /dev/tty
 }
 
 dia_ibox() { # input box
@@ -510,13 +515,13 @@ if ((${#xopts[*]})); then
 					fi
 				done
 			fi
-		elif [[ ${xopts[x]} = Show_header ]]; then
+		elif [[ ${xopts[x]} = Show_header ]]; then # show header only
 			headers_only=1 arr_cmdline[${#arr_cmdline[@]}]="-t"
-		elif [[ ${xopts[x]} = Show_members ]]; then
+		elif [[ ${xopts[x]} = Show_members ]]; then # show members
 			show_members=1 arr_cmdline[${#arr_cmdline[@]}]="-m"
-		elif [[ ${xopts[x]} = Show_all ]]; then
+		elif [[ ${xopts[x]} = Show_all ]]; then # show header and members
 			show_all=1 arr_cmdline[${#arr_cmdline[@]}]="-a"
-		elif [[ ${xopts[x]} = Members_only ]]; then
+		elif [[ ${xopts[x]} = Members_only ]]; then # isolate members of a single set
 			isolate=1 arr_cmdline[${#arr_cmdline[@]}]="-i"
 		elif [[ ${xopts[x]} = Header_search ]]; then # show only sets, which contain a matching header entry
 			while (($? == 0)); do
@@ -618,28 +623,28 @@ if ((${#xopts[*]})); then
 				arr_cmdline[${#arr_cmdline[@]}]="-Ht"
 				arr_cmdline[${#arr_cmdline[@]}]="\"$str_tmp\"" #"
 			fi
-		elif [[ ${xopts[x]} = Glob_search ]]; then
+		elif [[ ${xopts[x]} = Glob_search ]]; then # glob match members
 			str_search=( $(dia_ibox "Enter the glob expression for: ${xopts[x]}") )
 			if (($? == 0)); then
 				glob_search=1
 				arr_cmdline[${#arr_cmdline[@]}]="-Fg"
 				arr_cmdline[${#arr_cmdline[@]}]="\"$str_search\"" #"
 			fi
-		elif [[ ${xopts[x]} = Regex_search ]]; then
+		elif [[ ${xopts[x]} = Regex_search ]]; then # regex match members
 			str_search=( $(dia_ibox "Enter the regex expression for: ${xopts[x]}") )
 			if (($? == 0)); then
 				regex_search=1
 				arr_cmdline[${#arr_cmdline[@]}]="-Fr"
 				arr_cmdline[${#arr_cmdline[@]}]="\"$str_search\"" #"
 			fi
-		elif [[ ${xopts[x]} = Opt_int_search ]]; then
+		elif [[ ${xopts[x]} = Opt_int_search ]]; then # match values of member options
 			while (($? == 0)); do
 				arr_opt_int_search[${#arr_opt_int_search[@]}]=$(dia_ibox \
 					"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nvalue = int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex\nCancel to quit.")
 				if (($? == 0)); then
 					if ! ( [[ ${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]} = *:* ]] && is_compare_str_complex "${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]#*:}" )
 					then
-						ex_err "invalid format of header descriptor: \`${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+						ex_err "invalid format of member options expression: \`${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
 						return 0
 					fi
 					let opt_int_search+=1
@@ -650,7 +655,7 @@ if ((${#xopts[*]})); then
 					break
 				fi
 			done
-		elif [[ ${xopts[x]} = Match_member_sum ]]; then
+		elif [[ ${xopts[x]} = Match_member_sum ]]; then # match on total amount of members
 			while (($? == 0)); do
 				arr_match_on_msum[${#arr_match_on_msum[@]}]=$(dia_ibox \
 					"Enter one or more compare expression(s) for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'\nCancel to quit.")
@@ -667,7 +672,7 @@ if ((${#xopts[*]})); then
 					break
 				fi
 			done
-		elif [[ ${xopts[x]} = Exclude_set ]]; then
+		elif [[ ${xopts[x]} = Exclude_set ]]; then # exclude certain sets
 			while (($? == 0)); do
 				arr_sxclude[${#arr_sxclude[@]}]=$(dia_ibox \
 					"Enter one or more glob expression(s) for: ${xopts[x]}.\nCancel to quit.")
@@ -697,36 +702,36 @@ if ((${#xopts[*]})); then
 					break
 				fi
 			done
-		elif [[ ${xopts[x]} = Glob_xclude_elem ]]; then
+		elif [[ ${xopts[x]} = Glob_xclude_elem ]]; then # exclude members matching a glob
 			str_xclude=( $(dia_ibox "Enter the glob expression for: ${xopts[x]}") )
 			if (($? == 0)); then
 				glob_xclude_element=1
 				arr_cmdline[${#arr_cmdline[@]}]="-Xg"
 				arr_cmdline[${#arr_cmdline[@]}]="\"$str_xclude\"" #"
 			fi
-		elif [[ ${xopts[x]} = Regex_xclude_elem ]]; then
+		elif [[ ${xopts[x]} = Regex_xclude_elem ]]; then # exclude members matching a regex pattern
 			str_xclude=( $(dia_ibox "Enter the regex expression for: ${xopts[x]}") )
 			if (($? == 0)); then
 				regex_xclude_element=1
 				arr_cmdline[${#arr_cmdline[@]}]="-Xr"
 				arr_cmdline[${#arr_cmdline[@]}]="\"$str_xclude\"" #"
 			fi
-		elif [[ ${xopts[x]} = Exclude_elem_opt ]]; then
+		elif [[ ${xopts[x]} = Exclude_elem_opt ]]; then # suppress display of members options
 			xclude_member_opts=1 arr_cmdline[${#arr_cmdline[@]}]="-Xo"
-		elif [[ ${xopts[x]} = Count_sets ]]; then
+		elif [[ ${xopts[x]} = Count_sets ]]; then # count matching sets
 			count_sets=1 arr_cmdline[${#arr_cmdline[@]}]="-Cs"
-		elif [[ ${xopts[x]} = Count_members ]]; then
+		elif [[ ${xopts[x]} = Count_members ]]; then # count members and member matches
 			show_count=1 arr_cmdline[${#arr_cmdline[@]}]="-c"
-		elif [[ ${xopts[x]} = Calc_mem ]]; then
+		elif [[ ${xopts[x]} = Calc_mem ]]; then # calculate total mem usage
 			calc_mem=1 arr_cmdline[${#arr_cmdline[@]}]="-Tm"
-		elif [[ ${xopts[x]} = Count_sets_total ]]; then
+		elif [[ ${xopts[x]} = Count_sets_total ]]; then # count amount of traversed sets
 			sets_total=1 arr_cmdline[${#arr_cmdline[@]}]="-Ts"
-		elif [[ ${xopts[x]} = All_counters ]]; then
+		elif [[ ${xopts[x]} = All_counters ]]; then # enable all counters
 			show_count=1 count_sets=1 calc_mem=1 sets_total=1
 			arr_cmdline[${#arr_cmdline[@]}]="-Ca"
-		elif [[ ${xopts[x]} = Colorize ]]; then
+		elif [[ ${xopts[x]} = Colorize ]]; then # colorize output
 			colorize=1 arr_cmdline[${#arr_cmdline[@]}]="-Co"
-		elif [[ ${xopts[x]} = Delim ]]; then
+		elif [[ ${xopts[x]} = Delim ]]; then # delimiter character for separating member entries
 			delim=( $(dia_ibox \
 				"Enter the new delimiter character.\nPersistent until you reset it.\n\$'string' type escapes are not supported in interactive mode.") )
 			if ((${#delim} > 1)); then
@@ -735,7 +740,7 @@ if ((${#xopts[*]})); then
 			fi
 			arr_cmdline[${#arr_cmdline[@]}]="-d"
 			arr_cmdline[${#arr_cmdline[@]}]="\"$delim\"" #"
-		elif [[ ${xopts[x]} = Resolve ]]; then str_tmp=0
+		elif [[ ${xopts[x]} = Resolve ]]; then str_tmp=0 # resolve members
 			if ((${#arr_par[@]})); then
 				for i in ${!arr_par[@]}; do
 					if [[ ${arr_par[i]} = -r ]]; then
@@ -746,7 +751,7 @@ if ((${#xopts[*]})); then
 			if ! ((str_tmp)); then
 				arr_par[${#arr_par[@]}]="-r"
 			fi
-		elif [[ ${xopts[x]} = Sort ]]; then str_tmp=0
+		elif [[ ${xopts[x]} = Sort ]]; then str_tmp=0 # sort members
 			if ((${#arr_par[@]})); then
 				for i in ${!arr_par[@]}; do
 					if [[ ${arr_par[i]} = -s ]]; then
@@ -1298,14 +1303,14 @@ options:
     show sets matching one or more integer valued header entries.
 -G           when in interactive mode, generate command-line.
 -Hi header-glob:[!|<|>|<=|>=]value [...]
-    match one or more integer valued headers \`Header' entries.
+    match integer valued entries of the \`Header' header.
 -Ht set-type-glob       match on set type.
 -Hr [!|<|>|<=|>=]value  match on number of references (value=int).
 -Hs [!|<|>|<=|>=]value  match on size in memory (value=int).
 -Hv [!|<|>|<=|>=]value  match on revision number (value=int).
 -Mc [!|<|>|<=|>=]value [...]  match on member count (value=int).
--Oi option-glob:[!|<|>|<=|>=]value [...]
-    match member options (value=int | 0xhex[/0xhex] | hex:[!|<|>|<=|>=]hex).
+-Oi option-glob:[!|<|>|<=|>=]value [...] match member option values
+    (value=int|0xhex[/0xhex]|hex:[!|<|>|<=|>=]hex).
 -Tm          calculate total memory usage of all matching sets.
 -To          set timeout value (int) for read (listing sets).
 -Ts          count amount of traversed sets.
@@ -1364,7 +1369,7 @@ options:
 			str_search="$2"
 			shift
 		;;
-		-G) generate_cmdline=1
+		-G) generate_cmdline=1 # in interactive mode generate the cmd-line for ipset_list
 		;;
 		-Oi) let opt_int_search+=1 # match member option values
 			[[ $2 ]] || ex_miss_optarg $1 "pattern"
@@ -1372,7 +1377,7 @@ options:
 				arr_opt_int_search[y++]="$2"
 				shift
 			else
-				ex_err "invalid format of header descriptor: \`$2'. expecting: \`glob:[!|<|>|<=|>=]value'"
+				ex_err "invalid format of member options expression: \`$2'. expecting: \`glob:[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Fh) let match_on_header+=1 # show only sets, which contain a matching header entry
@@ -1508,19 +1513,16 @@ fi
 while :; do
 	[[ -x ${ipset:-$(command -v ipset)} ]] && ipset="$(command -v ipset)" && break
 	[[ -x ${ipset:=/sbin/ipset} ]] && break
-	printf "ipset binary \`%s' does not exist, or is not executable. check \`ipset' variable\n" "$ipset" >&2
-	exit 1
+	ex_err "ipset binary \`$ipset' does not exist, or is not executable. check \`ipset' variable"
 done
 ips_version="$("$ipset" version)"
 ips_version="${ips_version#ipset v}"
 ips_version="${ips_version%%.*}"
 if ! is_int "$ips_version"; then
-	printf "failed retrieving ipset version. expected digits, got: \`%s'\n" "$ips_version" >&2
-	exit 1
+	ex_err "failed retrieving ipset version. expected digits, got: \`$ips_version'"
 fi
 if ((ips_version < 6)); then
-	printf "found version \`%s' - ipset versions from 6.x and upwards are supported\n" "$ips_version" >&2
-	exit 1
+	ex_err "found version \`$ips_version' - ipset versions from 6.x and upwards are supported"
 fi
 
 # sets to work on (no arg means all sets)
@@ -1530,8 +1532,7 @@ while IFS=$'\n' read -r; do
 	arr_sets[idx++]="$REPLY"
 done < <("$ipset" list -n)
 if ! ((${#arr_sets[@]})); then
-	printf "Cannot find any sets\n" >&2
-	exit 1
+	ex_err "Cannot find any sets"
 fi
 
 # remember sets - interactive mode may modify arr_sets()
