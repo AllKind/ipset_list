@@ -325,7 +325,7 @@ exit 2
 
 ex_err() {
 if ((iactive > 1)); then
-	rdia --msgbox "ERROR: $*" $w_height $w_with
+	dia_mbox "ERROR: $*"
 else
 	printf "%s\n" "$*" >&2
 	exit 1
@@ -456,6 +456,10 @@ dia_ibox() { # input box
 rdia --inputbox "$1" $w_height $w_with
 }
 
+dia_mbox() { # msg box
+rdia --msgbox "$1" $w_height $w_with
+}
+
 dia_clist() { # checklist
 if [[ $1 = --noitem ]]; then
 	local str_cmd="--noitem --separate-output --checklist"
@@ -529,7 +533,7 @@ if ((${#xopts[*]})); then
 		if [[ -z ${xopts[x]} ]]; then continue
 		elif [[ ${xopts[x]} = Select_sets ]]; then
 			if ((${#all_sets[@]} == 1)); then
-				rdia --msgbox "There is only one set present. Automatically selecting it." $w_height $w_with
+				dia_mbox "There is only one set present. Automatically selecting it."
 				setglob=( ${all_sets[*]} )
 				continue
 			fi
@@ -814,7 +818,7 @@ if ((${#xopts[*]})); then
 			TMOUT=( $(dia_ibox "Enter the timeout value (integer): ${xopts[x]}") )
 			if (($? == 0)); then
 				if ! is_int "$TMOUT"; then
-					rdia --msgbox "Timeout value \`$TMOUT' is not an integer." $w_height $w_with
+					ex_err "Timeout value \`$TMOUT' is not an integer."
 				fi
 				arr_cmdline[${#arr_cmdline[@]}]="-To"
 				arr_cmdline[${#arr_cmdline[@]}]="$TMOUT"
