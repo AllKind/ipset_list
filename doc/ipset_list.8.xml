@@ -2,7 +2,7 @@
 <?oxygen RNGSchema="http://www.oasis-open.org/docbook/xml/5.0/rng/docbook.rng" type="xml"?>
 <refentry xmlns="http://docbook.org/ns/docbook">
     <info><author>
-            <personname>AllKind aka Mart Frauenlob</personname>
+            <personname>Mart Frauenlob aka AllKind</personname>
             <email>AllKind@fastest.cc</email>
             <personblurb>
                 <para>Some guy infront of a screen.</para>
@@ -59,7 +59,7 @@
         <para>Some variables are available inside the script configuration header. They are all
             undefined by default. So they are all available for manipulation in the environment at
             runtime. For details see section <emphasis role="bold">Environment</emphasis>, or the
-            comments inside ipset_list None of them is mandatory, unless you want to change default
+            comments inside ipset_list. None of them is mandatory, unless you want to change default
             values.</para>
         <para>Some options exclude or require each other. <command>ipset_list</command> will
             complain if that is the case. The output of <command>ipset_list -h</command> does

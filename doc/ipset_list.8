@@ -1,6 +1,6 @@
 '\" t
 .\"     Title: ipset_list manual
-.\"    Author: AllKind aka Mart Frauenlob <AllKind@fastest.cc>
+.\"    Author: Mart Frauenlob aka AllKind <AllKind@fastest.cc>
 .\" Generator: DocBook XSL-NS Stylesheets v1.75.2 <http://docbook.sf.net/>
 .\"      Date: 03/02/2016
 .\"    Manual: ipset_list 3.4
@@ -49,7 +49,12 @@ are supported)\&.
 .PP
 Optionally the output can be colorized\&.
 .PP
-Some variables are available inside the script configuration header\&. Some of them are mentioned here\&. For the others please read the according comments inside the script\&. None of them is mandatory, unless you want to change default values\&.
+A
+\fIcompspec\fR
+(programmable completion specification) for bash completion is included\&.
+.PP
+Some variables are available inside the script configuration header\&. They are all undefined by default\&. So they are all available for manipulation in the environment at runtime\&. For details see section
+\fBEnvironment\fR, or the comments inside ipset_list\&. None of them is mandatory, unless you want to change default values\&.
 .PP
 Some options exclude or require each other\&.
 \fBipset_list\fR
@@ -287,6 +292,101 @@ Exclude sets matching a [ext]glob pattern\&.
 .RS 4
 Stop further option processing\&.
 .RE
+.SH "ENVIRONMENT"
+.PP
+The following variables are available during runtime\&. They can also be defined permanently in the configuration header of
+\fBipset_list\fR\&.
+.PP
+.PP
+ipset
+.RS 4
+Ipset executable\&. The variable can be either: empty, the name of the binary, or the full path to the binary\&.
+.RE
+.PP
+TMOUT, iactive_tmout
+.RS 4
+See description of the `\-To\*(Aq parameter\&.
+.RE
+.PP
+colorize
+.RS 4
+Colorize the output\&. The variable can be either: empty (=0), `0\*(Aq \- enabled or `1\*(Aq \- disabled\&.
+.RE
+.PP
+cl
+.RS 4
+The cl program\&. The variable can be either: empty, the name of the binary, or the full path to the binary\&. Also see description of the `\-Co\*(Aq parameter\&.
+.RE
+.PP
+col_fg
+.RS 4
+Default foreground color\&. Defaults to white\&.
+.RE
+.PP
+col_bg
+.RS 4
+Default background color\&. Defaults to black\&.
+.RE
+.PP
+col_headers
+.RS 4
+Color for headers\&. Defaults to cyan\&.
+.RE
+.PP
+col_members
+.RS 4
+Color for members\&. Defaults to yellow\&.
+.RE
+.PP
+col_match
+.RS 4
+Color for matching entries\&. Defaults to red\&.
+.RE
+.PP
+col_memsize
+.RS 4
+Color for displaying of memsize\&. Defaults to green\&.
+.RE
+.PP
+col_set_count
+.RS 4
+Color for counting of matching sets\&. Defaults to magenta\&.
+.RE
+.PP
+col_set_total
+.RS 4
+Color for counting of traversed sets\&. Defaults to blue\&.
+.RE
+.PP
+col_highlight
+.RS 4
+General highlighting color\&. Defaults to white\&.
+.RE
+.PP
+dialog_prog
+.RS 4
+The dialog program required for interactive mode\&. The variable can be either: empty, the name of the binary (dialog or whiptail), or the full path to the binary\&.
+.RE
+.PP
+tput
+.RS 4
+The tput program \- optional for interactive mode\&. The variable can be either: empty, the name of the binary, or the full path to the binary\&.
+.RE
+.PP
+w_height
+.RS 4
+Terminal window height for interactive mode\&. Best practice is to set it to 0 and let tput retrieve the value\&.
+.RE
+.PP
+w_with
+.RS 4
+Terminal window with for interactive mode\&. Best practice is to set it to 0 and let tput retrieve the value\&.
+.RE
+.PP
+l_height
+.RS 4
+List height for interactive mode\&. Best practice is to set it to 0 and let ipset_list calculate the value (=w_height \- 10)\&.
+.RE
 .SH "SEE ALSO"
 .PP
 
@@ -297,7 +397,7 @@ Stop further option processing\&.
 \fBregex\fR(7)
 .SH "AUTHOR"
 .PP
-\fBAllKind aka Mart Frauenlob\fR <\&AllKind@fastest\&.cc\&>
+\fBMart Frauenlob aka AllKind\fR <\&AllKind@fastest\&.cc\&>
 .RS 4
 Some guy infront of a screen\&.
 .RE
