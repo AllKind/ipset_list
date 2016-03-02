@@ -156,13 +156,19 @@
 # modify your PATH variable
 # by default the path is only set if the PATH variable is not already set in the environment
 # PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-: ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
+#: ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
 
 # path to ipset.
-# defaults to `/sbin/ipset' if unset.
+# if unset, ipset_list first tries to find ipset in path.
+# on failure it next tries the default `/sbin/ipset'.
+# variable can be either:
+# - empty (automatic retrieval if in PATH)
+# - ipset (name of the executable)
+# - the full path to ipset
 #ipset="/sbin/ipset"
+#ipset=ipset
 # find in path if not declared in parent environment
-: ${ipset:=$(command -v ipset)}
+#: ${ipset:=$(command -v ipset)}
 
 # default delimiter character for set members (elements).
 # defaults to whitespace if unset.
@@ -228,7 +234,7 @@
 # dialog version 1.2 or greater is required
 # variable can be either:
 # - empty (automatic retrieval if in PATH)
-# - dialog or whiptail
+# - dialog or whiptail (name of the executable)
 # - the full path to one of them
 #dialog_prog="dialog"
 #dialog_prog="/usr/bin/dialog"
@@ -237,6 +243,11 @@
 #: ${dialog_prog:=$(command -v whiptail)}
 
 # tput binary - optional for interactive mode
+# variable can be either:
+# - empty (automatic retrieval if in PATH)
+# - tput (name of the executable)
+# - the full path to tput
+#tput=tput
 #tput="/usr/bin/tput"
 # find in path if not declared in parent environment
 : ${tput:=$(command -v tput)}
@@ -279,8 +290,8 @@ readonly version=3.3
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_xclude="" opt
-declare -i show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
-declare -i match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
+declare -i member_count=match_count=do_count=show_count=calc_mem=count_sets=sets_total=0
+declare -i show_all=show_members=headers_only=names_only=isolate=match_on_header=glob_search=regex_search=opt_int_search=0
 declare -i exclude_header=glob_xclude_element=regex_xclude_element=exclude_set=xclude_member_opts=0
 declare -i i=x=y=idx=0
 declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
@@ -290,6 +301,9 @@ declare -i global_colorize=${colorize:=0} global_tmout="${TMOUT:=30}"
 declare global_delim="${delim:=" "}"
 declare -a arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
 declare -a arr_hxclude=() arr_sxclude=() arr_par=() all_sets=() arr_cmdline=() arr_tmp=()
+
+# declare standard PATH, if not already defined in environment
+: ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
 
 # simple trap
 trap "echo trap activated - exiting; enable exit; exit 111" HUP INT QUIT STOP TERM
@@ -336,13 +350,13 @@ fi
 return 0
 }
 
-add_search_to_member_cache() {
+add_search_to_member_cache() { # cache set members
 if ((show_members || show_all || isolate)); then
 	arr_mcache[i++]="$REPLY"
 fi
 }
 
-arith_elem_opt_search() {
+arith_elem_opt_search() { # -Oi parameter
 local str_opt_val str_val2 str_op2 str_cg='?(\!|<|>|<=|>=)' str_xdig='0[xX]+([[:xdigit:]])'
 found_member_opt=0
 for y in ${!arr_opt_int_search[@]}; do
@@ -452,10 +466,6 @@ interactive_mode() { # interactive mode - wizard based composing of commands
 iactive=2 # -ge 1 means we are in interactive mode
 # some global variables need to set on each run
 i=x=0
-show_all=show_count=show_members=headers_only=names_only=isolate=calc_mem=count_sets=sets_total=0
-match_on_header=glob_search=regex_search=member_count=match_count=do_count=opt_int_search=0
-exclude_header=glob_xclude_element=regex_xclude_element=exclude_set=xclude_member_opts=0
-generate_cmdline=$global_gen_cmd colorize=$global_colorize delim="$global_delim" TMOUT=$global_tmout
 arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 local str_tmp
 local -a xopts sopts setglob=() arr_iopts=()
@@ -1568,6 +1578,7 @@ done
 
 # check for ipset program and version
 while :; do
+	[[ $ipset ]] && command -v "$ipset" &>/dev/null && break
 	[[ -x ${ipset:-$(command -v ipset)} ]] && ipset="$(command -v ipset)" && break
 	[[ -x ${ipset:=/sbin/ipset} ]] && break
 	ex_err "ipset binary \`$ipset' does not exist, or is not executable. check \`ipset' variable"
@@ -1621,12 +1632,13 @@ if ((iactive)); then # interactive mode
 		fi
 	fi
 	if [[ $dialog_prog = *dialog ]]; then
-		if [[ $(dialog --version) = Version:+([[:blank:]])@(0.+([[:digit:]])|1.0|1.1)-* ]]; then
+		if [[ $($dialog_prog --version) = Version:+([[:blank:]])@(0.+([[:digit:]])|1.0|1.1)-* ]]; then
 			ex_err "Detected unsupported version of the dialog program! Please upgrade to at least 1.2, or use whiptail."
 		fi
 	fi
 	# check for tput program
 	while :; do
+		[[ $tput ]] && command -v "$tput" &>/dev/null && break
 		[[ -x ${tput:-$(command -v tput)} ]] && tput="$(command -v tput)" && break
 		[[ -x ${tput:=/usr/bin/tput} ]] && break
 		unset tput
@@ -1654,6 +1666,10 @@ if ((iactive)); then # interactive mode
 	fi
 	# ready to run interactive mode
 	while (($? == 0)); do
+		member_count=match_count=do_count=show_count=calc_mem=count_sets=sets_total=0
+		show_all=show_members=headers_only=names_only=isolate=match_on_header=glob_search=regex_search=opt_int_search=0
+		exclude_header=glob_xclude_element=regex_xclude_element=exclude_set=xclude_member_opts=0
+		generate_cmdline=$global_gen_cmd colorize=$global_colorize delim="$global_delim" TMOUT=$global_tmout
 		interactive_mode
 	done
 	exit 0
