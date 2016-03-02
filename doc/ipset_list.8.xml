@@ -54,20 +54,22 @@
         <para>It includes an interactive wizard based mode, that utilizes a dialog program
                 (<command>dialog</command> or <command>whiptail</command> are supported).</para>
         <para>Optionally the output can be colorized.</para>
-        <para>Some variables are available inside the script configuration header. Some of them are
-            mentioned here. For the others please read the according comments inside the script.
-            None of them is mandatory, unless you want to change default values.</para>
-        <para>Some options exclude each other. <command>ipset_list</command> will complain if that
-            is the case. The output of <command>ipset_list -h</command> does display the valid
-            combinations.</para>
+        <para>Some variables are available inside the script configuration header. They are all
+            undefined by default. So they are all available for manipulation in the environment at
+            runtime. For details see section <emphasis role="bold">ENVIRONMENT</emphasis>, or the
+            comments inside ipset_list None of them is mandatory, unless you want to change default
+            values.</para>
+        <para>Some options exclude or require each other. <command>ipset_list</command> will
+            complain if that is the case. The output of <command>ipset_list -h</command> does
+            display the valid combinations.</para>
         <para>Example usage is given in the header of the script itself, or in the Readme.md
             shipping with <command>ipset_list</command>.</para>
     </refsect1>
     <refsect1>
         <title>Options</title>
         <para>All options are optional. Some require an argument, others do not. All options and
-            their arguments must be separated by blank(s). If an option can be used more than once,
-            it is mentioned explicitly. </para>
+            their arguments must be separated by <emphasis role="underline">blank</emphasis>(s). If
+            an option can be used more than once, it is mentioned explicitly. </para>
         <para>When run without arguments, the names of all sets found, are displayed with the prefix
             `Name:'.</para>
         <variablelist>
@@ -87,8 +89,8 @@
                 <term>-</term>
                 <listitem>
                     <para>Enter interactive mode. This wizard based way to select the options
-                        utilizes a dialog program. Which can either be <command
-                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                        utilizes a <emphasis role="underline">dialog</emphasis> program. Which can
+                        either be <command xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink">dialog</command> or <command
                             xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink">whiptail</command>. <command
@@ -104,7 +106,8 @@
                 <term>-a</term>
                 <listitem>
                     <para>Show all information (header and members) but with default
-                            <varname>delim</varname> (whitespace).</para>
+                            <varname>delim</varname> (<emphasis role="underline"
+                            >whitespace</emphasis>).</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -119,13 +122,19 @@
                 <listitem>
                     <para>Delimiter character used to separate member entries. By default <command
                             xmlns:xi="http://www.w3.org/2001/XInclude"
-                            xmlns:xlink="http://www.w3.org/1999/xlink">ipset</command> uses newline
-                        as delimiter. <command xmlns:xi="http://www.w3.org/2001/XInclude"
+                            xmlns:xlink="http://www.w3.org/1999/xlink">ipset</command> uses
+                            <emphasis role="underline">newline</emphasis> as delimiter. <command
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink">ipset_list</command> by
-                        default uses a whitespace. Which can be changed permanently by editing the
-                        variable <varname xmlns:xi="http://www.w3.org/2001/XInclude"
+                        default uses a <emphasis role="underline">whitespace</emphasis>. Which can
+                        be changed permanently by editing the variable <varname
+                            xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink">delim</varname> in the
-                        configuration header of ipset_list.</para>
+                        configuration header of ipset_list. If this parameter is used when starting
+                        interactive mode, it will apply globally to all search queries performed.
+                        Unless you choose the <emphasis role="underline">Delim</emphasis> option
+                        from the menu, which will overwrite the global value just for that single
+                        search.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -191,7 +200,9 @@
                         available to adjust the color settings. Their names are prefixed with col_*.
                         The list of valid color names can be retrieved by running <command>cl
                             --list</command>. The default is not to use colored output. That can be
-                        changed by setting the <varname>colorize</varname> variable to `1'.</para>
+                        changed by setting the <varname>colorize</varname> variable to `1'. If this
+                        parameter is used when starting interactive mode, it will apply globally to
+                        all search queries performed.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -294,10 +305,14 @@
                             xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink">TMOUT</varname> variable,
                         which can be set in the configuration header of the script, is 30. This
-                        command line option overrides it. Setting it to 0, disables the timeout. To
-                        influence for how long the result is displayed in interactive mode, before
-                        returning to the main screen, set the environment variable
-                            <varname>iactive_tmout</varname> to the desired value.</para>
+                        command line option overrides it. Setting it to 0, disables the timeout. If
+                        this parameter is used when starting interactive mode, it will apply
+                        globally to all search queries performed. Unless you choose the <emphasis
+                            role="underline">Timeout</emphasis> option from the menu, which will
+                        overwrite the global value just for that single search. To influence for how
+                        long the result is displayed in interactive mode, before returning to the
+                        main screen, set the environment variable <varname>iactive_tmout</varname>
+                        to the desired value.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -344,6 +359,134 @@
                 </listitem>
             </varlistentry>
         </variablelist>
+    </refsect1>
+    <refsect1 xml:id="env">
+        <title>ENVIRONMENT</title>
+        <para>The following variables are available during runtime. They can also be defined
+            permanently in the configuration header of <command>ipset_list</command>. </para>
+        <para>
+            <variablelist>
+                <varlistentry>
+                    <term>ipset</term>
+                    <listitem>
+                        <para>Ipset executable. The variable can be either: empty, the name of the
+                            binary, or the full path to the binary.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>TMOUT, iactive_tmout</term>
+                    <listitem>
+                        <para>See description of the `-To' parameter.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>colorize</term>
+                    <listitem>
+                        <para>Colorize the output. The variable can be either: empty (=0), `0' -
+                            enabled or `1' - disabled.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>cl</term>
+                    <listitem>
+                        <para>The cl program. The variable can be either: empty, the name of the
+                            binary, or the full path to the binary. Also see description of the
+                            `-Co' parameter.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>col_fg</term>
+                    <listitem>
+                        <para>Default foreground color. Defaults to white.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>col_bg</term>
+                    <listitem>
+                        <para>Default background color. Defaults to black.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>col_headers</term>
+                    <listitem>
+                        <para>Color for headers. Defaults to cyan.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>col_members</term>
+                    <listitem>
+                        <para>Color for members. Defaults to yellow.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>col_match</term>
+                    <listitem>
+                        <para>Color for matching entries. Defaults to red.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>col_memsize</term>
+                    <listitem>
+                        <para>Color for displaying of memsize. Defaults to green.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>col_set_count</term>
+                    <listitem>
+                        <para>Color for counting of matching sets. Defaults to magenta.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>col_set_total</term>
+                    <listitem>
+                        <para>Color for counting of traversed sets. Defaults to blue.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>col_highlight</term>
+                    <listitem>
+                        <para>General highlighting color. Defaults to white. </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>dialog_prog</term>
+                    <listitem>
+                        <para>The dialog program required for interactive mode. The variable can be
+                            either: empty, the name of the binary (dialog or whiptail), or the full
+                            path to the binary.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>tput</term>
+                    <listitem>
+                        <para>The tput program - optional for interactive mode. The variable can be
+                            either: empty, the name of the binary, or the full path to the
+                            binary.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>w_height</term>
+                    <listitem>
+                        <para>Terminal window height for interactive mode. Best practice is to set
+                            it to 0 and let tput retrieve the value.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>w_with</term>
+                    <listitem>
+                        <para>Terminal window with for interactive mode. Best practice is to set it
+                            to 0 and let tput retrieve the value.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>l_height</term>
+                    <listitem>
+                        <para>List height for interactive mode. Best practice is to set it to 0 and
+                            let ipset_list calculate the value (=w_height - 10).</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </para>
     </refsect1>
     <refsect1>
         <title>See also</title>

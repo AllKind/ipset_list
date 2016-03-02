@@ -12,30 +12,39 @@
             ...]</p></div></div><div class="refsect1" lang="en"><a name="d0e67"></a><h2>Description</h2><p>ipset_list is a wrapper script for listing sets of the netfilter
                 <span class="command"><strong>ipset</strong></span> program. It allows you to match and display sets, headers,
             and elements in various ways.</p><p>It is written for the <span class="command"><strong>bash</strong></span> shell.</p><p>It includes an interactive wizard based mode, that utilizes a dialog program
-                (<span class="command"><strong>dialog</strong></span> or <span class="command"><strong>whiptail</strong></span> are supported).</p><p>Optionally the output can be colorized.</p><p>Some variables are available inside the script configuration header. Some of them are
-            mentioned here. For the others please read the according comments inside the script.
-            None of them is mandatory, unless you want to change default values.</p><p>Some options exclude each other. <span class="command"><strong>ipset_list</strong></span> will complain if that
-            is the case. The output of <span class="command"><strong>ipset_list -h</strong></span> does display the valid
-            combinations.</p><p>Example usage is given in the header of the script itself, or in the Readme.md
-            shipping with <span class="command"><strong>ipset_list</strong></span>.</p></div><div class="refsect1" lang="en"><a name="d0e105"></a><h2>Options</h2><p>All options are optional. Some require an argument, others do not. All options and
-            their arguments must be separated by blank(s). If an option can be used more than once,
-            it is mentioned explicitly. </p><p>When run without arguments, the names of all sets found, are displayed with the prefix
+                (<span class="command"><strong>dialog</strong></span> or <span class="command"><strong>whiptail</strong></span> are supported).</p><p>Optionally the output can be colorized.</p><p>Some variables are available inside the script configuration header. They are all
+            undefined by default. So they are all available for manipulation in the environment at
+            runtime. For details see section <span class="bold"><strong>ENVIRONMENT</strong></span>, or the
+            comments inside ipset_list None of them is mandatory, unless you want to change default
+            values.</p><p>Some options exclude or require each other. <span class="command"><strong>ipset_list</strong></span> will
+            complain if that is the case. The output of <span class="command"><strong>ipset_list -h</strong></span> does
+            display the valid combinations.</p><p>Example usage is given in the header of the script itself, or in the Readme.md
+            shipping with <span class="command"><strong>ipset_list</strong></span>.</p></div><div class="refsect1" lang="en"><a name="d0e108"></a><h2>Options</h2><p>All options are optional. Some require an argument, others do not. All options and
+            their arguments must be separated by <span class="underline">blank</span>(s). If
+            an option can be used more than once, it is mentioned explicitly. </p><p>When run without arguments, the names of all sets found, are displayed with the prefix
             `Name:'.</p><div class="variablelist"><dl><dt><span class="term">-h, -?</span></dt><dd><p>Show usage instructions.</p></dd><dt><span class="term">-v</span></dt><dd><p>Show version information.</p></dd><dt><span class="term">-</span></dt><dd><p>Enter interactive mode. This wizard based way to select the options
-                        utilizes a dialog program. Which can either be <span class="command"><strong>dialog</strong></span> or <span class="command"><strong>whiptail</strong></span>. <span class="command"><strong>dialog</strong></span> is the
+                        utilizes a <span class="underline">dialog</span> program. Which can
+                        either be <span class="command"><strong>dialog</strong></span> or <span class="command"><strong>whiptail</strong></span>. <span class="command"><strong>dialog</strong></span> is the
                         preferred and default, if the variable <code class="varname">dialog_prog</code> is not
                         defined. Only dialog versions greater or equal to 1.2 are supported.</p></dd><dt><span class="term">-a</span></dt><dd><p>Show all information (header and members) but with default
-                            <code class="varname">delim</code> (whitespace).</p></dd><dt><span class="term">-c</span></dt><dd><p>Calculate the total amout of set members and also the sum of members
-                        matching a criteria given by another option.</p></dd><dt><span class="term">-d delim</span></dt><dd><p>Delimiter character used to separate member entries. By default <span class="command"><strong>ipset</strong></span> uses newline
-                        as delimiter. <span class="command"><strong>ipset_list</strong></span> by
-                        default uses a whitespace. Which can be changed permanently by editing the
-                        variable <code class="varname">delim</code> in the
-                        configuration header of ipset_list.</p></dd><dt><span class="term">-i</span></dt><dd><p>Show only the members of a single set.</p></dd><dt><span class="term">-m</span></dt><dd><p>Show the members of a set.</p></dd><dt><span class="term">-n</span></dt><dd><p>Show the set names only. No prefix is shown, as when running <span class="command"><strong>ipset_list</strong></span> without
+                            <code class="varname">delim</code> (<span class="underline">whitespace</span>).</p></dd><dt><span class="term">-c</span></dt><dd><p>Calculate the total amout of set members and also the sum of members
+                        matching a criteria given by another option.</p></dd><dt><span class="term">-d delim</span></dt><dd><p>Delimiter character used to separate member entries. By default <span class="command"><strong>ipset</strong></span> uses
+                            <span class="underline">newline</span> as delimiter. <span class="command"><strong>ipset_list</strong></span> by
+                        default uses a <span class="underline">whitespace</span>. Which can
+                        be changed permanently by editing the variable <code class="varname">delim</code> in the
+                        configuration header of ipset_list. If this parameter is used when starting
+                        interactive mode, it will apply globally to all search queries performed.
+                        Unless you choose the <span class="underline">Delim</span> option
+                        from the menu, which will overwrite the global value just for that single
+                        search.</p></dd><dt><span class="term">-i</span></dt><dd><p>Show only the members of a single set.</p></dd><dt><span class="term">-m</span></dt><dd><p>Show the members of a set.</p></dd><dt><span class="term">-n</span></dt><dd><p>Show the set names only. No prefix is shown, as when running <span class="command"><strong>ipset_list</strong></span> without
                         arguments.</p></dd><dt><span class="term">-r</span></dt><dd><p>Try to resolve ip addresses in the output (slow!).</p></dd><dt><span class="term">-s</span></dt><dd><p>Print elements sorted (if supported by the set type).</p></dd><dt><span class="term">-t</span></dt><dd><p>Show set headers only.</p></dd><dt><span class="term">-Ca</span></dt><dd><p>Enable all counters (shortcut for -c -Cs -Ts -Tm).</p></dd><dt><span class="term">-Co</span></dt><dd><p>Colorize the output. Requires the <span class="command"><strong>cl</strong></span> program. It can
                         be downloaded from here: <a class="link" href="http://sf.net/projects/colorize-shell/" target="_top">http://sf.net/projects/colorize-shell/</a> or <a class="link" href="https://github.com/AllKind/cl" target="_top">https://github.com/AllKind/cl</a>. Configuration variables are
                         available to adjust the color settings. Their names are prefixed with col_*.
                         The list of valid color names can be retrieved by running <span class="command"><strong>cl
                             --list</strong></span>. The default is not to use colored output. That can be
-                        changed by setting the <code class="varname">colorize</code> variable to `1'.</p></dd><dt><span class="term">-Cs</span></dt><dd><p>Count the amount of sets that matched the search criteria.</p></dd><dt><span class="term">-Fg pattern</span></dt><dd><p>Match on members using a [ext]glob pattern.</p></dd><dt><span class="term">-Fr pattern</span></dt><dd><p>Match on members using a regex pattern.</p></dd><dt><span class="term">-Fh header-glob:value-glob [...]</span></dt><dd><p>Show sets containing one or more [ext]glob matching headers. This option
+                        changed by setting the <code class="varname">colorize</code> variable to `1'. If this
+                        parameter is used when starting interactive mode, it will apply globally to
+                        all search queries performed.</p></dd><dt><span class="term">-Cs</span></dt><dd><p>Count the amount of sets that matched the search criteria.</p></dd><dt><span class="term">-Fg pattern</span></dt><dd><p>Match on members using a [ext]glob pattern.</p></dd><dt><span class="term">-Fr pattern</span></dt><dd><p>Match on members using a regex pattern.</p></dd><dt><span class="term">-Fh header-glob:value-glob [...]</span></dt><dd><p>Show sets containing one or more [ext]glob matching headers. This option
                         can be used multiple times.</p></dd><dt><span class="term">-Fi header-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Show sets matching one or more integer valued header entries. This option
                         can be used multiple times.</p></dd><dt><span class="term">-G</span></dt><dd><p>When in interactive mode, generate the <span class="command"><strong>ipset_list</strong></span>
                         command-line, as for use in 'normal' mode.</p></dd><dt><span class="term">-Hi header-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Match on integer valued entries of the `Header' header. i.e. timeout. This
@@ -44,11 +53,28 @@
                         used multiple times.</p></dd><dt><span class="term">-Tm</span></dt><dd><p>Calculate the total memory usage of all matching sets.</p></dd><dt><span class="term">-To</span></dt><dd><p>Set timeout value (integer) in seconds for <span class="command"><strong>read</strong></span>. This affects
                         the listing of sets. The default value of the <code class="varname">TMOUT</code> variable,
                         which can be set in the configuration header of the script, is 30. This
-                        command line option overrides it. Setting it to 0, disables the timeout. To
-                        influence for how long the result is displayed in interactive mode, before
-                        returning to the main screen, set the environment variable
-                            <code class="varname">iactive_tmout</code> to the desired value.</p></dd><dt><span class="term">-Ts</span></dt><dd><p>Count the amount of traversed sets.</p></dd><dt><span class="term">-Xo</span></dt><dd><p>Suppress the display of member options.</p></dd><dt><span class="term">-Xh header-glob:value-glob [...]</span></dt><dd><p>Exclude one or more [ext]glob matching header entries. This option can be
-                        used multiple times.</p></dd><dt><span class="term">-Xg pattern</span></dt><dd><p>Exclude members matching a [ext]glob pattern.</p></dd><dt><span class="term">-Xr pattern</span></dt><dd><p>Exclude members matching a regex pattern.</p></dd><dt><span class="term">-Xs pattern</span></dt><dd><p>Exclude sets matching a [ext]glob pattern.</p></dd><dt><span class="term">--</span></dt><dd><p>Stop further option processing.</p></dd></dl></div></div><div class="refsect1" lang="en"><a name="d0e386"></a><h2>See also</h2><p>
+                        command line option overrides it. Setting it to 0, disables the timeout. If
+                        this parameter is used when starting interactive mode, it will apply
+                        globally to all search queries performed. Unless you choose the <span class="underline">Timeout</span> option from the menu, which will
+                        overwrite the global value just for that single search. To influence for how
+                        long the result is displayed in interactive mode, before returning to the
+                        main screen, set the environment variable <code class="varname">iactive_tmout</code>
+                        to the desired value.</p></dd><dt><span class="term">-Ts</span></dt><dd><p>Count the amount of traversed sets.</p></dd><dt><span class="term">-Xo</span></dt><dd><p>Suppress the display of member options.</p></dd><dt><span class="term">-Xh header-glob:value-glob [...]</span></dt><dd><p>Exclude one or more [ext]glob matching header entries. This option can be
+                        used multiple times.</p></dd><dt><span class="term">-Xg pattern</span></dt><dd><p>Exclude members matching a [ext]glob pattern.</p></dd><dt><span class="term">-Xr pattern</span></dt><dd><p>Exclude members matching a regex pattern.</p></dd><dt><span class="term">-Xs pattern</span></dt><dd><p>Exclude sets matching a [ext]glob pattern.</p></dd><dt><span class="term">--</span></dt><dd><p>Stop further option processing.</p></dd></dl></div></div><div class="refsect1" lang="en"><a name="env"></a><h2>ENVIRONMENT</h2><p>The following variables are available during runtime. They can also be defined
+            permanently in the configuration header of <span class="command"><strong>ipset_list</strong></span>. </p><p>
+            </p><div class="variablelist"><dl><dt><span class="term">ipset</span></dt><dd><p>Ipset executable. The variable can be either: empty, the name of the
+                            binary, or the full path to the binary.</p></dd><dt><span class="term">TMOUT, iactive_tmout</span></dt><dd><p>See description of the `-To' parameter.</p></dd><dt><span class="term">colorize</span></dt><dd><p>Colorize the output. The variable can be either: empty (=0), `0' -
+                            enabled or `1' - disabled.</p></dd><dt><span class="term">cl</span></dt><dd><p>The cl program. The variable can be either: empty, the name of the
+                            binary, or the full path to the binary. Also see description of the
+                            `-Co' parameter.</p></dd><dt><span class="term">col_fg</span></dt><dd><p>Default foreground color. Defaults to white.</p></dd><dt><span class="term">col_bg</span></dt><dd><p>Default background color. Defaults to black.</p></dd><dt><span class="term">col_headers</span></dt><dd><p>Color for headers. Defaults to cyan.</p></dd><dt><span class="term">col_members</span></dt><dd><p>Color for members. Defaults to yellow.</p></dd><dt><span class="term">col_match</span></dt><dd><p>Color for matching entries. Defaults to red.</p></dd><dt><span class="term">col_memsize</span></dt><dd><p>Color for displaying of memsize. Defaults to green.</p></dd><dt><span class="term">col_set_count</span></dt><dd><p>Color for counting of matching sets. Defaults to magenta.</p></dd><dt><span class="term">col_set_total</span></dt><dd><p>Color for counting of traversed sets. Defaults to blue.</p></dd><dt><span class="term">col_highlight</span></dt><dd><p>General highlighting color. Defaults to white. </p></dd><dt><span class="term">dialog_prog</span></dt><dd><p>The dialog program required for interactive mode. The variable can be
+                            either: empty, the name of the binary (dialog or whiptail), or the full
+                            path to the binary.</p></dd><dt><span class="term">tput</span></dt><dd><p>The tput program - optional for interactive mode. The variable can be
+                            either: empty, the name of the binary, or the full path to the
+                            binary.</p></dd><dt><span class="term">w_height</span></dt><dd><p>Terminal window height for interactive mode. Best practice is to set
+                            it to 0 and let tput retrieve the value.</p></dd><dt><span class="term">w_with</span></dt><dd><p>Terminal window with for interactive mode. Best practice is to set it
+                            to 0 and let tput retrieve the value.</p></dd><dt><span class="term">l_height</span></dt><dd><p>List height for interactive mode. Best practice is to set it to 0 and
+                            let ipset_list calculate the value (=w_height - 10).</p></dd></dl></div><p>
+        </p></div><div class="refsect1" lang="en"><a name="d0e530"></a><h2>See also</h2><p>
             <span class="citerefentry"><span class="refentrytitle">ipset</span>(8)</span>
             <span class="citerefentry"><span class="refentrytitle">dialog</span>(1)</span>
             <span class="citerefentry"><span class="refentrytitle">whiptail</span>(1)</span>

@@ -2,12 +2,12 @@
 .\"     Title: ipset_list manual
 .\"    Author: AllKind aka Mart Frauenlob <AllKind@fastest.cc>
 .\" Generator: DocBook XSL-NS Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 03/01/2016
+.\"      Date: 03/02/2016
 .\"    Manual: ipset_list 3.4
 .\"    Source: ipset_list 3.4
 .\"  Language: English
 .\"
-.TH "IPSET_LIST MANUAL" "8" "03/01/2016" "ipset_list 3.4" "ipset_list 3\&.4"
+.TH "IPSET_LIST MANUAL" "8" "03/02/2016" "ipset_list 3.4" "ipset_list 3\&.4"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -51,7 +51,7 @@ Optionally the output can be colorized\&.
 .PP
 Some variables are available inside the script configuration header\&. Some of them are mentioned here\&. For the others please read the according comments inside the script\&. None of them is mandatory, unless you want to change default values\&.
 .PP
-Some options exclude each other\&.
+Some options exclude or require each other\&.
 \fBipset_list\fR
 will complain if that is the case\&. The output of
 \fBipset_list \-h\fR
@@ -61,7 +61,8 @@ Example usage is given in the header of the script itself, or in the Readme\&.md
 \fBipset_list\fR\&.
 .SH "OPTIONS"
 .PP
-All options are optional\&. Some require an argument, others do not\&. All options and their arguments must be separated by blank(s)\&. If an option can be used more than once, it is mentioned explicitly\&.
+All options are optional\&. Some require an argument, others do not\&. All options and their arguments must be separated by
+\fIblank\fR(s)\&. If an option can be used more than once, it is mentioned explicitly\&.
 .PP
 When run without arguments, the names of all sets found, are displayed with the prefix `Name:\*(Aq\&.
 .PP
@@ -77,7 +78,9 @@ Show version information\&.
 .PP
 \-
 .RS 4
-Enter interactive mode\&. This wizard based way to select the options utilizes a dialog program\&. Which can either be
+Enter interactive mode\&. This wizard based way to select the options utilizes a
+\fIdialog\fR
+program\&. Which can either be
 \fBdialog\fR
 or
 \fBwhiptail\fR\&.
@@ -91,7 +94,7 @@ is not defined\&. Only dialog versions greater or equal to 1\&.2 are supported\&
 .RS 4
 Show all information (header and members) but with default
 \fIdelim\fR
-(whitespace)\&.
+(\fIwhitespace\fR)\&.
 .RE
 .PP
 \-c
@@ -103,11 +106,16 @@ Calculate the total amout of set members and also the sum of members matching a 
 .RS 4
 Delimiter character used to separate member entries\&. By default
 \fBipset\fR
-uses newline as delimiter\&.
+uses
+\fInewline\fR
+as delimiter\&.
 \fBipset_list\fR
-by default uses a whitespace\&. Which can be changed permanently by editing the variable
+by default uses a
+\fIwhitespace\fR\&. Which can be changed permanently by editing the variable
 \fIdelim\fR
-in the configuration header of ipset_list\&.
+in the configuration header of ipset_list\&. If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&. Unless you choose the
+\fIDelim\fR
+option from the menu, which will overwrite the global value just for that single search\&.
 .RE
 .PP
 \-i
@@ -157,7 +165,7 @@ or
 \m[blue]\fBhttps://github\&.com/AllKind/cl\fR\m[]\&. Configuration variables are available to adjust the color settings\&. Their names are prefixed with col_*\&. The list of valid color names can be retrieved by running
 \fBcl \-\-list\fR\&. The default is not to use colored output\&. That can be changed by setting the
 \fIcolorize\fR
-variable to `1\*(Aq\&.
+variable to `1\*(Aq\&. If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&.
 .RE
 .PP
 \-Cs
@@ -238,7 +246,9 @@ Calculate the total memory usage of all matching sets\&.
 Set timeout value (integer) in seconds for
 \fBread\fR\&. This affects the listing of sets\&. The default value of the
 \fITMOUT\fR
-variable, which can be set in the configuration header of the script, is 30\&. This command line option overrides it\&. Setting it to 0, disables the timeout\&. To influence for how long the result is displayed in interactive mode, before returning to the main screen, set the environment variable
+variable, which can be set in the configuration header of the script, is 30\&. This command line option overrides it\&. Setting it to 0, disables the timeout\&. If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&. Unless you choose the
+\fITimeout\fR
+option from the menu, which will overwrite the global value just for that single search\&. To influence for how long the result is displayed in interactive mode, before returning to the main screen, set the environment variable
 \fIiactive_tmout\fR
 to the desired value\&.
 .RE
