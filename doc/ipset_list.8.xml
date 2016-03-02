@@ -54,9 +54,11 @@
         <para>It includes an interactive wizard based mode, that utilizes a dialog program
                 (<command>dialog</command> or <command>whiptail</command> are supported).</para>
         <para>Optionally the output can be colorized.</para>
+        <para>A <emphasis role="underline">compspec</emphasis> (programmable completion
+            specification) for bash completion is included.</para>
         <para>Some variables are available inside the script configuration header. They are all
             undefined by default. So they are all available for manipulation in the environment at
-            runtime. For details see section <emphasis role="bold">ENVIRONMENT</emphasis>, or the
+            runtime. For details see section <emphasis role="bold">Environment</emphasis>, or the
             comments inside ipset_list None of them is mandatory, unless you want to change default
             values.</para>
         <para>Some options exclude or require each other. <command>ipset_list</command> will
@@ -361,7 +363,7 @@
         </variablelist>
     </refsect1>
     <refsect1 xml:id="env">
-        <title>ENVIRONMENT</title>
+        <title>Environment</title>
         <para>The following variables are available during runtime. They can also be defined
             permanently in the configuration header of <command>ipset_list</command>. </para>
         <para>

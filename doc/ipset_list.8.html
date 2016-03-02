@@ -12,14 +12,15 @@
             ...]</p></div></div><div class="refsect1" lang="en"><a name="d0e67"></a><h2>Description</h2><p>ipset_list is a wrapper script for listing sets of the netfilter
                 <span class="command"><strong>ipset</strong></span> program. It allows you to match and display sets, headers,
             and elements in various ways.</p><p>It is written for the <span class="command"><strong>bash</strong></span> shell.</p><p>It includes an interactive wizard based mode, that utilizes a dialog program
-                (<span class="command"><strong>dialog</strong></span> or <span class="command"><strong>whiptail</strong></span> are supported).</p><p>Optionally the output can be colorized.</p><p>Some variables are available inside the script configuration header. They are all
+                (<span class="command"><strong>dialog</strong></span> or <span class="command"><strong>whiptail</strong></span> are supported).</p><p>Optionally the output can be colorized.</p><p>A <span class="underline">compspec</span> (programmable completion
+            specification) for bash completion is included.</p><p>Some variables are available inside the script configuration header. They are all
             undefined by default. So they are all available for manipulation in the environment at
-            runtime. For details see section <span class="bold"><strong>ENVIRONMENT</strong></span>, or the
+            runtime. For details see section <span class="bold"><strong>Environment</strong></span>, or the
             comments inside ipset_list None of them is mandatory, unless you want to change default
             values.</p><p>Some options exclude or require each other. <span class="command"><strong>ipset_list</strong></span> will
             complain if that is the case. The output of <span class="command"><strong>ipset_list -h</strong></span> does
             display the valid combinations.</p><p>Example usage is given in the header of the script itself, or in the Readme.md
-            shipping with <span class="command"><strong>ipset_list</strong></span>.</p></div><div class="refsect1" lang="en"><a name="d0e108"></a><h2>Options</h2><p>All options are optional. Some require an argument, others do not. All options and
+            shipping with <span class="command"><strong>ipset_list</strong></span>.</p></div><div class="refsect1" lang="en"><a name="d0e113"></a><h2>Options</h2><p>All options are optional. Some require an argument, others do not. All options and
             their arguments must be separated by <span class="underline">blank</span>(s). If
             an option can be used more than once, it is mentioned explicitly. </p><p>When run without arguments, the names of all sets found, are displayed with the prefix
             `Name:'.</p><div class="variablelist"><dl><dt><span class="term">-h, -?</span></dt><dd><p>Show usage instructions.</p></dd><dt><span class="term">-v</span></dt><dd><p>Show version information.</p></dd><dt><span class="term">-</span></dt><dd><p>Enter interactive mode. This wizard based way to select the options
@@ -60,7 +61,7 @@
                         long the result is displayed in interactive mode, before returning to the
                         main screen, set the environment variable <code class="varname">iactive_tmout</code>
                         to the desired value.</p></dd><dt><span class="term">-Ts</span></dt><dd><p>Count the amount of traversed sets.</p></dd><dt><span class="term">-Xo</span></dt><dd><p>Suppress the display of member options.</p></dd><dt><span class="term">-Xh header-glob:value-glob [...]</span></dt><dd><p>Exclude one or more [ext]glob matching header entries. This option can be
-                        used multiple times.</p></dd><dt><span class="term">-Xg pattern</span></dt><dd><p>Exclude members matching a [ext]glob pattern.</p></dd><dt><span class="term">-Xr pattern</span></dt><dd><p>Exclude members matching a regex pattern.</p></dd><dt><span class="term">-Xs pattern</span></dt><dd><p>Exclude sets matching a [ext]glob pattern.</p></dd><dt><span class="term">--</span></dt><dd><p>Stop further option processing.</p></dd></dl></div></div><div class="refsect1" lang="en"><a name="env"></a><h2>ENVIRONMENT</h2><p>The following variables are available during runtime. They can also be defined
+                        used multiple times.</p></dd><dt><span class="term">-Xg pattern</span></dt><dd><p>Exclude members matching a [ext]glob pattern.</p></dd><dt><span class="term">-Xr pattern</span></dt><dd><p>Exclude members matching a regex pattern.</p></dd><dt><span class="term">-Xs pattern</span></dt><dd><p>Exclude sets matching a [ext]glob pattern.</p></dd><dt><span class="term">--</span></dt><dd><p>Stop further option processing.</p></dd></dl></div></div><div class="refsect1" lang="en"><a name="env"></a><h2>Environment</h2><p>The following variables are available during runtime. They can also be defined
             permanently in the configuration header of <span class="command"><strong>ipset_list</strong></span>. </p><p>
             </p><div class="variablelist"><dl><dt><span class="term">ipset</span></dt><dd><p>Ipset executable. The variable can be either: empty, the name of the
                             binary, or the full path to the binary.</p></dd><dt><span class="term">TMOUT, iactive_tmout</span></dt><dd><p>See description of the `-To' parameter.</p></dd><dt><span class="term">colorize</span></dt><dd><p>Colorize the output. The variable can be either: empty (=0), `0' -
@@ -74,7 +75,7 @@
                             it to 0 and let tput retrieve the value.</p></dd><dt><span class="term">w_with</span></dt><dd><p>Terminal window with for interactive mode. Best practice is to set it
                             to 0 and let tput retrieve the value.</p></dd><dt><span class="term">l_height</span></dt><dd><p>List height for interactive mode. Best practice is to set it to 0 and
                             let ipset_list calculate the value (=w_height - 10).</p></dd></dl></div><p>
-        </p></div><div class="refsect1" lang="en"><a name="d0e530"></a><h2>See also</h2><p>
+        </p></div><div class="refsect1" lang="en"><a name="d0e535"></a><h2>See also</h2><p>
             <span class="citerefentry"><span class="refentrytitle">ipset</span>(8)</span>
             <span class="citerefentry"><span class="refentrytitle">dialog</span>(1)</span>
             <span class="citerefentry"><span class="refentrytitle">whiptail</span>(1)</span>
