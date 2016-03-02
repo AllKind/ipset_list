@@ -187,8 +187,14 @@
 # path to cl (to colorize the output).
 # http://sourceforge.net/projects/colorize-shell/ or
 # https://github.com/AllKind/cl
-# defaults to `/usr/local/bin/cl' if unset.
+# variable can be either:
+# - empty (automatic retrieval if in PATH)
+# - cl (name of the executable)
+# - the full path to cl
+#cl="cl"
 #cl="/usr/local/bin/cl"
+# find in path if not declared in parent environment
+#: ${cl:=$(command -v cl)}
 
 # define colors
 # run `cl --list' to retrieve the valid color names
@@ -894,7 +900,10 @@ if ((glob_xclude_element || regex_xclude_element)); then
 	fi
 fi
 if ((colorize)); then
-	if ! [[ -x ${cl:=$(command -v cl || printf "%s\n" /usr/local/bin/cl)} ]]; then
+	while :; do
+		[[ $cl ]] && command -v "$cl" &>/dev/null && break
+		[[ -x ${cl:-$(command -v cl)} ]] && cl="$(command -v cl)" && break
+		[[ -x ${cl:=/usr/local/bin/cl} ]] && break
 		if ((iactive > 1)); then
 			ex_err "Cannot colorize the output. cl program \`$cl' does not exist, or is not executable. \
 If you do not have the program, you can download it from: \
@@ -909,7 +918,7 @@ https://github.com/AllKind/cl"
 			printf "\n"
 			exit 1
 		fi
-	fi
+	done
 	# set color defaults if unset
 	: ${col_fg:=white}
 	: ${col_bg:=black}
