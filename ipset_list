@@ -282,6 +282,14 @@
 #active_tmout=
 
 # -----------------------------------------------------------------
+# config file
+# -----------------------------------------------------------------
+
+# all the above variables can be loaded from a configuration file
+# overwritting the values defined above.
+config_file="/etc/default/ipset_list.conf"
+
+# -----------------------------------------------------------------
 # DO NOT MODIFY ANYTHING BEYOND THIS LINE!
 # -----------------------------------------------------------------
 
@@ -1386,6 +1394,13 @@ fi
 # -----------------------------------------------------------------
 # main
 # -----------------------------------------------------------------
+
+# load config file
+if [[ $config_file && -r $config_file ]]; then
+	. "$config_file" || {
+		ex_err "Error while loading configuration file: \`$config_file'."
+	}
+fi
 
 # parse cmd-line options
 while (($#)); do
