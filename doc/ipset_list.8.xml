@@ -292,6 +292,14 @@
                 </listitem>
             </varlistentry>
             <varlistentry>
+                <term>-T element [...]</term>
+                <listitem>
+                    <para>Run <code>`ipset test set element`</code> to check if the <emphasis
+                            role="underline">element</emphasis> is in the set. This option can be
+                        used multiple times.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
                 <term>-Tm</term>
                 <listitem>
                     <para>Calculate the total memory usage of all matching sets.</para>
@@ -313,8 +321,8 @@
                             role="underline">Timeout</emphasis> option from the menu, which will
                         overwrite the global value just for that single search. To influence for how
                         long the result is displayed in interactive mode, before returning to the
-                        main screen, set the environment variable <varname>iactive_tmout</varname>
-                        to the desired value.</para>
+                        main screen, set the variable <varname>iactive_tmout</varname> to the
+                        desired value.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>

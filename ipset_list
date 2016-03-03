@@ -297,7 +297,8 @@ readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_xclude="" opt
 declare -i member_count=match_count=do_count=show_count=calc_mem=count_sets=sets_total=0
-declare -i show_all=show_members=headers_only=names_only=isolate=match_on_header=glob_search=regex_search=opt_int_search=0
+declare -i show_all=show_members=headers_only=names_only=isolate=0
+declare -i match_on_header=glob_search=regex_search=opt_int_search=test_element=0
 declare -i exclude_header=glob_xclude_element=regex_xclude_element=exclude_set=xclude_member_opts=0
 declare -i i=x=y=idx=0
 declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
@@ -308,6 +309,7 @@ declare -i global_colorize=${colorize:=0} global_tmout="${TMOUT:=30}"
 declare global_delim="${delim:=" "}"
 declare -a arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
 declare -a arr_hxclude=() arr_sxclude=() arr_par=() all_sets=() arr_cmdline=() arr_old_select=() arr_tmp=()
+declare -a arr_test_elem=()
 
 # declare standard PATH, if not already defined in environment
 : ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
@@ -477,7 +479,6 @@ interactive_mode() { # interactive mode - wizard based composing of commands
 iactive=2 # -ge 1 means we are in interactive mode
 # some global variables need to set on each run
 i=x=0
-arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_hxclude=() arr_sxclude=() arr_match_on_msum=() arr_opt_int_search=()
 local str_tmp
 local -a xopts sopts arr_opts=() setglob=() arr_iopts=()
 local -a arr_cmdline=( "$me" ) # first entry in composed cmdline is always ME :-)
@@ -499,6 +500,7 @@ local -a arr_pre_opts=(
 "Regex_search" "Match members using a regex pattern (-Fr)"
 "Opt_int_search" "Match integer valued member options (-Oi)"
 "Match_member_sum" "Match on member count (value=int) (-Mc)"
+"Test_element" "Test if an element is in the set (-T)"
 "Exclude_set" "Exclude sets matching a [ext]glob pattern (-Xs)"
 "Exclude_header" "Suppress [ext]glob matching header entries (-Xh)"
 "Glob_xclude_elem" "Exclude members matching a [ext]glob pattern (-Xg)"
@@ -761,6 +763,19 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 				break
 			fi
 		done
+	elif [[ ${xopts[x]} = Test_element ]]; then # test for existence of element
+		while (($? == 0)); do
+			arr_test_elem[${#arr_test_elem[@]}]=$(dia_ibox \
+				"Enter one or more elemnts for: ${xopts[x]}.\nCancel to quit.")
+			if (($? == 0)); then
+				let test_element+=1
+				arr_cmdline[${#arr_cmdline[@]}]="-T"
+				arr_cmdline[${#arr_cmdline[@]}]="\"${arr_test_elem[$(( ${#arr_test_elem[@]} - 1 ))]}\"" #"
+			else
+				((${#arr_test_elem[@]})) && unset arr_test_elem[$(( ${#arr_test_elem[@]} - 1 ))]
+				break
+			fi
+		done
 	elif [[ ${xopts[x]} = Exclude_header ]]; then # don't show certain headers
 		while (($? == 0)); do
 			arr_hxclude[${#arr_hxclude[@]}]=$(dia_ibox \
@@ -881,9 +896,12 @@ fi
 }
 
 main() { # well yes - what to say, it's main() :-)
-local str_name str_val str_op
-in_header=found_set=found_member_opt=found_hxclude=found_sxclude=xclude_count=mem_total=mem_tmp=set_count=sets_sum=i=x=idx=0
+local str_name str_set str_val str_op
+local -i in_header=found_set=found_member_opt=found_hxclude=found_sxclude=test_succeed=0
+local -i xclude_count=mem_total=mem_tmp=set_count=sets_sum=0
+i=0 x=0 idx=0
 arr_sets=() arr_hcache=() arr_mcache=() arr_tmp=()
+
 # option logic
 if ((names_only)); then
 	if ((headers_only||show_members||show_all||isolate||\
@@ -1010,11 +1028,22 @@ else
 fi
 
 # read sets
-for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
+for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
+	found_set=0 test_succeed=0 arr_hcache=() arr_mcache=()
+	if ((test_element)); then # test for existence of members
+		for y in ${!arr_test_elem[@]}; do
+			if "$ipset" test "$str_set" "${arr_test_elem[y]}" &>/dev/null; then
+				let test_succeed+=1
+			fi
+		done
+		if ((test_succeed < test_element)); then # not all tests succeeded
+			test_succeed=0
+		fi
+	fi
 	while read -r || {
 		(($? > 128)) && \
 			printf "timeout reached or signal received, while reading set \`%s'.\n" \
-			"${arr_sets[idx]}" >&2 && continue 2;
+			"$str_set" >&2 && continue 2;
    	}; do
 		case "$REPLY" in
 			"") : ;;
@@ -1025,12 +1054,17 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 				let sets_sum+=1
 				if ((exclude_set)); then # don't show certain sets
 					for y in ${!arr_sxclude[@]}; do
-						if [[ ${arr_sets[idx]} = ${arr_sxclude[y]} ]]; then let found_sxclude+=1
+						if [[ $str_set = ${arr_sxclude[y]} ]]; then
+							let found_sxclude+=1
 							continue 3 # don't unset, as user could list sets multiple times
 						fi
 					done
 				fi
-				in_header=1 found_set=1 found_header=0 member_count=0 match_count=0 xclude_count=0 mem_tmp=0 builtin_mc=-1 i=0 x=0
+				found_header=0 member_count=0 match_count=0 xclude_count=0 mem_tmp=0 builtin_mc=-1 i=0 x=0
+				if ((test_element != test_succeed)); then
+					break # not all tests succeeded, nothing more to do, we can now safely quit
+				fi
+				in_header=1 found_set=1
 				if ! ((isolate)); then # if showing members only, continue without saving any header data
 					if ((names_only)); then
 						if ((colorize)); then
@@ -1173,7 +1207,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 							if ! xclude_elem_search; then
 								(($? == 2 && iactive > 1)) && return 0
 								if [[ $REPLY = $str_search ]]; then
-									if ((opt_int_search)); then
+									if ((opt_int_search)); then # glob matches, -Oi is also requested
 										arith_elem_opt_search
 									else
 										let match_count+=1
@@ -1185,7 +1219,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 							if ! xclude_elem_search; then
 								(($? == 2 && iactive > 1)) && return 0
 								if [[ $REPLY =~ $str_search ]]; then
-									if ((opt_int_search)); then
+									if ((opt_int_search)); then # regex matches, -Oi is also requested
 										arith_elem_opt_search
 									else
 										let match_count+=1
@@ -1235,7 +1269,7 @@ for idx in "${!arr_sets[@]}"; do found_set=0 arr_hcache=() arr_mcache=()
 					let member_count+=1
 				fi
 		esac
-	done < <("$ipset" list "${arr_sets[idx]}" "${arr_par[@]}")
+	done < <("$ipset" list "$str_set" "${arr_par[@]}")
 	if ((found_set)); then # print gathered information
 		if ((glob_search || regex_search || opt_int_search)) && ((match_count == 0)); then
 			continue # glob, regex or option-integer search didn't match
@@ -1354,16 +1388,16 @@ while (($#)); do
 ipset_list [option [opt-arg]] [set-name-glob] [...]
 
 ipset_list {-?|-h} | -v
-ipset_list [-i|-r|-s|-Co|-Xo] [-d char] [-To value]
+ipset_list [-i|-r|-s|-Co|-T|-Xo] [-d char] [-To value]
     [-Fg|-Fr pattern] [-Xg|-Xr pattern]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name
-ipset_list [-n|-c|-Ca|-Co|-Cs|-Tm|-Ts|-Xs] [-To value]
+ipset_list [-n|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts|-Xs] [-To value]
     [-Fh header-glob:value-glob] [...] [-Fg|-Fr pattern]
     [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...]
     [-Xs set-name-glob] [...] -- [set-name-glob] [...]
-ipset_list [-t|-c|-Ca|-Co|-Cs|-Tm|-Ts] [-To value]
+ipset_list [-t|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts] [-To value]
     [-Fh header-glob:value-glob] [...]
     [-Fi header-glob:[!|<|>|<=|>=]value] [...]
     [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
@@ -1371,7 +1405,7 @@ ipset_list [-t|-c|-Ca|-Co|-Cs|-Tm|-Ts] [-To value]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...]
     [-Xh header-glob:value-glob] [...]
     [-Xs set-name-glob] [...] -- [set-name-glob] [...]
-ipset_list [-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-Tm|-Ts|-Xo] [-d char] [-To value]
+ipset_list [-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-T|-Tm|-Ts|-Xo] [-d char] [-To value]
     [-Fh header-glob:value-glob] [...]
     [-Fi header-glob:[!|<|>|<=|>=]value] [...]
     [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
@@ -1413,6 +1447,7 @@ options:
 -Mc [!|<|>|<=|>=]value [...]  match on member count (value=int).
 -Oi option-glob:[!|<|>|<=|>=]value [...] match member option values
     (value=int|0xhex[/0xhex]|hex:[!|<|>|<=|>=]hex).
+-T element [...]  test if element is in set (\`ipset test n element\`).
 -Tm          calculate total memory usage of all matching sets.
 -To          set timeout value (int) for read (listing sets).
 -Ts          count amount of traversed sets.
@@ -1556,6 +1591,11 @@ options:
 			else
 				ex_err "invalid format of match on member count value: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
 			fi
+		;;
+		-T) let test_element+=1 # test precence in set via `ipset test elem`
+			[[ $2 ]] || ex_miss_optarg $1 "element"
+			arr_test_elem[${#arr_test_elem[@]}]="$2"
+			shift
 		;;
 		-To) # set the timeout for read (limited to integer)
 			[[ $2 ]] || ex_miss_optarg $1 "value"
@@ -1709,10 +1749,16 @@ if ((iactive)); then # interactive mode
 	fi
 	# ready to run interactive mode
 	while (($? == 0)); do
-		member_count=match_count=do_count=show_count=calc_mem=count_sets=sets_total=0
-		show_all=show_members=headers_only=names_only=isolate=match_on_header=glob_search=regex_search=opt_int_search=0
-		exclude_header=glob_xclude_element=regex_xclude_element=exclude_set=xclude_member_opts=0
+		# some variables need to be reset on each loop
+		member_count=0 match_count=0 do_count=0 show_count=0 calc_mem=0 count_sets=0 sets_total=0
+		show_all=0 show_members=0 headers_only=0 names_only=0 isolate=0
+		match_on_header=0 glob_search=0 regex_search=0 opt_int_search=0 test_element=0
+		exclude_header=0 glob_xclude_element=0 regex_xclude_element=0 exclude_set=0 xclude_member_opts=0
 		generate_cmdline=$global_gen_cmd colorize=$global_colorize delim="$global_delim" TMOUT=$global_tmout
+		arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
+		arr_test_elem=() arr_hxclude=() arr_sxclude=()
+
+		# run interactive window until user cancels
 		interactive_mode
 	done
 	exit 0
