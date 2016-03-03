@@ -179,10 +179,9 @@
 # the command line option -To overrides this.
 #set_tmout=30
 
-# the timeout of the result screen in interactive mode, before
-# returning to the main dialog window (integer). default 9999999999.
-#active_tmout=
-
+# -----------------------------------------------------------------
+# color settings
+# -----------------------------------------------------------------
 # colorize the output (bool 0/1). default 0.
 #colorize=0
 
@@ -237,6 +236,9 @@
 # defaults to: white
 #col_highlight="white"
 
+# -----------------------------------------------------------------
+# settings for interactive mdoe
+# -----------------------------------------------------------------
 # a dialog program is required for interactive mode
 # either dialog (default), or whiptail are supported
 # dialog version 1.2 or greater is required
@@ -274,6 +276,10 @@
 
 # list height for interactive mode
 #l_height=0
+
+# the timeout of the result screen in interactive mode, before
+# returning to the main dialog window (integer). default 9999999999.
+#active_tmout=
 
 # -----------------------------------------------------------------
 # DO NOT MODIFY ANYTHING BEYOND THIS LINE!
