@@ -177,9 +177,11 @@
 
 # default read timeout (for reading sets - esp. with the -r switch).
 # the command line option -To overrides this.
-# to influence the timeout of the result screen in interactive mode,
-# set the environment variable `iactive_tmout' to the desired value.
-#TMOUT=30
+#set_tmout=30
+
+# the timeout of the result screen in interactive mode, before
+# returning to the main dialog window (integer). default 9999999999.
+#active_tmout=
 
 # colorize the output (bool 0/1). default 0.
 #colorize=0
@@ -305,8 +307,10 @@ declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
 declare -i iactive=0 # en/disable interactive mode
 declare -i iactive_err=0 # remember error state in interactive mode
 declare -i generate_cmdline=global_gen_cmd=0 # generate command line in iactive mode
-declare -i global_colorize=${colorize:=0} global_tmout="${TMOUT:=30}"
-declare global_delim="${delim:=" "}"
+declare -ir default_set_tmout=30
+declare -r default_delim=" "
+declare global_delim="${delim:=$default_delim}"
+declare -i global_colorize=${colorize:=0} global_tmout="${set_tmout:=$default_set_tmout}"
 declare -a arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
 declare -a arr_hxclude=() arr_sxclude=() arr_par=() all_sets=() arr_cmdline=() arr_old_select=() arr_tmp=()
 declare -a arr_test_elem=()
@@ -315,7 +319,7 @@ declare -a arr_test_elem=()
 : ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
 
 # simple trap
-trap "echo trap activated - exiting; enable exit; exit 111" HUP INT QUIT STOP TERM
+trap "echo trap on signal activated - exiting; enable exit; exit 111" HUP INT QUIT STOP TERM
 
 # -----------------------------------------------------------------
 # functions
@@ -860,14 +864,14 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 	elif [[ ${xopts[x]} = Generate_cmd ]]; then # generate ipset_list cmd-line
 		generate_cmdline=1
 	elif [[ ${xopts[x]} = Timeout ]]; then # timeout for reading sets
-		TMOUT=( $(dia_ibox "Enter the timeout value (integer): ${xopts[x]}") )
+		set_tmout=( $(dia_ibox "Enter the timeout value (integer): ${xopts[x]}") )
 		if (($? == 0)); then
-			if ! is_int "$TMOUT"; then
-				ex_err "Timeout value \`$TMOUT' is not an integer."
+			if ! is_int "$set_tmout"; then
+				ex_err "Timeout value \`$set_tmout' is not an integer."
 				return 0
 			fi
 			arr_cmdline[${#arr_cmdline[@]}]="-To"
-			arr_cmdline[${#arr_cmdline[@]}]="$TMOUT"
+			arr_cmdline[${#arr_cmdline[@]}]="$set_tmout"
 		fi
 	fi
 done
@@ -1040,7 +1044,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 			test_succeed=0
 		fi
 	fi
-	while read -r || {
+	while read -r -t ${set_tmout:=$default_set_tmout} || {
 		(($? > 128)) && \
 			printf "timeout reached or signal received, while reading set \`%s'.\n" \
 			"$str_set" >&2 && continue 2;
@@ -1298,7 +1302,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 			if ((xclude_member_opts)); then
 				arr_mcache=( "${arr_mcache[@]%% *}" )
 			fi
-			IFS="${delim:= }"
+			IFS="${delim:=$default_delim}"
 			if ((colorize)); then
 				printf "$("$cl" $col_members)%s$("$cl" normal $col_fg $col_bg)" "${arr_mcache[*]}"
 			else
@@ -1599,7 +1603,7 @@ options:
 		;;
 		-To) # set the timeout for read (limited to integer)
 			[[ $2 ]] || ex_miss_optarg $1 "value"
-			TMOUT="$2" global_tmout="$2"
+			set_tmout="$2" global_tmout="$2"
 			shift
 		;;
 		-Tm) calc_mem=1 # caculate total memory usage of all matching sets
@@ -1652,8 +1656,8 @@ if [[ ${colorize:=0} != [01] ]]; then
 	ex_err "value of variable \`colorize' \`$colorize' is not 0 or 1"
 fi
 
-# validate TMOUT and iactive_tmout variables
-for opt in TMOUT iactive_tmout; do
+# validate set_tmout and iactive_tmout variables
+for opt in set_tmout iactive_tmout; do
 	if ! is_int "${!opt:-0}"; then
 		ex_err "value \`${!opt}' of variable \`$opt' is not an integer"
 	fi
@@ -1754,7 +1758,7 @@ if ((iactive)); then # interactive mode
 		show_all=0 show_members=0 headers_only=0 names_only=0 isolate=0
 		match_on_header=0 glob_search=0 regex_search=0 opt_int_search=0 test_element=0
 		exclude_header=0 glob_xclude_element=0 regex_xclude_element=0 exclude_set=0 xclude_member_opts=0
-		generate_cmdline=$global_gen_cmd colorize=$global_colorize delim="$global_delim" TMOUT=$global_tmout
+		generate_cmdline=$global_gen_cmd colorize=$global_colorize delim="$global_delim" set_tmout=$global_tmout
 		arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
 		arr_test_elem=() arr_hxclude=() arr_sxclude=()
 
