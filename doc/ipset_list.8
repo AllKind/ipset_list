@@ -53,8 +53,9 @@ A
 \fIcompspec\fR
 (programmable completion specification) for bash completion is included\&.
 .PP
-Some variables are available inside the script configuration header\&. They are all undefined by default\&. So they are all available for manipulation in the environment at runtime\&. For details see section
-\fBEnvironment\fR, or the comments inside ipset_list\&. None of them is mandatory, unless you want to change default values\&.
+Some variables are available inside the script configuration header, or the configuration file (ipset_list\&.conf)\&. As the configuration file will be loaded after reading the configuration header, its settings take precedence\&. They are all undefined by default\&. Thus being available for manipulation in the environment at runtime\&. For details see section
+\fBEnvironment\fR, or the comments inside
+ipset_list[\&.conf]\&. None of them is mandatory, unless you want to change default values\&.
 .PP
 Some options exclude or require each other\&.
 \fBipset_list\fR
@@ -120,7 +121,7 @@ by default uses a
 \fIdelim\fR
 in the configuration header of ipset_list\&. If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&. Unless you choose the
 \fIDelim\fR
-option from the menu, which will overwrite the global value just for that single search\&.
+option from the menu, which will overwrite the global value just for that single query\&.
 .RE
 .PP
 \-i
@@ -259,12 +260,12 @@ Calculate the total memory usage of all matching sets\&.
 .RS 4
 Set timeout value (integer) in seconds for
 \fBread\fR\&. This affects the listing of sets\&. The default value of the
-\fITMOUT\fR
-variable, which can be set in the configuration header of the script, is 30\&. This command line option overrides it\&. Setting it to 0, disables the timeout\&. If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&. Unless you choose the
+\fIset_tmout\fR
+variable, which can be set in the configuration header of the script, is 30\&. This command line option overrides it\&. If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&. Unless you choose the
 \fITimeout\fR
 option from the menu, which will overwrite the global value just for that single search\&. To influence for how long the result is displayed in interactive mode, before returning to the main screen, set the variable
 \fIiactive_tmout\fR
-to the desired value\&.
+(default 9999999999 \- that should be sufficient time for you to stare at the result, aight?) to the desired value\&.
 .RE
 .PP
 \-Ts
@@ -304,15 +305,20 @@ Stop further option processing\&.
 .SH "ENVIRONMENT"
 .PP
 The following variables are available during runtime\&. They can also be defined permanently in the configuration header of
-\fBipset_list\fR\&.
+\fBipset_list\fR, or the configuration file (ipset_list\&.conf)\&.
 .PP
+.PP
+config_file
+.RS 4
+The full path to the configuration file\&. This variable is obviously only available in the configuration header, or the environment\&.
+.RE
 .PP
 ipset
 .RS 4
 Ipset executable\&. The variable can be either: empty, the name of the binary, or the full path to the binary\&.
 .RE
 .PP
-TMOUT, iactive_tmout
+set_tmout, iactive_tmout
 .RS 4
 See description of the `\-To\*(Aq parameter\&.
 .RE
@@ -396,6 +402,11 @@ l_height
 .RS 4
 List height for interactive mode\&. Best practice is to set it to 0 and let ipset_list calculate the value (=w_height \- 10)\&.
 .RE
+.SH "EXIT CODES"
+.PP
+An exit code of `0\*(Aq indicates success\&. A return value of `1\*(Aq is a good sign of failure\&. If a
+\fISIGNAL\fR
+was received (HUP, INT, QUIT, STOP, TERM are trapped) the script exits with a return value of `111\*(Aq\&.
 .SH "SEE ALSO"
 .PP
 

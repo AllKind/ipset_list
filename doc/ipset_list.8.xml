@@ -45,7 +45,7 @@
             </arg>
         </cmdsynopsis>
     </refsynopsisdiv>
-    <refsect1>
+    <refsect1 xml:id="description">
         <title>Description</title>
         <para>ipset_list is a wrapper script for listing sets of the netfilter
                 <command>ipset</command> program. It allows you to match and display sets, headers,
@@ -56,18 +56,21 @@
         <para>Optionally the output can be colorized.</para>
         <para>A <emphasis role="underline">compspec</emphasis> (programmable completion
             specification) for bash completion is included.</para>
-        <para>Some variables are available inside the script configuration header. They are all
-            undefined by default. So they are all available for manipulation in the environment at
-            runtime. For details see section <emphasis role="bold">Environment</emphasis>, or the
-            comments inside ipset_list. None of them is mandatory, unless you want to change default
-            values.</para>
+        <para>Some variables are available inside the script configuration header, or the
+            configuration file (<filename>ipset_list.conf</filename>). As the configuration file
+            will be loaded after reading the configuration header, its settings take precedence.
+            They are all undefined by default. Thus being available for manipulation in the
+            environment at runtime. For details see section <emphasis role="bold"
+                >Environment</emphasis>, or the comments inside
+                <filename>ipset_list[.conf]</filename>. None of them is mandatory, unless you want
+            to change default values.</para>
         <para>Some options exclude or require each other. <command>ipset_list</command> will
             complain if that is the case. The output of <command>ipset_list -h</command> does
             display the valid combinations.</para>
         <para>Example usage is given in the header of the script itself, or in the Readme.md
             shipping with <command>ipset_list</command>.</para>
     </refsect1>
-    <refsect1>
+    <refsect1 xml:id="options">
         <title>Options</title>
         <para>All options are optional. Some require an argument, others do not. All options and
             their arguments must be separated by <emphasis role="underline">blank</emphasis>(s). If
@@ -136,7 +139,7 @@
                         interactive mode, it will apply globally to all search queries performed.
                         Unless you choose the <emphasis role="underline">Delim</emphasis> option
                         from the menu, which will overwrite the global value just for that single
-                        search.</para>
+                        query.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -313,16 +316,17 @@
                             xmlns:xlink="http://www.w3.org/1999/xlink">read</command>. This affects
                         the listing of sets. The default value of the <varname
                             xmlns:xi="http://www.w3.org/2001/XInclude"
-                            xmlns:xlink="http://www.w3.org/1999/xlink">TMOUT</varname> variable,
+                            xmlns:xlink="http://www.w3.org/1999/xlink">set_tmout</varname> variable,
                         which can be set in the configuration header of the script, is 30. This
-                        command line option overrides it. Setting it to 0, disables the timeout. If
-                        this parameter is used when starting interactive mode, it will apply
-                        globally to all search queries performed. Unless you choose the <emphasis
-                            role="underline">Timeout</emphasis> option from the menu, which will
-                        overwrite the global value just for that single search. To influence for how
-                        long the result is displayed in interactive mode, before returning to the
-                        main screen, set the variable <varname>iactive_tmout</varname> to the
-                        desired value.</para>
+                        command line option overrides it. If this parameter is used when starting
+                        interactive mode, it will apply globally to all search queries performed.
+                        Unless you choose the <emphasis role="underline">Timeout</emphasis> option
+                        from the menu, which will overwrite the global value just for that single
+                        search. To influence for how long the result is displayed in interactive
+                        mode, before returning to the main screen, set the variable
+                            <varname>iactive_tmout</varname> (default 9999999999 - that should be
+                        sufficient time for you to stare at the result, aight?) to the desired
+                        value.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -373,9 +377,17 @@
     <refsect1 xml:id="env">
         <title>Environment</title>
         <para>The following variables are available during runtime. They can also be defined
-            permanently in the configuration header of <command>ipset_list</command>. </para>
+            permanently in the configuration header of <command>ipset_list</command>, or the
+            configuration file (<filename>ipset_list.conf</filename>). </para>
         <para>
             <variablelist>
+                <varlistentry>
+                    <term>config_file</term>
+                    <listitem>
+                        <para>The full path to the configuration file. This variable is obviously
+                            only available in the configuration header, or the environment.</para>
+                    </listitem>
+                </varlistentry>
                 <varlistentry>
                     <term>ipset</term>
                     <listitem>
@@ -384,7 +396,7 @@
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term>TMOUT, iactive_tmout</term>
+                    <term>set_tmout, iactive_tmout</term>
                     <listitem>
                         <para>See description of the `-To' parameter.</para>
                     </listitem>
@@ -498,7 +510,13 @@
             </variablelist>
         </para>
     </refsect1>
-    <refsect1>
+    <refsect1 xml:id="exit_stat">
+        <title>Exit codes</title>
+        <para>An exit code of `0' indicates success. A return value of `1' is a good sign of
+            failure. If a <emphasis role="underline">SIGNAL</emphasis> was received (HUP, INT, QUIT,
+            STOP, TERM are trapped) the script exits with a return value of `111'. </para>
+    </refsect1>
+    <refsect1 xml:id="see_also">
         <title>See also</title>
         <para>
             <citerefentry>
