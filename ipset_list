@@ -1046,9 +1046,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 				let test_succeed+=1
 			fi
 		done
-		if ((test_succeed < test_element)); then # not all tests succeeded
-			test_succeed=0
-		fi
+		test_succeed=$((test_succeed < test_element ? 0 : test_succeed)) # not all tests succeeded
 	fi
 	while read -r -t ${set_tmout:=$default_set_tmout} || {
 		(($? > 128)) && \
