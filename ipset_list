@@ -339,33 +339,41 @@ trap "echo trap on signal activated - exiting; enable exit; exit 111" HUP INT QU
 # functions
 # -----------------------------------------------------------------
 
-ex_miss_optarg() {
-printf "%s of option \`%s' is missing\n" "$2" "$1" >&2
+pm() { # print message
+printf "$*\n"
+}
+
+pe() { # print error
+printf "$*\n" >&2
+}
+
+ex_miss_optarg() { # missing option argument
+pe "$2 of option \`$1' is missing"
 exit 2
 }
 
-ex_err() {
+ex_err() { # exit on error
 if ((iactive > 1)); then
 	dia_mbox "ERROR: $*"
 else
-	printf "%s\n" "$*" >&2
+	pe "$*"
 	exit 1
 fi
 }
 
-is_int() {
+is_int() { # test if arg is int
 [[ $1 = +([[:digit:]]) ]]
 }
 
-is_digit_or_xigit() {
+is_digit_or_xigit() { # test if arg is int or 0[xX]xdigit
 [[ $1 = @(+([[:digit:]])|0[xX]+([[:xdigit:]])) ]]
 }
 
-is_compare_str() {
+is_compare_str() { # test if arg is a compare string
 [[ $1 = ?(\!|<|>|<=|>=)@(+([[:digit:]])|0[x|X]+([[:xdigit:]])) ]]
 }
 
-is_compare_str_complex() {
+is_compare_str_complex() { # test if arg is a complex compare string
 [[ $1 = ?(\!|<|>|<=|>=)@(+([[:digit:]])|0@(x|X)+([[:xdigit:]])?(/0@(x|X)+([[:xdigit:]]))|+([[:xdigit:]]):?(\!|<|>|<=|>=)+([[:xdigit:]])) ]]
 }
 
@@ -449,7 +457,7 @@ if ((opt_int_search == found_member_opt)); then
 fi
 }
 
-xclude_elem_search() {
+xclude_elem_search() { # -Xg | -Xr
 if ((glob_xclude_element)); then # exclude matching members
 	if [[ $REPLY = $str_xclude ]]; then
 		let xclude_count+=1
@@ -891,7 +899,7 @@ done
 
 # run main with set glob as optional option
 main "${setglob[@]}"
-printf "\n"
+pm
 if ((generate_cmdline)); then # generate the ipset_list cmd-line
 	if ((${#arr_par[@]})); then
 		arr_cmdline[${#arr_cmdline[@]}]="${arr_par[*]}"
@@ -901,13 +909,13 @@ if ((generate_cmdline)); then # generate the ipset_list cmd-line
 			arr_cmdline[${#arr_cmdline[@]}]="\"${setglob[i]}\"" #"
 		done
 	fi
-	printf "Composed command line:\n"
+	pm "Composed command line:"
 	printf "    %s\n" "${arr_cmdline[*]}"
-	printf "\n"
+	pm
 fi
 read -t ${iactive_tmout:-9999999999} -N 1 -p " Press \`ENTER' to continue, or \`ESC' to return to the shell."
 if [[ $REPLY = $'\E' ]]; then
-	printf "\n" # avoid moving the shell prompt
+	pm # avoid moving the shell prompt
 	return 1
 fi
 }
@@ -981,9 +989,8 @@ https://github.com/AllKind/cl"
 			return 0
 		else
 			printf "\nCannot colorize the output.\ncl program \`%s' does not exist, or is not executable.\ncheck \`cl' variable.\n\n" "$cl" >&2
-			printf "If you do not have the program, you can download it from:\n"
-			printf "%s\n" "http://sourceforge.net/projects/colorize-shell/" \
-				"https://github.com/AllKind/cl" >&2
+			printf "If you do not have the program, you can download it from:\n" >&2
+			printf "%s\n" "http://sourceforge.net/projects/colorize-shell/" "https://github.com/AllKind/cl" >&2
 			printf "\n"
 			exit 1
 		fi
@@ -1056,9 +1063,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 		test_succeed=$((test_succeed < test_element ? 0 : test_succeed)) # not all tests succeeded
 	fi
 	while read -r -t ${set_tmout:=$default_set_tmout} || {
-		(($? > 128)) && \
-			printf "timeout reached or signal received, while reading set \`%s'.\n" \
-			"$str_set" >&2 && continue 2;
+		(($? > 128)) && pe "timeout reached or signal received, while reading set \`$str_set'." && continue 2;
    	}; do
 		case "$REPLY" in
 			"") : ;;
@@ -1107,7 +1112,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 			;;
 			Members:*) # closes header (if not `ipset -t')
 				if ! ((in_header)); then
-					printf "unexpected entry: \`%s' - header not opened?\n" "$REPLY" >&2
+					pe "unexpected entry: \`$REPLY' - header not opened?"
 					exit 1
 				fi
 				in_header=0 found_hxclude=0
@@ -1134,7 +1139,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 			;;
 			*) # either in-header, or member entry
 				if ! ((found_set)); then
-					printf "no set opened by \`Name:'. unexpected entry \`%s'.\n" "$REPLY" >&2
+					pe "no set opened by \`Name:'. unexpected entry: \`$REPLY'."
 					exit 1
 				fi
 				if ((in_header)); then # we should be in the header
@@ -1150,7 +1155,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 						for y in ${!arr_hsearch_int[@]}; do # int compare
 							if [[ ${REPLY%%:*} = ${arr_hsearch_int[y]%%:*} ]]; then # header name matches
 								if ! is_int "${REPLY#*: }"; then
-									printf "header value \`%s' is not an integer.\n" "${REPLY#*: }" >&2
+									pe "header value \`${REPLY#*: }' is not an integer."
 									exit 1
 								fi
 								str_val="${arr_hsearch_int[y]#*:}"
@@ -1196,7 +1201,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 					if ((calc_mem)); then
 						if [[ ${REPLY%%:*} = "Size in memory" ]]; then
 							if ! is_int "${REPLY#*: }"; then
-								printf "header value \`%s' is not an integer.\n" "${REPLY#*: }" >&2
+								pe "header value \`${REPLY#*: }' is not an integer."
 								exit 1
 							fi
 							# save to temp, in case we throw away the set, if it doesn't match other criteria
@@ -1659,7 +1664,7 @@ options:
 		;;
 		-\!|-f) ex_err "unsupported option: \`$1'"
 		;;
-		-v) printf "%s version %s\n" "$me" "$version"
+		-v) pm "$me version $version"
 			exit 0
 		;;
 		--) break
