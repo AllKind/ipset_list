@@ -562,8 +562,7 @@ arr_old_select=()
 
 # main screen: checklist with all options
 xopts=( $(dia_clist \
-"Select the desired options (multiple choice).\n\
-Use SPACE key to (de)select.\n\
+"Select options (multiple choice). Use SPACE key to (de)select.\n\
 After you confirm with ENTER or the OK button, options will be evaluated.\n\
 You will be prompted for input if an option requires this.\n\
 Use the ESC key or CANCEL button to quit." "${arr_opts[@]}") )
