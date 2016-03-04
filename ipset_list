@@ -627,7 +627,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 				"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`*:*'\nCancel to quit.")
 			if (($? == 0)); then
 				if ! [[ ${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]} = *:* ]]; then
-					ex_err "invalid format of header descriptor: \`${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]}'. expecting: \`*:*'"
+					ex_err "Invalid format of header descriptor: \`${arr_hsearch[$(( ${#arr_hsearch[@]} - 1 ))]}'. Expecting: \`*:*'"
 					iactive_err=1
 					return 0
 				fi
@@ -645,7 +645,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 				"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit.")
 			if (($? == 0)); then
 				if ! is_compare_str "${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]#*:}"; then
-					ex_err "invalid format of header descriptor: \`${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+					ex_err "Invalid format of header descriptor: \`${arr_hsearch_int[$(( ${#arr_hsearch_int[@]} - 1 ))]}'. Expecting: \`glob:[!|<|>|<=|>=]value'"
 					return 0
 				fi
 				let match_on_header+=1
@@ -663,7 +663,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 				"Enter one or more expression(s) for: ${xopts[x]}.\nExpected input: \`glob:[!|<|>|<=|>=]value'\nCancel to quit.")
 			if (($? == 0)); then
 				if ! [[ ${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]} = *:* ]]; then
-					ex_err "invalid format of headers \'Header' flag descriptor: \`${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+					ex_err "Invalid format of headers \'Header' flag descriptor: \`${arr_hsearch_xint[$(( ${#arr_hsearch_xint[@]} - 1 ))]}'. Expecting: \`glob:[!|<|>|<=|>=]value'"
 					return 0
 				fi
 				let match_on_header+=1
@@ -678,7 +678,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 		str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 		if (($? == 0)); then
 			if ! is_compare_str "$str_tmp"; then
-				ex_err "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+				ex_err "Invalid format of references header descriptor: \`$str_tmp'. Expecting: \`[!|<|>|<=|>=]value'"
 				return 0
 			fi
 			let match_on_header+=1
@@ -690,7 +690,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 		str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 		if (($? == 0)); then
 			if ! is_compare_str "$str_tmp"; then
-				ex_err "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+				ex_err "Invalid format of references header descriptor: \`$str_tmp'. Expecting: \`[!|<|>|<=|>=]value'"
 				return 0
 			fi
 			let match_on_header+=1
@@ -702,7 +702,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 		str_tmp=$(dia_ibox "Enter compare expression for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'")
 		if (($? == 0)); then
 			if ! is_compare_str "$str_tmp"; then
-				ex_err "invalid format of references header descriptor: \`$str_tmp'. expecting: \`[!|<|>|<=|>=]value'"
+				ex_err "Invalid format of references header descriptor: \`$str_tmp'. Expecting: \`[!|<|>|<=|>=]value'"
 				return 0
 			fi
 			let match_on_header+=1
@@ -714,7 +714,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 		str_tmp=$(dia_ibox "Enter glob expression for: ${xopts[x]}.\nExpected input: \`*:*'")
 		if (($? == 0)); then
 			if ! [[ $str_tmp = *:* ]]; then
-				ex_err "invalid format of set type descriptor: \`$str_tmp'. expecting: \`*:*'."
+				ex_err "Invalid format of set type descriptor: \`$str_tmp'. Expecting: \`*:*'."
 				return 0
 			fi
 			let match_on_header+=1
@@ -747,7 +747,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 			if (($? == 0)); then
 				if ! ( [[ ${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]} = *:* ]] && is_compare_str_complex "${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]#*:}" )
 				then
-					ex_err "invalid format of member options expression: \`${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]}'. expecting: \`glob:[!|<|>|<=|>=]value'"
+					ex_err "Invalid format of member options expression: \`${arr_opt_int_search[$(( ${#arr_opt_int_search[@]} - 1 ))]}'. Expecting: \`glob:[!|<|>|<=|>=]value'"
 					return 0
 				fi
 				let opt_int_search+=1
@@ -764,7 +764,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 				"Enter one or more compare expression(s) for: ${xopts[x]}.\nExpected input: \`[!|<|>|<=|>=]value'\nCancel to quit.")
 			if (($? == 0)); then
 				if ! is_compare_str "${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}"; then
-					ex_err "invalid format of match on member count value: \`${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}'. expecting: \`[!|<|>|<=|>=]value'"
+					ex_err "Invalid format of match on member count value: \`${arr_match_on_msum[$(( ${#arr_match_on_msum[@]} - 1 ))]}'. Expecting: \`[!|<|>|<=|>=]value'"
 					return 0
 				fi
 				do_count=1
@@ -807,7 +807,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 				"Enter one or more glob expression(s) for: ${xopts[x]}.\nExpected input: \`*:*'.\nCancel to quit.")
 			if (($? == 0)); then
 				if ! [[ ${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]} = *:* ]]; then
-					ex_err "invalid format of header descriptor: \`${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]}'. expecting: \`*:*'"
+					ex_err "Invalid format of header descriptor: \`${arr_hxclude[$(( ${#arr_hxclude[@]} - 1 ))]}'. Expecting: \`*:*'"
 					return 0
 				fi
 				exclude_header=1
@@ -855,7 +855,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 		delim=( $(dia_ibox \
 			"Enter the new delimiter character.\nPersistent until you reset it.\n\$'string' type escapes are not supported in interactive mode.") )
 		if ((${#delim} > 1)); then
-			ex_err "only one character is allowed as delim"
+			ex_err "Only one character is allowed as delim"
 			return 0
 		fi
 		arr_cmdline[${#arr_cmdline[@]}]="-d"
@@ -932,47 +932,47 @@ if ((names_only)); then
 	if ((headers_only||show_members||show_all||isolate||\
 		glob_xclude_element||regex_xclude_element||xclude_member_opts))
    	then
-		ex_err "option -n does not allow this combination of options"
+		ex_err "Option -n does not allow this combination of options"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((headers_only)); then
 	if ((show_members || show_all || isolate)); then
-		ex_err "options -t and -a|-i|-m are mutually exclusive"
+		ex_err "Options -t and -a|-i|-m are mutually exclusive"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((headers_only)); then
 	if ((xclude_member_opts||glob_xclude_element||regex_xclude_element)); then
-		ex_err "options -t and -Xg|-Xr|-Xo are mutually exclusive"
+		ex_err "Options -t and -Xg|-Xr|-Xo are mutually exclusive"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((isolate)); then
 	if ((show_count||show_all||calc_mem||count_sets||sets_total||exclude_set)); then
-		ex_err "options -i and -a|-c|-Ca|-Cs|-Tm|-Ts|-Xs are mutually exclusive"
+		ex_err "Options -i and -a|-c|-Ca|-Cs|-Tm|-Ts|-Xs are mutually exclusive"
 		((iactive > 1)) && return 0
 	fi
 	if ((match_on_header)); then
-		ex_err "option -i does not allow matching on header entries"
+		ex_err "Option -i does not allow matching on header entries"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((glob_search || regex_search)); then
 	if ((glob_search && regex_search)); then
-		ex_err "options -Fg and -Fr are mutually exclusive"
+		ex_err "Options -Fg and -Fr are mutually exclusive"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((exclude_header)); then
 	if ! ((headers_only || show_all)); then
-		ex_err "option -Xh requires -a or -t"
+		ex_err "Option -Xh requires -a or -t"
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((glob_xclude_element || regex_xclude_element)); then
 	if ! ((show_members || show_all || isolate)); then
-		ex_err "options -Xg|-Xr require any of -a|-i|-m"
+		ex_err "Options -Xg|-Xr require any of -a|-i|-m"
 		((iactive > 1)) && return 0
 	fi
 fi
@@ -1011,7 +1011,7 @@ https://github.com/AllKind/cl"
 	   	col_set_count col_set_total col_highlight
 	do
 		if ! ("$cl" "${!opt}"); then
-			ex_err "variable \`$opt' has an invalid color value: \`${!opt}'"
+			ex_err "Variable \`$opt' has an invalid color value: \`${!opt}'"
 			return 1
 		fi
 	done
@@ -1034,18 +1034,18 @@ if [[ $1 ]]; then # there are remaining arg(s)
 	done
 	if ((isolate)); then
 		if (($# != 1)); then
-			ex_err "option -i is only valid for a single set"
+			ex_err "Option -i is only valid for a single set"
 			((iactive > 1)) && return 0
 		fi
 	fi
 	arr_sets=("${arr_tmp[@]}") # reassign matched sets
 	if ((isolate && ${#arr_sets[@]} > 1)); then
-		ex_err "option -i is only valid for a single set"
+		ex_err "Option -i is only valid for a single set"
 		((iactive > 1)) && return 0
 	fi
 else
 	if ((isolate)); then
-		ex_err "option -i is only valid for a single set"
+		ex_err "Option -i is only valid for a single set"
 		((iactive > 1)) && return 0
 	fi
 	arr_sets=( "${all_sets[@]}" )
@@ -1063,13 +1063,13 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 		test_succeed=$((test_succeed < test_element ? 0 : test_succeed)) # not all tests succeeded
 	fi
 	while read -r -t ${set_tmout:=$default_set_tmout} || {
-		(($? > 128)) && pe "timeout reached or signal received, while reading set \`$str_set'." && continue 2;
+		(($? > 128)) && pe "Timeout reached or signal received, while reading set \`$str_set'." && continue 2;
    	}; do
 		case "$REPLY" in
 			"") : ;;
 			Name:*) # header opened (set found)
 				if ((in_header)); then
-					ex_err "unexpected entry: \`$REPLY' - header not closed?"
+					ex_err "Unexpected entry: \`$REPLY' - header not closed?"
 				fi
 				let sets_sum+=1
 				if ((exclude_set)); then # don't show certain sets
@@ -1112,7 +1112,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 			;;
 			Members:*) # closes header (if not `ipset -t')
 				if ! ((in_header)); then
-					pe "unexpected entry: \`$REPLY' - header not opened?"
+					pe "Unexpected entry: \`$REPLY' - header not opened?"
 					exit 1
 				fi
 				in_header=0 found_hxclude=0
@@ -1139,7 +1139,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 			;;
 			*) # either in-header, or member entry
 				if ! ((found_set)); then
-					pe "no set opened by \`Name:'. unexpected entry: \`$REPLY'."
+					pe "No set opened by \`Name:'. Unexpected entry: \`$REPLY'."
 					exit 1
 				fi
 				if ((in_header)); then # we should be in the header
@@ -1155,7 +1155,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 						for y in ${!arr_hsearch_int[@]}; do # int compare
 							if [[ ${REPLY%%:*} = ${arr_hsearch_int[y]%%:*} ]]; then # header name matches
 								if ! is_int "${REPLY#*: }"; then
-									pe "header value \`${REPLY#*: }' is not an integer."
+									pe "Header value \`${REPLY#*: }' is not an integer."
 									exit 1
 								fi
 								str_val="${arr_hsearch_int[y]#*:}"
@@ -1201,7 +1201,7 @@ for idx in "${!arr_sets[@]}"; do str_set="${arr_sets[idx]}"
 					if ((calc_mem)); then
 						if [[ ${REPLY%%:*} = "Size in memory" ]]; then
 							if ! is_int "${REPLY#*: }"; then
-								pe "header value \`${REPLY#*: }' is not an integer."
+								pe "Header value \`${REPLY#*: }' is not an integer."
 								exit 1
 							fi
 							# save to temp, in case we throw away the set, if it doesn't match other criteria
@@ -1507,13 +1507,13 @@ options:
 		-d) # delimiter char for separating member entries
 			[[ $2 ]] || ex_miss_optarg $1 "delim character"
 			if ((${#2} > 1)); then
-				ex_err "only one character is allowed as delim"
+				ex_err "Only one character is allowed as delim"
 			fi
 			delim="$2" global_delim="$2"
 			shift
 		;;
 		-o) if [[ $2 != plain ]]; then
-				ex_err "only plain output is supported"
+				ex_err "Only plain output is supported"
 			fi
 		;;
 		-Ca) # shortcut for -c -Cs -Ts -Tm
@@ -1544,7 +1544,7 @@ options:
 				arr_opt_int_search[y++]="$2"
 				shift
 			else
-				ex_err "invalid format of member options expression: \`$2'. expecting: \`glob:[!|<|>|<=|>=]value'"
+				ex_err "Invalid format of member options expression: \`$2'. Expecting: \`glob:[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Fh) let match_on_header+=1 # show only sets, which contain a matching header entry
@@ -1553,7 +1553,7 @@ options:
 				arr_hsearch[x++]="$2"
 				shift
 			else
-				ex_err "invalid format of header descriptor: \`$2'. expecting: \`*:*'"
+				ex_err "Invalid format of header descriptor: \`$2'. Expecting: \`*:*'"
 			fi
 		;;
 		-Fi) let match_on_header+=1 # show only sets, containing a matching (int compare) header entry
@@ -1562,7 +1562,7 @@ options:
 				arr_hsearch_int[idx++]="$2"
 				shift
 			else
-				ex_err "invalid format of header descriptor: \`$2'. expecting: \`name:[!|<|>|<=|>=]value'"
+				ex_err "Invalid format of header descriptor: \`$2'. Expecting: \`name:[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Hi) let match_on_header+=1 # match on name + integer (digit & xdigit) inside of headers 'Header' flag
@@ -1571,7 +1571,7 @@ options:
 				arr_hsearch_xint[${#arr_hsearch_xint[@]}]="$2"
 				shift
 			else
-				ex_err "invalid format of headers \'Header' flag descriptor: \`$2'. expecting: \`name:[!|<|>|<=|>=]value'"
+				ex_err "Invalid format of headers \'Header' flag descriptor: \`$2'. Expecting: \`name:[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Hr) let match_on_header+=1 # shortcut for -Fi References:...
@@ -1580,7 +1580,7 @@ options:
 				arr_hsearch_int[idx++]="References:$2"
 				shift
 			else
-				ex_err "invalid format of references header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
+				ex_err "Invalid format of references header descriptor: \`$2'. Expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Hs) let match_on_header+=1 # shortcut for -Fi "Size in Memory:..."
@@ -1589,7 +1589,7 @@ options:
 				arr_hsearch_int[idx++]="Size in memory:$2"
 				shift
 			else
-				ex_err "invalid format of memsize header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
+				ex_err "Invalid format of memsize header descriptor: \`$2'. Expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Ht) let match_on_header+=1 # shortcut for -Fh Type:x:y
@@ -1598,7 +1598,7 @@ options:
 				arr_hsearch[x++]="Type:$2"
 				shift
 			else
-				ex_err "invalid format of set type descriptor: \`$2'. expecting: \`*:*'."
+				ex_err "Invalid format of set type descriptor: \`$2'. Expecting: \`*:*'."
 			fi
 		;;
 		-Hv) let match_on_header+=1 # shortcut for -Fi Revision:...
@@ -1607,7 +1607,7 @@ options:
 				arr_hsearch_int[idx++]="Revision:$2"
 				shift
 			else
-				ex_err "invalid format of revision header descriptor: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
+				ex_err "Invalid format of revision header descriptor: \`$2'. Expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-Mc) do_count=1 # match on the count of members
@@ -1616,7 +1616,7 @@ options:
 				arr_match_on_msum[${#arr_match_on_msum[@]}]="$2"
 				shift
 			else
-				ex_err "invalid format of match on member count value: \`$2'. expecting: \`[!|<|>|<=|>=]value'"
+				ex_err "Invalid format of match on member count value: \`$2'. Expecting: \`[!|<|>|<=|>=]value'"
 			fi
 		;;
 		-T) let test_element+=1 # test precence in set via `ipset test elem`
@@ -1639,7 +1639,7 @@ options:
 				arr_hxclude[${#arr_hxclude[@]}]="$2"
 				shift
 			else
-				ex_err "invalid format of header descriptor: \`$2'. expecting: \`*:*'"
+				ex_err "Invalid format of header descriptor: \`$2'. Expecting: \`*:*'"
 			fi
 		;;
 		-Xg) glob_xclude_element=1 # suppress printing of matching members using a globbing pattern
@@ -1662,7 +1662,7 @@ options:
 			arr_sxclude[${#arr_sxclude[@]}]="$2"
 			shift
 		;;
-		-\!|-f) ex_err "unsupported option: \`$1'"
+		-\!|-f) ex_err "Unsupported option: \`$1'"
 		;;
 		-v) pm "$me version $version"
 			exit 0
@@ -1676,13 +1676,13 @@ done
 
 # validate value of colorize
 if [[ ${colorize:=0} != [01] ]]; then
-	ex_err "value of variable \`colorize' \`$colorize' is not 0 or 1"
+	ex_err "Value of variable \`colorize' \`$colorize' is not 0 or 1"
 fi
 
 # validate set_tmout and iactive_tmout variables
 for opt in set_tmout iactive_tmout; do
 	if ! is_int "${!opt:-0}"; then
-		ex_err "value \`${!opt}' of variable \`$opt' is not an integer"
+		ex_err "Value \`${!opt}' of variable \`$opt' is not an integer"
 	fi
 done
 
@@ -1691,16 +1691,16 @@ while :; do
 	[[ $ipset ]] && command -v "$ipset" &>/dev/null && break
 	[[ -x ${ipset:-$(command -v ipset)} ]] && ipset="$(command -v ipset)" && break
 	[[ -x ${ipset:=/sbin/ipset} ]] && break
-	ex_err "ipset binary \`$ipset' does not exist, or is not executable. check \`ipset' variable"
+	ex_err "ipset binary \`$ipset' does not exist, or is not executable. Check \`ipset' variable"
 done
 ips_version="$("$ipset" version)"
 ips_version="${ips_version#ipset v}"
 ips_version="${ips_version%%.*}"
 if ! is_int "$ips_version"; then
-	ex_err "failed retrieving ipset version. expected digits, got: \`$ips_version'"
+	ex_err "Failed retrieving ipset version. expected digits, got: \`$ips_version'"
 fi
 if ((ips_version < 6)); then
-	ex_err "found version \`$ips_version' - ipset versions from 6.x and upwards are supported"
+	ex_err "Found version \`$ips_version' - ipset versions from 6.x and upwards are supported"
 fi
 
 # sets to work on (no arg means all sets)
@@ -1761,7 +1761,7 @@ if ((iactive)); then # interactive mode
 	# check for int values
 	for opt in w_height w_with l_height; do
 		if ! is_int "${!opt}"; then
-			ex_err "value of \`$opt' is not an integer"
+			ex_err "Value of \`$opt' is not an integer"
 		fi
 	done
 	# if 0 and tput is present, adjust window measures automatically
