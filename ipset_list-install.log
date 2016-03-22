@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-declare -- BASHCOMPDIR="/tmp/compl"
-declare -- BINDIR="/tmp/sbin"
-declare -- DATAROOTDIR="/tmp/share"
-declare -- DOCDIR="/tmp/share/doc"
-declare -- MANDIR="/tmp/share/man"
-declare -- SYSCONFDIR="/tmp/etc"
