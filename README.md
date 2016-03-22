@@ -23,6 +23,7 @@ Features:
 - Calculate the total size in memory of all matching sets.
 - Calculate the amount of matching, excluded and traversed sets.
 - Test for existence of multiple elements over multiple sets.
+- Save the query result in plain ipset commands format.
 - Operate on a single, selected, or all sets.
 - Colorize the output.
 - A wizard based interactive mode.
