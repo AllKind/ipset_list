@@ -78,5 +78,5 @@ Examples:
 - `ipset_list - -d $'\n'`  - enter interactive mode, globally set delim to newline.
 - `ipset_list - >/tmp/data`  - enter interactive mode and redirect the output to a file.
 - `ipset_list - -G`  - enter interactive mode, show generated command line.
-- `ipset_list -Ht hash:ip -T 1.1.1.1 -T 2.2.2.2 -m -Gp auto - show all sets of type hash:ip. Test for existence of the elements 1.1.1.1 and 2.2.2.2. Show the members and save the query result as commands in plain ipset format to a file, which name is auto-generated.
+- `ipset_list -Ht hash:ip -T 1.1.1.1 -T 2.2.2.2` -m -Gp auto - show all sets of type hash:ip. Test for existence of the elements 1.1.1.1 and 2.2.2.2. Show the members and save the query result as commands in plain ipset format to a file, which name is auto-generated.
 
