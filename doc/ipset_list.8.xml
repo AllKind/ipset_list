@@ -15,12 +15,12 @@
             <contrib>Thanks go to the open source community.</contrib>
         </author>
         <productname>ipset_list</productname>
-        <productnumber>3.4</productnumber>
+        <productnumber>3.5</productnumber>
     </info>
     <refmeta>
         <refentrytitle>ipset_list manual</refentrytitle>
         <manvolnum>8</manvolnum>
-        <refmiscinfo class="manual">ipset_list 3.4</refmiscinfo>
+        <refmiscinfo class="manual">ipset_list 3.5</refmiscinfo>
     </refmeta>
     <refnamediv>
         <refdescriptor>ipset set listing wrapper script</refdescriptor>
@@ -49,7 +49,8 @@
         <title>Description</title>
         <para>ipset_list is a wrapper script for listing sets of the netfilter
                 <command>ipset</command> program. It allows you to match and display sets, headers,
-            and elements in various ways.</para>
+            and elements in various ways. The result can be saved to a file containing the ipset
+            commands needed to create the representation of the query.</para>
         <para>It is written for the <command>bash</command> shell.</para>
         <para>It includes an interactive wizard based mode, that utilizes a dialog program
                 (<command>dialog</command> or <command>whiptail</command> are supported).</para>
@@ -58,12 +59,11 @@
             specification) for bash completion is included.</para>
         <para>Some variables are available inside the script configuration header, or the
             configuration file (<filename>ipset_list.conf</filename>). As the configuration file
-            will be loaded after reading the configuration header, its settings take precedence.
-            They are all undefined by default. Thus being available for manipulation in the
-            environment at runtime. For details see section <emphasis role="bold"
-                >Environment</emphasis>, or the comments inside
-                <filename>ipset_list[.conf]</filename>. None of them is mandatory, unless you want
-            to change default values.</para>
+            will be loaded after reading the configuration header, its settings take precedence. The
+            variables are all undefined by default. Thus being available for manipulation in the
+            environment at runtime. None of them is mandatory, unless you want to change default
+            values. For details see section <emphasis role="bold">Environment</emphasis>, or the
+            comments inside <filename>ipset_list[.conf]</filename>.</para>
         <para>Some options exclude or require each other. <command>ipset_list</command> will
             complain if that is the case. The output of <command>ipset_list -h</command> does
             display the valid combinations.</para>
@@ -250,6 +250,18 @@
                 </listitem>
             </varlistentry>
             <varlistentry>
+                <term>-Gp {auto|file}</term>
+                <listitem>
+                    <para>Save the result of the query as <command>ipset</command> set creation
+                        commands. If `<emphasis role="underline">auto</emphasis>' is used as option
+                        argument, the file name is automatically generated. Otherwise it must be
+                        specified. In interactive mode the file name will always be generated
+                        automatically, except for the first run, if a file name was give one the
+                        command line. The directory the file(s) will be saved into can be modified
+                        using the <varname>cachedir</varname> variable.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
                 <term>-Hi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
                     <para>Match on integer valued entries of the `Header' header. i.e. timeout. This
@@ -393,6 +405,15 @@
                     <listitem>
                         <para>Ipset executable. The variable can be either: empty, the name of the
                             binary, or the full path to the binary.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>cachedir</term>
+                    <listitem>
+                        <para>Directory to save the query results into. The variable can be either:
+                            empty, in which case it defaults to
+                                <filename>/var/cache/ipset_list</filename>, or a regular
+                            path.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>

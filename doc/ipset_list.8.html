@@ -11,15 +11,16 @@
                 <em class="replaceable"><code>set-name-glob</code></em>
             ...]</p></div></div><div class="refsect1" lang="en"><a name="description"></a><h2>Description</h2><p>ipset_list is a wrapper script for listing sets of the netfilter
                 <span class="command"><strong>ipset</strong></span> program. It allows you to match and display sets, headers,
-            and elements in various ways.</p><p>It is written for the <span class="command"><strong>bash</strong></span> shell.</p><p>It includes an interactive wizard based mode, that utilizes a dialog program
+            and elements in various ways. The result can be saved to a file containing the ipset
+            commands needed to create the representation of the query.</p><p>It is written for the <span class="command"><strong>bash</strong></span> shell.</p><p>It includes an interactive wizard based mode, that utilizes a dialog program
                 (<span class="command"><strong>dialog</strong></span> or <span class="command"><strong>whiptail</strong></span> are supported).</p><p>Optionally the output can be colorized.</p><p>A <span class="underline">compspec</span> (programmable completion
             specification) for bash completion is included.</p><p>Some variables are available inside the script configuration header, or the
             configuration file (<code class="filename">ipset_list.conf</code>). As the configuration file
-            will be loaded after reading the configuration header, its settings take precedence.
-            They are all undefined by default. Thus being available for manipulation in the
-            environment at runtime. For details see section <span class="bold"><strong>Environment</strong></span>, or the comments inside
-                <code class="filename">ipset_list[.conf]</code>. None of them is mandatory, unless you want
-            to change default values.</p><p>Some options exclude or require each other. <span class="command"><strong>ipset_list</strong></span> will
+            will be loaded after reading the configuration header, its settings take precedence. The
+            variables are all undefined by default. Thus being available for manipulation in the
+            environment at runtime. None of them is mandatory, unless you want to change default
+            values. For details see section <span class="bold"><strong>Environment</strong></span>, or the
+            comments inside <code class="filename">ipset_list[.conf]</code>.</p><p>Some options exclude or require each other. <span class="command"><strong>ipset_list</strong></span> will
             complain if that is the case. The output of <span class="command"><strong>ipset_list -h</strong></span> does
             display the valid combinations.</p><p>Example usage is given in the header of the script itself, or in the Readme.md
             shipping with <span class="command"><strong>ipset_list</strong></span>.</p></div><div class="refsect1" lang="en"><a name="options"></a><h2>Options</h2><p>All options are optional. Some require an argument, others do not. All options and
@@ -50,7 +51,13 @@
                         all search queries performed.</p></dd><dt><span class="term">-Cs</span></dt><dd><p>Count the amount of sets that matched the search criteria.</p></dd><dt><span class="term">-Fg pattern</span></dt><dd><p>Match on members using a [ext]glob pattern.</p></dd><dt><span class="term">-Fr pattern</span></dt><dd><p>Match on members using a regex pattern.</p></dd><dt><span class="term">-Fh header-glob:value-glob [...]</span></dt><dd><p>Show sets containing one or more [ext]glob matching headers. This option
                         can be used multiple times.</p></dd><dt><span class="term">-Fi header-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Show sets matching one or more integer valued header entries. This option
                         can be used multiple times.</p></dd><dt><span class="term">-G</span></dt><dd><p>When in interactive mode, generate the <span class="command"><strong>ipset_list</strong></span>
-                        command-line, as for use in 'normal' mode.</p></dd><dt><span class="term">-Hi header-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Match on integer valued entries of the `Header' header. i.e. timeout. This
+                        command-line, as for use in 'normal' mode.</p></dd><dt><span class="term">-Gp {auto|file}</span></dt><dd><p>Save the result of the query as <span class="command"><strong>ipset</strong></span> set creation
+                        commands. If `<span class="underline">auto</span>' is used as option
+                        argument, the file name is automatically generated. Otherwise it must be
+                        specified. In interactive mode the file name will always be generated
+                        automatically, except for the first run, if a file name was give one the
+                        command line. The directory the file(s) will be saved into can be modified
+                        using the <code class="varname">cachedir</code> variable.</p></dd><dt><span class="term">-Hi header-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Match on integer valued entries of the `Header' header. i.e. timeout. This
                         option can be used multiple times.</p></dd><dt><span class="term">-Ht set-type-glob</span></dt><dd><p>Match on the set type.</p></dd><dt><span class="term">-Hr [!|&lt;|&gt;|&lt;=|&gt;=]value</span></dt><dd><p>Match on number of references. value=integer.</p></dd><dt><span class="term">-Hs [!|&lt;|&gt;|&lt;=|&gt;=]value</span></dt><dd><p>Match on size in memory. value=integer.</p></dd><dt><span class="term">-Hv [!|&lt;|&gt;|&lt;=|&gt;=]value</span></dt><dd><p>Match on revision number. value=integer.</p></dd><dt><span class="term">-Mc [!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Match on the member count. value=integer.</p></dd><dt><span class="term">-Oi option-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Match values of member options. i.e. timeout. <code class="code">value=int |
                             0xhex[/0xhex] | hex:[!|&lt;|&gt;|&lt;=|&gt;=]hex</code>. This option can be
                         used multiple times.</p></dd><dt><span class="term">-T element [...]</span></dt><dd><p>Run <code class="code">`ipset test set element`</code> to check if the <span class="underline">element</span> is in the set. This option can be
@@ -71,7 +78,10 @@
             configuration file (<code class="filename">ipset_list.conf</code>). </p><p>
             </p><div class="variablelist"><dl><dt><span class="term">config_file</span></dt><dd><p>The full path to the configuration file. This variable is obviously
                             only available in the configuration header, or the environment.</p></dd><dt><span class="term">ipset</span></dt><dd><p>Ipset executable. The variable can be either: empty, the name of the
-                            binary, or the full path to the binary.</p></dd><dt><span class="term">set_tmout, iactive_tmout</span></dt><dd><p>See description of the `-To' parameter.</p></dd><dt><span class="term">colorize</span></dt><dd><p>Colorize the output. The variable can be either: empty (=0), `0' -
+                            binary, or the full path to the binary.</p></dd><dt><span class="term">cachedir</span></dt><dd><p>Directory to save the query results into. The variable can be either:
+                            empty, in which case it defaults to
+                                <code class="filename">/var/cache/ipset_list</code>, or a regular
+                            path.</p></dd><dt><span class="term">set_tmout, iactive_tmout</span></dt><dd><p>See description of the `-To' parameter.</p></dd><dt><span class="term">colorize</span></dt><dd><p>Colorize the output. The variable can be either: empty (=0), `0' -
                             enabled or `1' - disabled.</p></dd><dt><span class="term">cl</span></dt><dd><p>The cl program. The variable can be either: empty, the name of the
                             binary, or the full path to the binary. Also see description of the
                             `-Co' parameter.</p></dd><dt><span class="term">col_fg</span></dt><dd><p>Default foreground color. Defaults to white.</p></dd><dt><span class="term">col_bg</span></dt><dd><p>Default background color. Defaults to black.</p></dd><dt><span class="term">col_headers</span></dt><dd><p>Color for headers. Defaults to cyan.</p></dd><dt><span class="term">col_members</span></dt><dd><p>Color for members. Defaults to yellow.</p></dd><dt><span class="term">col_match</span></dt><dd><p>Color for matching entries. Defaults to red.</p></dd><dt><span class="term">col_memsize</span></dt><dd><p>Color for displaying of memsize. Defaults to green.</p></dd><dt><span class="term">col_set_count</span></dt><dd><p>Color for counting of matching sets. Defaults to magenta.</p></dd><dt><span class="term">col_set_total</span></dt><dd><p>Color for counting of traversed sets. Defaults to blue.</p></dd><dt><span class="term">col_highlight</span></dt><dd><p>General highlighting color. Defaults to white. </p></dd><dt><span class="term">dialog_prog</span></dt><dd><p>The dialog program required for interactive mode. The variable can be
