@@ -139,7 +139,7 @@ local Copts=(-Ca -Cs -Co)
 local Fopts=(-Fh -Fi -Fg -Fr -Oi)
 local Iopts=(-- -d -r -s -G -Gp -To)
 local Hopts=(-Hi -Hr -Hs -Ht -Hv)
-local Topts=(-Tm -To -Ts)
+local Topts=(-T -Tm -To -Ts)
 local Xopts=(-Xh -Xg -Xr -Xs -Xo)
 local arr_types=() arr_tmp=()
 
@@ -189,12 +189,12 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
         *)
         ((set_index)) && break
         # options expecting an opt arg
-        str_tmp="@(-@(d|Fg|Fh|Fi|Fr|Hi|Ht|Hr|Hs|Hv|Mc|Oi|To|Xg|Xh|Xr|Xs))"
+        str_tmp="@(-@(d|Fg|Fh|Fi|Fr|Gp|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Xg|Xh|Xr|Xs))"
         if [[ ${words[i-1]} = $str_tmp ]]; then
             continue
         fi
         # if not an option, register set index
-        str_tmp="@(-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Gp|Hi|Ht|Hr|Hs|Hv|Mc|Oi|To|Tm|Ts|Xg|Xh|Xo|Xr))"
+        str_tmp="@(-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Gp|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Tm|Ts|Xg|Xh|Xo|Xr))"
         if [[ ${words[i]} != $str_tmp ]]; then
             for x in ${!sets[@]}; do
                 if [[ ${sets[x]} = ${words[i]} ]]; then
@@ -233,7 +233,7 @@ if ((set_index)); then
     # and also handles those who have the name of ipset_list options
     _ipset_list_show_sets
 else
-if [[ $prev = -@(\?|d|h|v|Fg|Fi|Fr|Hi|Oi|To|Xg|Xr) ]]; then
+if [[ $prev = -@(\?|d|h|v|Fg|Fi|Fr|Hi|Oi|T|To|Xg|Xr) ]]; then
     return 0
 elif [[ $prev = -Xs ]]; then
     # list sets if user does not want to enter a glob
@@ -288,7 +288,7 @@ elif [[ $prev = -Gp ]]; then
 elif [[ $cur = -* ]]; then
     # any option is requested
     case "$prev" in
-        -@(-|\?|d|h|v|Fg|Fh|Fi|Fr|Gp|Hi|Ht|Hr|Hs|Hv|Mc|Oi|To|Xg|Xh|Xr))
+        -@(-|\?|d|h|v|Fg|Fh|Fi|Fr|Gp|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Xg|Xh|Xr))
         # options that exclude any other option,
         # or need a value we can't predict
             return 0
@@ -302,7 +302,7 @@ elif [[ $cur = -* ]]; then
     if ((iactive)); then
         COMPREPLY=( $(compgen -W '${Iopts[@]}' -- $cur ) )
     elif ((isolate)); then
-        COMPREPLY=( $(compgen -W '-- -Co -d -r -s -Fg -Fr -Gp -Oi -To -Xg -Xo -Xr' -- $cur ) )
+        COMPREPLY=( $(compgen -W '-- -Co -d -r -s -Fg -Fr -Gp -Oi -T -To -Xg -Xo -Xr' -- $cur ) )
     elif ((names_only)); then
         COMPREPLY=( $(compgen -W \
             '-- -c ${Copts[@]} ${Fopts[@]} -Gp ${Hopts[@]} -Mc ${Topts[@]} -Xs' \
@@ -344,7 +344,7 @@ elif [[ $cur = -* ]]; then
                 -Xr) _ipset_list_remove_reply_entry "-Xg" ;;
             esac
             # options allowed multiple times
-            if [[ ${words[i]} = @(""|-|-@(Fh|Fi|Hi|Mc|Oi|Xh|Xs)) ]]; then
+            if [[ ${words[i]} = @(""|-|-@(Fh|Fi|Hi|Mc|Oi|T|Xh|Xs)) ]]; then
                 continue
             else # remove dupe
                 _ipset_list_remove_reply_entry "${words[i]}"
