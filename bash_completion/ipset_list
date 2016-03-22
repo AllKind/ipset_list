@@ -137,7 +137,7 @@ local sets=( $("${ipset_list:-ipset_list}" -n) )
 local opts=(- -- -? -a -c -d -h -i -m -n -r -s -t -v)
 local Copts=(-Ca -Cs -Co)
 local Fopts=(-Fh -Fi -Fg -Fr -Oi)
-local Iopts=(-- -d -r -s -G -To)
+local Iopts=(-- -d -r -s -G -Gp -To)
 local Hopts=(-Hi -Hr -Hs -Ht -Hv)
 local Topts=(-Tm -To -Ts)
 local Xopts=(-Xh -Xg -Xr -Xs -Xo)
@@ -194,7 +194,7 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
             continue
         fi
         # if not an option, register set index
-        str_tmp="@(-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Hi|Ht|Hr|Hs|Hv|Mc|Oi|To|Tm|Ts|Xg|Xh|Xo|Xr))"
+        str_tmp="@(-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Gp|Hi|Ht|Hr|Hs|Hv|Mc|Oi|To|Tm|Ts|Xg|Xh|Xo|Xr))"
         if [[ ${words[i]} != $str_tmp ]]; then
             for x in ${!sets[@]}; do
                 if [[ ${sets[x]} = ${words[i]} ]]; then
@@ -278,10 +278,17 @@ elif [[ $prev = @(-@(Hr|Hs|Hv|Mc)) ]]; then
     # options making use of arithmetic comparison
     compopt -o nospace
     COMPREPLY=( $( compgen -P '\' -W '\! \< \> \<= \>=' -- "$cur" ) )
+elif [[ $prev = -Gp ]]; then
+	if ((got_bashcompl)); then
+		_filedir
+		COMPREPLY=( $( compgen -W 'auto ${COMPREPLY[@]}' -- "$cur" ) )
+	else
+		COMPREPLY=( $( compgen -f -- "$cur" ) )
+	fi
 elif [[ $cur = -* ]]; then
     # any option is requested
     case "$prev" in
-        -@(-|\?|d|h|v|Fg|Fh|Fi|Fr|Hi|Ht|Hr|Hs|Hv|Mc|Oi|To|Xg|Xh|Xr))
+        -@(-|\?|d|h|v|Fg|Fh|Fi|Fr|Gp|Hi|Ht|Hr|Hs|Hv|Mc|Oi|To|Xg|Xh|Xr))
         # options that exclude any other option,
         # or need a value we can't predict
             return 0
@@ -295,34 +302,34 @@ elif [[ $cur = -* ]]; then
     if ((iactive)); then
         COMPREPLY=( $(compgen -W '${Iopts[@]}' -- $cur ) )
     elif ((isolate)); then
-        COMPREPLY=( $(compgen -W '-- -Co -d -r -s -Fg -Fr -Oi -To -Xg -Xo -Xr' -- $cur ) )
+        COMPREPLY=( $(compgen -W '-- -Co -d -r -s -Fg -Fr -Gp -Oi -To -Xg -Xo -Xr' -- $cur ) )
     elif ((names_only)); then
         COMPREPLY=( $(compgen -W \
-            '-- -c ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} -Xs' \
+            '-- -c ${Copts[@]} ${Fopts[@]} -Gp ${Hopts[@]} -Mc ${Topts[@]} -Xs' \
             -- $cur ) )
     elif ((headers_only)); then
         COMPREPLY=( $(compgen -W \
-            '-- -c ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]}' \
+            '-- -c ${Copts[@]} ${Fopts[@]} -Gp ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]}' \
             -- $cur ) )
     elif ((show_members)); then
         COMPREPLY=( $(compgen -W \
-            '-- -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} -Xg -Xr -Xo' \
+            '-- -c -d -r -s ${Copts[@]} ${Fopts[@]} -Gp ${Hopts[@]} -Mc ${Topts[@]} -Xg -Xr -Xo' \
             -- $cur ) )
     elif ((show_all)); then
         COMPREPLY=( $(compgen -W \
-            '-- -c -d -r -s ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]}' \
+            '-- -c -d -r -s ${Copts[@]} ${Fopts[@]} -Gp ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]}' \
             -- $cur ) )
     elif ((resolve)); then
         COMPREPLY=( $(compgen -W \
-            '-- -a -c -d -s -m ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]}' \
+            '-- -a -c -d -s -m ${Copts[@]} ${Fopts[@]} -Gp ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]}' \
             -- $cur ) )
     elif ((header_operation)); then
         COMPREPLY=( $(compgen -W \
-            '-- -a -c -d -s -m -t ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]}' \
+            '-- -a -c -d -s -m -t ${Copts[@]} ${Fopts[@]} -Gp ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]}' \
             -- $cur ) )
     else
         COMPREPLY=( $(compgen -W \
-            '${opts[@]} ${Copts[@]} ${Fopts[@]} ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]}' \
+            '${opts[@]} ${Copts[@]} ${Fopts[@]} -Gp ${Hopts[@]} -Mc ${Topts[@]} ${Xopts[@]}' \
             -- $cur ) )
     fi
     # post process the reply
