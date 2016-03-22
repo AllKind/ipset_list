@@ -148,6 +148,10 @@
 # $0 - -d $'\n'  - enter interactive mode, globally set delim to newline.
 # $0 - -G  - enter interactive mode, show generated command line.
 # $0 - >/tmp/data  - enter interactive mode and redirect the output to a file.
+# $0 -Ht hash:ip -T 1.1.1.1 -T 2.2.2.2 -m -Gp auto - show all sets of type hash:ip.
+# + Test for existence of the elements 1.1.1.1 and 2.2.2.2.
+# + Show the members and save the query result as commands in plain ipset format
+# + to a file, which name is auto-generated.
 # -----------------------------------------------------------------
 
 # -----------------------------------------------------------------
@@ -155,7 +159,8 @@
 # -----------------------------------------------------------------
 
 # modify your PATH variable
-# by default the path is only set if the PATH variable is not already set in the environment
+# by default the path is only set if the PATH variable
+# is not already defined in the environment
 # PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 #: ${PATH:=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}
 
@@ -174,6 +179,7 @@
 # default delimiter character for set members (elements).
 # defaults to whitespace if unset.
 # use delim=$'\n' to use the ipset default newline as delimiter.
+# the command line option -d overrides this.
 #delim=" "
 
 # default read timeout (for reading sets - esp. with the -r switch).
