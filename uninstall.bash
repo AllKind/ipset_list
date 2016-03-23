@@ -137,11 +137,11 @@ for f in BASHCOMPDIR BINDIR; do
 	rem_file "${!f}/$ME"
 done
 
-for f in "${MANDIR}"/man5/${ME}*.5 "${MANDIR}"/man8/${ME}*.8; do
+for f in "${MANDIR}"/man8/${ME}*.8; do
 	rem_file "$f"
 done
 
-for f in 5 8; do
+for f in 8; do
 	rem_empty_dir "${MANDIR}/man${f}"
 done
 
