@@ -63,7 +63,7 @@ Examples:
 - `ipset_list -m -Fg "!(210.*)" setA`  - show members of setA excluding the elements matching the negated glob.
 - `ipset_list -a -Xh "@(@(H|R|M)e*):*"`  - show all info of all sets, but suppress Header, References, Revision and Member header entries (headers existing as per ipset 6.x -> tested version).
 - `ipset_list -t -Tm -Xh "@(Type|Re*|Header):*"` - show all sets headers, but suppress all but name and memsize entry, calculate the total memory size of all sets.
-- `ipset_list -t -Tm -Xh "!(Size*|Type):*" -Ts -Co` List all sets headers, but suppress all but name, type and memsize entry,
+- `ipset_list -t -Tm -Xh "!(Size*|Type):*" -Ts -Co` - list all sets headers, but suppress all but name, type and memsize entry,
  count amount of sets, calculate total memory usage, colorize the output.
 - `ipset_list -t -Ht "!(bitmap:@(ip|port))" -Xh "!(Type):*"`   - show all sets that are neither of type bitmap:ip or bitmap:port, suppress all but the type header.
 - `ipset_list -c -t -Cs -Ts -Xh "@(Size*|Re*|Header):*" -Ht "!(bitmap:*)"` - find all sets not of any bitmap type, count their members sum, display only the 'Type' header, count amount of matching and traversed sets.
