@@ -133,9 +133,16 @@ for f in SYSCONFDIR DOCDIR; do
 	rem_dir "${!f}/$ME"
 done
 
-for f in BASHCOMPDIR BINDIR; do
+for f in BINDIR; do
 	rem_file "${!f}/$ME"
 done
+
+if [[ $BASHCOMPDIR = \~ ]]; then
+	printf "bashcompdir is \`~'.\n\tRemember to manually remove completion from: \`%s'.\n" "~/.bash_completion"
+else
+	rem_file "${BASHCOMPDIR}/$ME"
+fi
+
 
 for f in "${MANDIR}"/man8/${ME}*.8; do
 	rem_file "$f"
@@ -149,6 +156,10 @@ for f in BASHCOMPDIR BINDIR DOCDIR MANDIR SYSCONFDIR DATAROOTDIR
 do
 	rem_empty_dir "${!f}"
 done
+
+if [[ $PREFIX ]]; then
+	rem_empty_dir "$PREFIX"
+fi
 
 printf "Finished uninstall\n"
 

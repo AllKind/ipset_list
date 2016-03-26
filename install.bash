@@ -53,6 +53,8 @@ PREFIX=
 SYSCONFDIR=
 VERBOSE=
 
+arr_args=( "$@" )
+
 # ------------------------------------------------------------------------- #
 # FUNCTIONS
 # ------------------------------------------------------------------------- #
@@ -198,6 +200,7 @@ install_file -m 0755 "${ME}" "${BINDIR}/$ME"
 install_file -m 0644 "${ME}.conf" "${SYSCONFDIR}/${ME}/${ME}.conf"
 
 if [[ $BASHCOMPDIR = ~ ]]; then
+	printf "bashcompdir is \`~', adding completion to \`%s'.\n\tRemember to manually remove it on uninstall, or re-install.\n" "~/.bash_completion"
 	if ! [[ $NOACT ]]; then
 		command cat ip-array_bash_completion >> ~/.bash_completion
 	fi
@@ -213,7 +216,8 @@ if ! [[ $NOACT ]]; then
 	# create log file, to be re-used by uninstall.bash
 	printf "Creating \`./${ME}-install.log' - Will need this for uninstallation!\n"
 	(set +C; printf '#!/usr/bin/env bash\n\n' > ./${ME}-install.log)
-	for var in BASHCOMPDIR BINDIR DATAROOTDIR DOCDIR MANDIR SYSCONFDIR; do
+	printf "# install arguments: %s\n\n" "${arr_args[*]}" >> ./${ME}-install.log
+	for var in PREFIX BASHCOMPDIR BINDIR DATAROOTDIR DOCDIR MANDIR SYSCONFDIR; do
 		declare -p "$var" >> ./${ME}-install.log
 	done
 fi
