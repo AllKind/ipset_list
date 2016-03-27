@@ -32,7 +32,7 @@ Features:
 - Programmable completion is included to make usage easier and faster.
 
 
-INSTALLATION:
+Installation:
 ==========
 
 An install script called install.bash ships with ipset_list.
