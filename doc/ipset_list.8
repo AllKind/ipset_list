@@ -2,12 +2,12 @@
 .\"     Title: ipset_list manual
 .\"    Author: Mart Frauenlob aka AllKind <AllKind@fastest.cc>
 .\" Generator: DocBook XSL-NS Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 03/22/2016
+.\"      Date: 03/27/2016
 .\"    Manual: ipset_list 3.5
 .\"    Source: ipset_list 3.5
 .\"  Language: English
 .\"
-.TH "IPSET_LIST MANUAL" "8" "03/22/2016" "ipset_list 3.5" "ipset_list 3\&.5"
+.TH "IPSET_LIST MANUAL" "8" "03/27/2016" "ipset_list 3.5" "ipset_list 3\&.5"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,6 +32,13 @@ ipset_list \- Match and display ipset (netfilter\&.org) sets in various ways
 .SH "SYNOPSIS"
 .HP \w'\fBipset_list\fR\ 'u
 \fBipset_list\fR [\fIoption\fR\ [\ \fIoption_argument\fR\ ]...] [\fIset\-name\-glob\fR...]
+.SH "FILES"
+.PP
+
+/usr/sbin/ipset_list
+.PP
+
+/etc/ipset_list/ipset_list\&.conf
 .SH "DESCRIPTION"
 .PP
 ipset_list is a wrapper script for listing sets of the netfilter
@@ -119,19 +126,23 @@ as delimiter\&.
 by default uses a
 \fIwhitespace\fR\&. Which can be changed permanently by editing the variable
 \fIdelim\fR
-in the configuration header of ipset_list\&. If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&. Unless you choose the
+in the configuration header of ipset_list\&.
+.sp
+If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&. Unless you choose the
 \fIDelim\fR
 option from the menu, which will overwrite the global value just for that single query\&.
 .RE
 .PP
 \-i
 .RS 4
-Show only the members of a single set\&.
+Show only the members of a
+\fBsingle\fR
+set\&.
 .RE
 .PP
 \-m
 .RS 4
-Show the members of a set\&.
+Show the set(s) members\&.
 .RE
 .PP
 \-n
@@ -153,7 +164,8 @@ Print elements sorted (if supported by the set type)\&.
 .PP
 \-t
 .RS 4
-Show set headers only\&.
+Show set headers
+\fBonly\fR\&.
 .RE
 .PP
 \-Ca
@@ -163,15 +175,24 @@ Enable all counters (shortcut for \-c \-Cs \-Ts \-Tm)\&.
 .PP
 \-Co
 .RS 4
-Colorize the output\&. Requires the
+Colorize the output\&.
+.sp
+Requires the
 \fBcl\fR
 program\&. It can be downloaded from here:
 \m[blue]\fBhttp://sf\&.net/projects/colorize\-shell/\fR\m[]
-or
-\m[blue]\fBhttps://github\&.com/AllKind/cl\fR\m[]\&. Configuration variables are available to adjust the color settings\&. Their names are prefixed with col_*\&. The list of valid color names can be retrieved by running
-\fBcl \-\-list\fR\&. The default is not to use colored output\&. That can be changed by setting the
+or:
+\m[blue]\fBhttps://github\&.com/AllKind/cl\fR\m[]\&.
+.sp
+Configuration variables are available to adjust the color settings\&. Their names are prefixed with
+col_*\&. The list of valid color names can be retrieved by running
+\fBcl \-\-list\fR\&.
+.sp
+The default is not to use colored output\&. That can be changed by setting the
 \fIcolorize\fR
-variable to `1\*(Aq\&. If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&.
+variable to `1\*(Aq\&.
+.sp
+If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&.
 .RE
 .PP
 \-Cs
@@ -210,7 +231,11 @@ command\-line, as for use in \*(Aqnormal\*(Aq mode\&.
 .RS 4
 Save the result of the query as
 \fBipset\fR
-set creation commands\&. If `\fIauto\fR\*(Aq is used as option argument, the file name is automatically generated\&. Otherwise it must be specified\&. In interactive mode the file name will always be generated automatically, except for the first run, if a file name was give one the command line\&. The directory the file(s) will be saved into can be modified using the
+set creation commands\&. If `\fIauto\fR\*(Aq is used as option argument, the file name is automatically generated\&. Otherwise it must be specified\&.
+.sp
+In interactive mode the file name will always be generated automatically, except for the first run, if a file name was give one the command line\&.
+.sp
+The directory the file(s) will be saved into can be modified using the
 \fIcachedir\fR
 variable\&.
 .RE
@@ -270,9 +295,13 @@ Calculate the total memory usage of all matching sets\&.
 Set timeout value (integer) in seconds for
 \fBread\fR\&. This affects the listing of sets\&. The default value of the
 \fIset_tmout\fR
-variable, which can be set in the configuration header of the script, is 30\&. This command line option overrides it\&. If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&. Unless you choose the
-\fITimeout\fR
-option from the menu, which will overwrite the global value just for that single search\&. To influence for how long the result is displayed in interactive mode, before returning to the main screen, set the variable
+variable, which can be set in the configuration header of the script, is 30\&. This command line option overrides it\&.
+.sp
+If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&. Unless you choose the
+\fBTimeout\fR
+option from the menu, which will overwrite the global value just for that single search\&.
+.sp
+To influence for how long the result is displayed in interactive mode, before returning to the main screen, set the variable
 \fIiactive_tmout\fR
 (default 9999999999 \- that should be sufficient time for you to stare at the result, aight?) to the desired value\&.
 .RE
@@ -340,7 +369,7 @@ See description of the `\-To\*(Aq parameter\&.
 .PP
 colorize
 .RS 4
-Colorize the output\&. The variable can be either: empty (=0), `0\*(Aq \- enabled or `1\*(Aq \- disabled\&.
+Colorize the output\&. The variable can be either: empty (=0), `0\*(Aq \- disabled, or `1\*(Aq \- enabled\&.
 .RE
 .PP
 cl
@@ -419,7 +448,9 @@ List height for interactive mode\&. Best practice is to set it to 0 and let ipse
 .RE
 .SH "EXIT CODES"
 .PP
-An exit code of `0\*(Aq indicates success\&. A return value of `1\*(Aq is a good sign of failure\&. If a
+An exit code of `0\*(Aq indicates success\&. A return value of `1\*(Aq is a good sign of failure\&.
+.PP
+If a
 \fISIGNAL\fR
 was received (HUP, INT, QUIT, STOP, TERM are trapped) the script exits with a return value of `111\*(Aq\&.
 .SH "SEE ALSO"

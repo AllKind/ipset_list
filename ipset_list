@@ -47,8 +47,9 @@
 # - Calculate the amount of matching, excluded and traversed sets.
 # - Test for existence of multiple elements over multiple sets.
 # - Operate on a single, selected, or all sets.
-# - Colorize the output.
+# - The query result can be saved as ipset set creation commands.
 # - A wizard based interactive mode.
+# - Colorize the output.
 # - Programmable completion is included to make usage easier and faster.
 # -----------------------------------------------------------------
 

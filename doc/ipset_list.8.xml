@@ -45,6 +45,15 @@
             </arg>
         </cmdsynopsis>
     </refsynopsisdiv>
+    <refsect1 xml:id="files">
+        <title>Files</title>
+        <para>
+            <filename>/usr/sbin/ipset_list</filename>
+        </para>
+        <para>
+            <filename>/etc/ipset_list/ipset_list.conf</filename>
+        </para>
+    </refsect1>
     <refsect1 xml:id="description">
         <title>Description</title>
         <para>ipset_list is a wrapper script for listing sets of the netfilter
@@ -135,23 +144,24 @@
                         be changed permanently by editing the variable <varname
                             xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink">delim</varname> in the
-                        configuration header of ipset_list. If this parameter is used when starting
-                        interactive mode, it will apply globally to all search queries performed.
-                        Unless you choose the <emphasis role="underline">Delim</emphasis> option
-                        from the menu, which will overwrite the global value just for that single
-                        query.</para>
+                        configuration header of ipset_list.</para>
+                    <para>If this parameter is used when starting interactive mode, it will apply
+                        globally to all search queries performed. Unless you choose the <emphasis
+                            role="underline">Delim</emphasis> option from the menu, which will
+                        overwrite the global value just for that single query.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
                 <term>-i</term>
                 <listitem>
-                    <para>Show only the members of a single set.</para>
+                    <para>Show only the members of a <emphasis role="bold">single</emphasis>
+                        set.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
                 <term>-m</term>
                 <listitem>
-                    <para>Show the members of a set.</para>
+                    <para>Show the set(s) members.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -178,7 +188,7 @@
             <varlistentry>
                 <term>-t</term>
                 <listitem>
-                    <para>Show set headers only.</para>
+                    <para>Show set headers <emphasis role="bold">only</emphasis>.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -190,24 +200,25 @@
             <varlistentry>
                 <term>-Co</term>
                 <listitem>
-                    <para>Colorize the output. Requires the <command
-                            xmlns:xi="http://www.w3.org/2001/XInclude"
+                    <para>Colorize the output.</para>
+                    <para>Requires the <command xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink">cl</command> program. It can
                         be downloaded from here: <link
                             xlink:href="http://sf.net/projects/colorize-shell/"
                             xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink"
-                            >http://sf.net/projects/colorize-shell/</link> or <link
+                            >http://sf.net/projects/colorize-shell/</link> or: <link
                             xlink:href="https://github.com/AllKind/cl"
                             xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink"
-                            >https://github.com/AllKind/cl</link>. Configuration variables are
-                        available to adjust the color settings. Their names are prefixed with col_*.
-                        The list of valid color names can be retrieved by running <command>cl
-                            --list</command>. The default is not to use colored output. That can be
-                        changed by setting the <varname>colorize</varname> variable to `1'. If this
-                        parameter is used when starting interactive mode, it will apply globally to
-                        all search queries performed.</para>
+                            >https://github.com/AllKind/cl</link>.</para>
+                    <para>Configuration variables are available to adjust the color settings. Their
+                        names are prefixed with <code>col_*</code>. The list of valid color names
+                        can be retrieved by running <command>cl --list</command>.</para>
+                    <para>The default is not to use colored output. That can be changed by setting
+                        the <varname>colorize</varname> variable to `1'.</para>
+                    <para>If this parameter is used when starting interactive mode, it will apply
+                        globally to all search queries performed.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -255,10 +266,12 @@
                     <para>Save the result of the query as <command>ipset</command> set creation
                         commands. If `<emphasis role="underline">auto</emphasis>' is used as option
                         argument, the file name is automatically generated. Otherwise it must be
-                        specified. In interactive mode the file name will always be generated
-                        automatically, except for the first run, if a file name was give one the
-                        command line. The directory the file(s) will be saved into can be modified
-                        using the <varname>cachedir</varname> variable.</para>
+                        specified.</para>
+                    <para>In interactive mode the file name will always be generated automatically,
+                        except for the first run, if a file name was give one the command
+                        line.</para>
+                    <para>The directory the file(s) will be saved into can be modified using the
+                            <varname>cachedir</varname> variable.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -330,12 +343,13 @@
                             xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink">set_tmout</varname> variable,
                         which can be set in the configuration header of the script, is 30. This
-                        command line option overrides it. If this parameter is used when starting
-                        interactive mode, it will apply globally to all search queries performed.
-                        Unless you choose the <emphasis role="underline">Timeout</emphasis> option
-                        from the menu, which will overwrite the global value just for that single
-                        search. To influence for how long the result is displayed in interactive
-                        mode, before returning to the main screen, set the variable
+                        command line option overrides it.</para>
+                    <para>If this parameter is used when starting interactive mode, it will apply
+                        globally to all search queries performed. Unless you choose the <command
+                            role="underline">Timeout</command> option from the menu, which will
+                        overwrite the global value just for that single search.</para>
+                    <para>To influence for how long the result is displayed in interactive mode,
+                        before returning to the main screen, set the variable
                             <varname>iactive_tmout</varname> (default 9999999999 - that should be
                         sufficient time for you to stare at the result, aight?) to the desired
                         value.</para>
@@ -426,7 +440,7 @@
                     <term>colorize</term>
                     <listitem>
                         <para>Colorize the output. The variable can be either: empty (=0), `0' -
-                            enabled or `1' - disabled.</para>
+                            disabled, or `1' - enabled.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
@@ -534,8 +548,9 @@
     <refsect1 xml:id="exit_stat">
         <title>Exit codes</title>
         <para>An exit code of `0' indicates success. A return value of `1' is a good sign of
-            failure. If a <emphasis role="underline">SIGNAL</emphasis> was received (HUP, INT, QUIT,
-            STOP, TERM are trapped) the script exits with a return value of `111'. </para>
+            failure.</para>
+        <para>If a <emphasis role="underline">SIGNAL</emphasis> was received (HUP, INT, QUIT, STOP,
+            TERM are trapped) the script exits with a return value of `111'. </para>
     </refsect1>
     <refsect1 xml:id="see_also">
         <title>See also</title>

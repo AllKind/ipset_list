@@ -3,6 +3,7 @@ ipset_list
 
 ipset set listing wrapper script written for the bash shell.
 It allows you to match and display sets, headers and elements in various ways.
+The result can be saved to a file containing the ipset commands needed to create the representation of the query.
 
 
 Features:
@@ -25,8 +26,9 @@ Features:
 - Test for existence of multiple elements over multiple sets.
 - Save the query result in plain ipset commands format.
 - Operate on a single, selected, or all sets.
-- Colorize the output.
+- The query result can be saved as ipset set creation commands.
 - A wizard based interactive mode.
+- Colorize the output.
 - Programmable completion is included to make usage easier and faster.
 
 
