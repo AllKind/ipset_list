@@ -75,7 +75,7 @@ Options:
 --docdir /path                Default: DATAROOTDIR/doc
 --mandir /path                Default: DATAROOTDIR/man
 --sysconfdir /path            Default: PREFIX/etc
---bashcompdir /path           Retrieved with pkg-config, or as fallback:
+--bashcompdir /path           Default: Retrieved with pkg-config, or as fallback:
                               /etc/bash_completion.d, or ~/.bash_completion
 \n"
 }
