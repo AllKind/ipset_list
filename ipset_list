@@ -335,6 +335,7 @@ declare -i iactive=0 # en/disable interactive mode
 declare -i iactive_err=0 # remember error state in interactive mode
 declare -i generate_cmdline=global_gen_cmd=0 # generate command line in iactive mode
 declare -i save_query_plain=0 global_save_query_plain=0 # generate plain ipset commands
+declare -i global_w_height=-1 global_w_with=-1 global_l_height=-1 # remember init values of window measures
 declare -ir default_set_tmout=30
 declare -r default_delim=" "
 declare global_delim="${delim:=$default_delim}"
@@ -495,19 +496,35 @@ fi
 return 1
 }
 
+_readjust_win() {
+# if globally 0 and tput is present, adjust window measures automatically on each loop
+if (( global_w_height == 0 )); then
+	w_height=$( "$tput" lines )
+fi
+if (( global_w_with == 0 )); then
+	w_with=$( "$tput" cols )
+fi
+if (( global_l_height == 0 )); then
+	l_height=$(( $( "$tput" lines ) - 10 ))
+fi
+}
+
 rdia() { # run dialog program
 "$dialog_prog" --title "ipset_list interactive mode" "$@" 2>&1 > /dev/tty
 }
 
 dia_ibox() { # input box
+_readjust_win
 rdia --inputbox "$1" $w_height $w_with
 }
 
 dia_mbox() { # msg box
+_readjust_win
 rdia --msgbox "$1" $w_height $w_with
 }
 
 dia_clist() { # checklist
+_readjust_win
 if [[ $1 = --noitem ]]; then
 	local str_cmd="--noitem --separate-output --checklist"
 	shift
@@ -1850,14 +1867,18 @@ if ((iactive)); then # interactive mode
 		fi
 	done
 	# if 0 and tput is present, adjust window measures automatically
+	# remember initial status for later re-adjustment
 	if (( w_height == 0 )) && [[ $tput ]]; then
 		w_height=$( "$tput" lines )
+		global_w_height=0
 	fi
 	if (( w_with == 0 )) && [[ $tput ]]; then
 		w_with=$( "$tput" cols )
+		global_w_with=0
 	fi
 	if (( l_height == 0 )) && [[ $tput ]]; then
 		l_height=$(( $( "$tput" lines ) - 10 ))
+		global_l_height=0
 	fi
 	# ready to run interactive mode
 	while (($? == 0)); do
