@@ -321,7 +321,7 @@ umask 077
 
 # variables
 export LC_ALL=C
-readonly version=3.4
+readonly version=3.5
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_xclude="" str_type str_header str_cache_plain_file opt
