@@ -32,6 +32,16 @@ Features:
 - Programmable completion is included to make usage easier and faster.
 
 
+INSTALLATION:
+==========
+
+An install script called install.bash ships with ipset_list.
+Running `install.bash -h` will show the available options.
+By default an installation path prefix of /usr/local is set.
+To install it into common locations run: `install.bash --prefix /usr --sysconfdir /etc`.
+The install script creates a log file, which will be used by the uninstall.bash uninstall script.
+
+
 Examples:
 ==========
 
