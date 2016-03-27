@@ -905,7 +905,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 		generate_cmdline=1
 	elif [[ ${xopts[x]} = Plain_export ]]; then # generate plain format ipset cmds
 		save_query_plain=1
-		str_cache_plain_file="${cachedir}/${me}_cache-plain_$(command date +%F_%T)_rnd${RANDOM}.bash"
+		str_cache_plain_file="${cachedir}/${me}_cache-plain_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
 	elif [[ ${xopts[x]} = Timeout ]]; then # timeout for reading sets
 		set_tmout=( $(dia_ibox "Enter the timeout value (integer): ${xopts[x]}") )
 		if (($? == 0)); then
@@ -1617,7 +1617,7 @@ options:
 		-Gp) save_query_plain=1 global_save_query_plain=1 # generate plain ipset commands
 			[[ $2 ]] || ex_miss_optarg $1 "filename"
 			if [[ $2 = auto ]]; then
-				str_cache_plain_file="${cachedir}/${me}_cache-plain_$(command date +%F_%T)_rnd${RANDOM}.bash"
+				str_cache_plain_file="${cachedir}/${me}_cache-plain_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
 			else
 				str_cache_plain_file="${cachedir}/$2"
 			fi
