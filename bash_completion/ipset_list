@@ -133,7 +133,7 @@ local -i i=x=got_bashcompl=iactive=0
 local -i show_all=isolate=show_members=resolve=headers_only=names_only=0
 local -i header_operation=set_index=0
 local cur prev cword words str_tmp
-local sets=( $("${ipset_list:-ipset_list}" -n) )
+local sets=( $("${ipset_list:-ipset_list}" -n 2>/dev/null) ) 2>/dev/null
 local opts=(- -- -? -a -c -d -h -i -m -n -r -s -t -v)
 local Copts=(-Ca -Cs -Co)
 local Fopts=(-Fh -Fi -Fg -Fr -Oi)
@@ -263,7 +263,7 @@ elif [[ $prev = @(-Fh|-Xh) ]]; then
         while read -r; do
             [[ $REPLY = Name ]] && continue
             COMPREPLY[${#COMPREPLY[@]}]="$REPLY"
-        done < <("$ipset_list" -t "${sets[0]}"|command awk -F: '{print $1}')
+        done < <("$ipset_list" -t "${sets[0]}" 2>/dev/null|command awk -F: '{print $1}')
         compopt -o nospace
         local IFS=$'\n'
         if [[ $prev = -Xh ]]; then
