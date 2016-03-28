@@ -406,35 +406,74 @@ fi
 return 0
 }
 
-x_indent() {
+x_indent() { # xml tag indention
 local -i x
-if ((tag_idx)); then
+#if ((tag_idx)); then
 	for ((x=1; x<=tag_idx; x++)); do
 		printf '    ' >> "$str_cache_xml_file"
 	done
-fi
+#fi
 }
 
-o_xtag() {
+o_xtag() { # <tag>
 x_indent
 printf '<%s>\n' "$1" >> "$str_cache_xml_file"
 }
 
-c_xtag() {
+c_xtag() { # </tag>
 x_indent
 printf '</%s>\n' "$1" >> "$str_cache_xml_file"
 }
 
-e_xtag() {
+e_xtag() { # <tag/>
 x_indent
 printf '<%s/>\n' "$1" >> "$str_cache_xml_file"
 }
 
-oc_xtag() {
+oc_xtag() { # <tag>CONTENT</tag>
 x_indent
 printf '<%s>%s</%s>\n' "$1" "$2" "$1" >> "$str_cache_xml_file"
 }
 
+head_val_is_int() { # just for safety, check if expected val is integer
+if ! is_int "$2"; then
+	pe "Headers $1 value \`$2' is not an integer."
+	exit 1
+fi
+}
+
+get_header() { # gather the header information
+local str_n="${REPLY%%:*}" str_v="${REPLY#*:+([[:blank:]])}"
+if [[ $str_n = Type ]]; then
+	if ((save_query_plain || save_query_xml)); then
+		str_type="$str_v"
+	fi
+elif [[ $str_n = Header ]]; then
+	if ((save_query_plain || save_query_xml)); then
+		str_header="$str_v"
+	fi
+elif [[ ${REPLY%%:*} = "Size in memory" ]]; then
+	# for calc_mem: save to temp, in case we throw away the set, if it doesn't match other criteria
+	# for save_query_xml: save memsize for tag writing
+	if ((calc_mem || save_query_xml)); then
+		head_val_is_int "$str_n" "$str_v"
+		mem_tmp="$str_v"
+	fi
+elif [[ $str_n = Revision ]]; then
+	if ((save_query_xml)); then
+		head_val_is_int "$str_n" "$str_v"
+		str_revision="$str_v"
+	fi
+elif [[ $str_n = References ]]; then
+	if ((save_query_xml)); then
+		head_val_is_int "$str_n" "$str_v"
+		str_references="$str_v"
+	fi
+elif [[ $str_n = "Number of entries" ]]; then
+	head_val_is_int "$str_n" "$str_v"
+	builtin_mc="$str_v" # we have the built in member count
+fi
+}
 
 add_search_to_member_cache() { # cache set members
 if ((show_members || show_all || isolate)); then
@@ -1223,38 +1262,7 @@ for idx in "${!arr_sets[@]}"; do
 							while read -r -t ${set_tmout:=$default_set_tmout} || {
 								(($? > 128)) && pe "Timeout reached or signal received, while reading set \`$str_set'." && continue 3;
 							}; do
-								# gather information needed to create the set
-								if [[ $REPLY = "Type:"+([[:blank:]])* ]]; then
-									str_type=${REPLY#*:+([[:blank:]])}
-								elif [[ $REPLY = "Header:"+([[:blank:]])* ]]; then
-									str_header=${REPLY#*:+([[:blank:]])}
-								elif [[ ${REPLY%%:*} = "Size in memory" ]]; then
-									if ((save_query_xml)); then
-										if ! is_int "${REPLY#*: }"; then
-											pe "Header value \`${REPLY#*: }' is not an integer."
-											exit 1
-										fi
-										# save memsize for tag writing
-										mem_tmp=${REPLY#*: }
-									fi
-								elif [[ ${REPLY%%:*} = "Revision" ]]; then
-									if ((save_query_xml)); then
-										if ! is_int "${REPLY#*: }"; then
-											pe "Header value \`${REPLY#*: }' is not an integer."
-											exit 1
-										fi
-										str_revision=${REPLY#*:+([[:blank:]])}
-									fi
-								elif [[ ${REPLY%%:*} = "References" ]]; then
-									if ((save_query_xml)); then
-										if ! is_int "${REPLY#*: }"; then
-											pe "Header value \`${REPLY#*: }' is not an integer."
-											exit 1
-										fi
-										str_references=${REPLY#*:+([[:blank:]])}
-									fi
-								fi
-#								[[ $str_type && $str_header ]] && break
+								get_header # retrieve header info
 							done < <("$ipset" list -t "$str_set")
 						fi
 						break # nothing to show but the names
@@ -1300,45 +1308,7 @@ for idx in "${!arr_sets[@]}"; do
 					exit 1
 				fi
 				if ((in_header)); then # we should be in the header
-					# gather information needed to create the set
-					if [[ $REPLY = "Type:"+([[:blank:]])* ]]; then
-						if ((save_query_plain || save_query_xml)); then # save plain/xml ipset commands
-							str_type=${REPLY#*:+([[:blank:]])}
-						fi
-					elif [[ $REPLY = "Header:"+([[:blank:]])* ]]; then
-						if ((save_query_plain || save_query_xml)); then
-							str_header=${REPLY#*:+([[:blank:]])}
-						fi
-					elif [[ ${REPLY%%:*} = "Size in memory" ]]; then
-						if ((calc_mem || save_query_xml)); then
-							if ! is_int "${REPLY#*: }"; then
-								pe "Header value \`${REPLY#*: }' is not an integer."
-								exit 1
-							fi
-							# for calc_mem: save to temp, in case we throw away the set, if it doesn't match other criteria
-							# for save_query_xml: save memsize for tag writing
-							mem_tmp=${REPLY#*: }
-						fi
-					elif [[ ${REPLY%%:*} = "Revision" ]]; then
-						if ((save_query_xml)); then
-							if ! is_int "${REPLY#*: }"; then
-								pe "Header value \`${REPLY#*: }' is not an integer."
-								exit 1
-							fi
-							str_revision=${REPLY#*:+([[:blank:]])}
-						fi
-					elif [[ ${REPLY%%:*} = "References" ]]; then
-						if ((save_query_xml)); then
-							if ! is_int "${REPLY#*: }"; then
-								pe "Header value \`${REPLY#*: }' is not an integer."
-								exit 1
-							fi
-							str_references=${REPLY#*:+([[:blank:]])}
-						fi
-					fi
-					if [[ $REPLY = "Number of entries:"+([[:blank:]])+([[:digit:]]) ]]; then
-						builtin_mc=${REPLY#*:+([[:blank:]])} # we have the built in member count
-					fi
+					get_header # retrieve header info
 					if ((match_on_header && found_header < match_on_header)); then # match on an header entry
 						for y in ${!arr_hsearch[@]}; do # string compare
 							if [[ ${REPLY%%:*} = ${arr_hsearch[y]%%:*} && ${REPLY#*: } = ${arr_hsearch[y]#*:} ]]
@@ -1347,10 +1317,7 @@ for idx in "${!arr_sets[@]}"; do
 						done
 						for y in ${!arr_hsearch_int[@]}; do # int compare
 							if [[ ${REPLY%%:*} = ${arr_hsearch_int[y]%%:*} ]]; then # header name matches
-								if ! is_int "${REPLY#*: }"; then
-									pe "Header value \`${REPLY#*: }' is not an integer."
-									exit 1
-								fi
+								head_val_is_int "${REPLY%%:*}" "${REPLY#*:+([[:blank:]])}"
 								str_val="${arr_hsearch_int[y]#*:}"
 								str_op="${str_val//[[:digit:]]}" # compare operator defaults to `=='
 								[[ ${str_op:===} = \! ]] && str_op='!='
