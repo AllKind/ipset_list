@@ -15,12 +15,12 @@
             <contrib>Thanks go to the open source community.</contrib>
         </author>
         <productname>ipset_list</productname>
-        <productnumber>3.5</productnumber>
+        <productnumber>3.6</productnumber>
     </info>
     <refmeta>
         <refentrytitle>ipset_list manual</refentrytitle>
         <manvolnum>8</manvolnum>
-        <refmiscinfo class="manual">ipset_list 3.5</refmiscinfo>
+        <refmiscinfo class="manual">ipset_list 3.6</refmiscinfo>
     </refmeta>
     <refnamediv>
         <refdescriptor>ipset set listing wrapper script</refdescriptor>
@@ -58,8 +58,8 @@
         <title>Description</title>
         <para>ipset_list is a wrapper script for listing sets of the netfilter
                 <command>ipset</command> program. It allows you to match and display sets, headers,
-            and elements in various ways. The result can be saved to a file containing the ipset
-            commands needed to create the representation of the query.</para>
+            and elements in various ways. The resulting representation of the query can be saved to
+            a file in ipset `save' and/or `xml' format.</para>
         <para>It is written for the <command>bash</command> shell.</para>
         <para>It includes an interactive wizard based mode, that utilizes a dialog program
                 (<command>dialog</command> or <command>whiptail</command> are supported).</para>
@@ -264,7 +264,23 @@
                 <term>-Gp {auto|file}</term>
                 <listitem>
                     <para>Save the result of the query as <command>ipset</command> set creation
-                        commands. If `<emphasis role="underline">auto</emphasis>' is used as option
+                        commands. The format is equal to the output of `ipset save`.</para>
+                    <para>If `<emphasis role="underline">auto</emphasis>' is used as option
+                        argument, the file name is automatically generated. Otherwise it must be
+                        specified.</para>
+                    <para>In interactive mode the file name will always be generated automatically,
+                        except for the first run, if a file name was give one the command
+                        line.</para>
+                    <para>The directory the file(s) will be saved into can be modified using the
+                            <varname>cachedir</varname> variable.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-Gx {auto|file}</term>
+                <listitem>
+                    <para>Save the result of the query as <command>ipset</command> xml
+                        output.</para>
+                    <para>If `<emphasis role="underline">auto</emphasis>' is used as option
                         argument, the file name is automatically generated. Otherwise it must be
                         specified.</para>
                     <para>In interactive mode the file name will always be generated automatically,

@@ -15,8 +15,8 @@
             <code class="filename">/etc/ipset_list/ipset_list.conf</code>
         </p></div><div class="refsect1" lang="en"><a name="description"></a><h2>Description</h2><p>ipset_list is a wrapper script for listing sets of the netfilter
                 <span class="command"><strong>ipset</strong></span> program. It allows you to match and display sets, headers,
-            and elements in various ways. The result can be saved to a file containing the ipset
-            commands needed to create the representation of the query.</p><p>It is written for the <span class="command"><strong>bash</strong></span> shell.</p><p>It includes an interactive wizard based mode, that utilizes a dialog program
+            and elements in various ways. The resulting representation of the query can be saved to
+            a file in ipset `save' and/or `xml' format.</p><p>It is written for the <span class="command"><strong>bash</strong></span> shell.</p><p>It includes an interactive wizard based mode, that utilizes a dialog program
                 (<span class="command"><strong>dialog</strong></span> or <span class="command"><strong>whiptail</strong></span> are supported).</p><p>Optionally the output can be colorized.</p><p>A <span class="underline">compspec</span> (programmable completion
             specification) for bash completion is included.</p><p>Some variables are available inside the script configuration header, or the
             configuration file (<code class="filename">ipset_list.conf</code>). As the configuration file
@@ -53,7 +53,13 @@
                         can be used multiple times.</p></dd><dt><span class="term">-Fi header-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Show sets matching one or more integer valued header entries. This option
                         can be used multiple times.</p></dd><dt><span class="term">-G</span></dt><dd><p>When in interactive mode, generate the <span class="command"><strong>ipset_list</strong></span>
                         command-line, as for use in 'normal' mode.</p></dd><dt><span class="term">-Gp {auto|file}</span></dt><dd><p>Save the result of the query as <span class="command"><strong>ipset</strong></span> set creation
-                        commands. If `<span class="underline">auto</span>' is used as option
+                        commands. The format is equal to the output of `ipset save`.</p><p>If `<span class="underline">auto</span>' is used as option
+                        argument, the file name is automatically generated. Otherwise it must be
+                        specified.</p><p>In interactive mode the file name will always be generated automatically,
+                        except for the first run, if a file name was give one the command
+                        line.</p><p>The directory the file(s) will be saved into can be modified using the
+                            <code class="varname">cachedir</code> variable.</p></dd><dt><span class="term">-Gx {auto|file}</span></dt><dd><p>Save the result of the query as <span class="command"><strong>ipset</strong></span> xml
+                        output.</p><p>If `<span class="underline">auto</span>' is used as option
                         argument, the file name is automatically generated. Otherwise it must be
                         specified.</p><p>In interactive mode the file name will always be generated automatically,
                         except for the first run, if a file name was give one the command

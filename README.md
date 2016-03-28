@@ -3,7 +3,8 @@ ipset_list
 
 ipset set listing wrapper script written for the bash shell.
 It allows you to match and display sets, headers and elements in various ways.
-The result can be saved to a file containing the ipset commands needed to create the representation of the query.
+The resulting representation of the query can be saved to a file, either in
+`ipset save -o save`, or `ipset save -o xml` format.
 
 
 Features:
@@ -24,7 +25,8 @@ Features:
 - Calculate the total size in memory of all matching sets.
 - Calculate the amount of matching, excluded and traversed sets.
 - Test for existence of multiple elements over multiple sets.
-- Save the query result in plain ipset commands format.
+- Save the query result in ipset save commands format.
+- Save the query result in ipset xml output format.
 - Operate on a single, selected, or all sets.
 - The query result can be saved as ipset set creation commands.
 - A wizard based interactive mode.
@@ -90,5 +92,5 @@ Examples:
 - `ipset_list - -d $'\n'`  - enter interactive mode, globally set delim to newline.
 - `ipset_list - >/tmp/data`  - enter interactive mode and redirect the output to a file.
 - `ipset_list - -G`  - enter interactive mode, show generated command line.
-- `ipset_list -Ht hash:ip -T 1.1.1.1 -T 2.2.2.2 -m -Gp auto` - show all sets of type hash:ip. Test for existence of the elements 1.1.1.1 and 2.2.2.2. Show the members and save the query result as commands in plain ipset format to a file, which name is auto-generated.
+- `ipset_list -Ht hash:ip -T 1.1.1.1 -T 2.2.2.2 -m -Gp auto` - show all sets of type hash:ip. Test for existence of the elements 1.1.1.1 and 2.2.2.2. Show the members and save the query result as commands in ipset save format to a file, which name is auto-generated.
 
