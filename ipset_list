@@ -1479,10 +1479,10 @@ for idx in "${!arr_sets[@]}"; do
 						;;
 				esac
 			done
-			let tag_idx-=1
-			c_xtag "header"
 			oc_xtag "memsize" "$mem_tmp"
 			oc_xtag "references" "$str_references"
+			let tag_idx-=1
+			c_xtag "header"
 		fi
 		if ((calc_mem)); then
 			let mem_total+=$mem_tmp
