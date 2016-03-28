@@ -195,7 +195,7 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
             continue
         fi
         # if not an option, register set index
-        str_tmp="@(-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Gp|Gx|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Tm|Ts|Xg|Xh|Xo|Xr))"
+        str_tmp="-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Gp|Gx|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Tm|Ts|Xg|Xh|Xo|Xr)"
         if [[ ${words[i]} != $str_tmp ]]; then
             for x in ${!sets[@]}; do
                 if [[ ${sets[x]} = ${words[i]} ]]; then

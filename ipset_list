@@ -1942,7 +1942,9 @@ options:
 		-v) pm "$me version $version"
 			exit 0
 		;;
-		--) break
+		--)
+			shift
+			break
 		;;
 		*) break
 	esac
