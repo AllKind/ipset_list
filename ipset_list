@@ -1487,7 +1487,7 @@ for idx in "${!arr_sets[@]}"; do
 			while (($#)); do opt="$1"
 				shift
 				case "$opt" in
-					family|hashsize|markmask|maxelem|range|timeout)
+					family|hashsize|markmask|maxelem|range|size|timeout)
 						oc_xtag "$opt" "$1"
 						shift
 						;;
