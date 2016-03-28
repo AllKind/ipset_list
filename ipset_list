@@ -1474,7 +1474,7 @@ for idx in "${!arr_sets[@]}"; do
 						oc_xtag "$opt" "$1"
 						shift
 						;;
-					comment|counters|forceadd|nomatch|skbinfo)
+					comment|counters|forceadd|skbinfo)
 						e_xtag "$opt"
 						;;
 				esac
@@ -1534,6 +1534,9 @@ for idx in "${!arr_sets[@]}"; do
 					opt='.*(comment)([[:blank:]])+[\"](.*)+[\"].*' # comment
 					if [[ ${arr_mcache[i]#*+([[:blank:]])} =~ $opt ]]
 					then oc_xtag "${BASH_REMATCH[1]}" "\"${BASH_REMATCH[3]}\""
+					fi
+					if [[ ${arr_mcache[i]#*+([[:blank:]])} =~ .*(nomatch).* ]]
+					then e_xtag "${BASH_REMATCH[1]}" # nomatch
 					fi
 					let tag_idx-=1
 					c_xtag "member"
