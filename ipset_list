@@ -1055,7 +1055,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 	elif [[ ${xopts[x]} = Generate_cmd ]]; then # generate ipset_list cmd-line
 		local_generate_cmdline=1
 	elif [[ ${xopts[x]} = Plain_export ]]; then # generate save format ipset cmds
-		str_tmp=$(dia_menu "Select the output mode for: ${xopts[x]}" "auto" "Automatically generated file name" "none" "Send output to stdout" "file" "Enter file name")
+		str_tmp=$(dia_menu "Select the output mode for: ${xopts[x]}" "auto" "Automatically generated file name" "none" "Send output to stdout" "file" "Enter a file name")
 		(($?)) && return 0
 		if [[ $str_tmp = auto ]]; then
 			local_plain_output_mode=0
@@ -1064,7 +1064,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 			local_plain_output_mode=1 str_cache_plain_file="/dev/stdout"
 		elif [[ $str_tmp = file ]]; then
 			while :; do
-				str_cache_plain_file="$(dia_ibox "Enter a file name")"
+				str_cache_plain_file="$(dia_ibox "Enter a file name: ${xopts[x]}")"
 				(($?)) && return 0
 				[[ -n $str_cache_plain_file && $str_cache_plain_file != +([[:blank:]]) ]] && break
 			done
@@ -1072,7 +1072,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 		fi
 		local_save_query_plain=1
 	elif [[ ${xopts[x]} = XML_export ]]; then # generate xml format ipset output
-		str_tmp=$(dia_menu "Select the output mode for: ${xopts[x]}" "auto" "Automatically generated file name" "none" "Send output to stdout" "file" "Enter file name")
+		str_tmp=$(dia_menu "Select the output mode for: ${xopts[x]}" "auto" "Automatically generated file name" "none" "Send output to stdout" "file" "Enter a file name")
 		(($?)) && return 0
 		if [[ $str_tmp = auto ]]; then
 			local_xml_output_mode=0
@@ -1081,7 +1081,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 			local_xml_output_mode=1 str_cache_xml_file="/dev/stdout"
 		elif [[ $str_tmp = file ]]; then
 			while :; do
-				str_cache_xml_file="$(dia_ibox "Enter a file name")"
+				str_cache_xml_file="$(dia_ibox "Enter a file name: ${xopts[x]}")"
 				(($?)) && return 0
 				[[ -n $str_cache_xml_file && $str_cache_xml_file != +([[:blank:]]) ]] && break
 			done
