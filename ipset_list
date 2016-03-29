@@ -1147,7 +1147,9 @@ if ((save_query_plain || save_query_xml)); then
 fi
 main "${setglob[@]}"
 pm
-if ((generate_cmdline)); then # generate the ipset_list cmd-line
+# generate the ipset_list cmd-line
+# we don't show it if -Gp|-Gx none is set, as their output contains the cmdline
+if ((generate_cmdline && output_mode == 0)); then
 	if ((${#arr_par[@]})); then
 		arr_cmdline[${#arr_cmdline[@]}]="${arr_par[*]}"
 	fi
