@@ -335,7 +335,7 @@ declare -i i=x=y=idx=0
 declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
 declare -i iactive=0 # en/disable interactive mode
 declare -i iactive_err=0 # remember error state in interactive mode
-declare -i output_mode=0 # show regular output - yes/no
+declare -i output_mode=0 global_output_mode=0 # show regular output - yes/no
 declare -i generate_cmdline=global_gen_cmd=0 # generate command line in iactive mode
 declare -i save_query_plain=0 global_save_query_plain=0 # generate plain ipset commands
 declare -i save_query_xml=0 global_save_query_xml=0 # generate xml ipset output
@@ -1821,13 +1821,13 @@ options:
 		-Gp) save_query_plain=1 global_save_query_plain=1 # generate plain ipset commands
 			[[ $2 ]] || ex_miss_optarg $1 "filename"
 			if [[ $2 = auto ]]; then
-				output_mode=0
+				global_output_mode=0
 				str_cache_plain_file="${cachedir}/${me}_cache-plain_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
 			elif [[ $2 = none ]]; then
 				output_mode=1 # don't show the regular output
 				str_cache_plain_file="/dev/stdout" # instead of writing to file, send to stdout
 			else
-				output_mode=0
+				global_output_mode=0
 				str_cache_plain_file="${cachedir}/$2"
 			fi
 			shift
@@ -1835,13 +1835,14 @@ options:
 		-Gx) save_query_xml=1 global_save_query_xml=1 # generate xml ipset output
 			[[ $2 ]] || ex_miss_optarg $1 "filename"
 			if [[ $2 = auto ]]; then
-				output_mode=0
+				global_output_mode=0
 				str_cache_xml_file="${cachedir}/${me}_cache-xml_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.xml"
 			elif [[ $2 = none ]]; then
 				output_mode=1 # don't show the regular output
+				global_output_mode=1
 				str_cache_xml_file="/dev/stdout" # instead of writing to file, send to stdout
 			else
-				output_mode=0
+				global_output_mode=0
 				str_cache_xml_file="${cachedir}/$2"
 			fi
 			shift
