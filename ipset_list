@@ -1042,28 +1042,14 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 		delim="$str_tmp"
 		arr_cmdline[${#arr_cmdline[@]}]="-d"
 		arr_cmdline[${#arr_cmdline[@]}]="\"$delim\"" #"
-	elif [[ ${xopts[x]} = Resolve ]]; then str_tmp=0 # resolve members
+	elif [[ ${xopts[x]} = Resolve ]]; then # resolve members
 		local_resolve=1
-		if ((${#arr_par[@]})); then
-			for i in ${!arr_par[@]}; do
-				if [[ ${arr_par[i]} = -r ]]; then
-					str_tmp=1
-				fi
-			done
-		fi
-		if ! ((str_tmp)); then
+		if [[ ${arr_par[*]} != *-r* ]]; then
 			arr_par[${#arr_par[@]}]="-r"
 		fi
-	elif [[ ${xopts[x]} = Sort ]]; then str_tmp=0 # sort members
+	elif [[ ${xopts[x]} = Sort ]]; then # sort members
 		local_sort=1
-		if ((${#arr_par[@]})); then
-			for i in ${!arr_par[@]}; do
-				if [[ ${arr_par[i]} = -s ]]; then
-					str_tmp=1
-				fi
-			done
-		fi
-		if ! ((str_tmp)); then
+		if [[ ${arr_par[*]} != *-s* ]]; then
 			arr_par[${#arr_par[@]}]="-s"
 		fi
 	elif [[ ${xopts[x]} = Generate_cmd ]]; then # generate ipset_list cmd-line
@@ -1116,22 +1102,14 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 done
 # local values overwrite global ones
 if ((local_resolve == 0)); then # turn of resolving
-	if ((${#arr_par[@]})); then
-		for i in ${!arr_par[@]}; do
-			if [[ ${arr_par[i]} = -r ]]; then
-				unset arr_par[i]
-			fi
-		done
-	fi
+	for i in ${!arr_par[@]}; do
+		[[ ${arr_par[i]} = -r ]] && unset arr_par[i]
+	done
 fi
 if ((local_sort == 0)); then # turn of sorting
-	if ((${#arr_par[@]})); then
-		for i in ${!arr_par[@]}; do
-			if [[ ${arr_par[i]} = -s ]]; then
-				unset arr_par[i]
-			fi
-		done
-	fi
+	for i in ${!arr_par[@]}; do
+		[[ ${arr_par[i]} = -s ]] && unset arr_par[i]
+	done
 fi
 colorize=$local_colorize generate_cmdline=$local_generate_cmdline
 output_mode=$((local_plain_output_mode || local_xml_output_mode ? 1 : 0))
