@@ -1106,6 +1106,11 @@ if ((glob_xclude_element || regex_xclude_element)); then
 		((iactive > 1)) && return 0
 	fi
 fi
+if ((output_mode == 1)); then
+	if [[ $str_cache_plain_file = /dev/stdout && $str_cache_xml_file = /dev/stdout ]]; then
+		ex_err "Using \`none' as argument to both -Gp and -Gx is not valid"
+	fi
+fi
 if ((colorize)); then
 	while :; do
 		[[ $cl ]] && command -v "$cl" &>/dev/null && break
@@ -1192,6 +1197,16 @@ if ((save_query_plain || save_query_xml)); then
 fi
 # write header of file to save representation of the query result as plain ipset commmands
 if ((save_query_plain)); then
+	if [[ $str_cache_plain_file != /dev/stdout ]]; then
+		printf "Writing query results in save format into:\n \`%s'\n\n" "$str_cache_plain_file"
+	fi
+fi
+if ((save_query_xml)); then
+	if [[ $str_cache_xml_file != /dev/stdout ]]; then
+		printf "Writing query results in XML format into:\n \`%s'\n\n" "$str_cache_xml_file"
+	fi
+fi
+if ((save_query_plain)); then
 	if (set -C; printf '#!/usr/bin/env bash\n' >"$str_cache_plain_file"); then
 		# remember file as long we didn't successfully finish writing to it
 		arr_files[${#arr_files[@]}]="$str_cache_plain_file"
@@ -1204,7 +1219,6 @@ if ((save_query_plain)); then
 	printf '%q ' "${arr_main_opts[@]}" >>"$str_cache_plain_file"
 	printf '\n\n' >>"$str_cache_plain_file"
 	printf 'ipset="%s"\n' "$ipset" >>"$str_cache_plain_file"
-	printf "Writing query results in save format into:\n \`%s'\n" "$str_cache_plain_file"
 fi
 # write header of file to save representation of the query result as xml ipset output
 if ((save_query_xml)); then
@@ -1221,7 +1235,6 @@ if ((save_query_xml)); then
 	printf ' -->\n\n' >>"$str_cache_xml_file"
 	o_xtag ipsets >>"$str_cache_xml_file"
 	let tag_idx+=1
-	printf "Writing query results in XML format into:\n \`%s'\n" "$str_cache_xml_file"
 fi
 
 # read sets
