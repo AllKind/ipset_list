@@ -661,7 +661,7 @@ local -a arr_pre_opts=(
 "Sort" "Print elements sorted (if supported) (-s)"
 "Timeout" "Timeout for reading sets (-To)"
 "Generate_cmd" "Generate the $me command line (-G)"
-"Plain_export" "Generate the plain format ipset commands (-Gp)"
+"Plain_export" "Generate the save format ipset commands (-Gp)"
 "XML_export" "Generate the xml format ipset output (-Gx)"
 )
 
@@ -1004,7 +1004,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 		fi
 	elif [[ ${xopts[x]} = Generate_cmd ]]; then # generate ipset_list cmd-line
 		generate_cmdline=1
-	elif [[ ${xopts[x]} = Plain_export ]]; then # generate plain format ipset cmds
+	elif [[ ${xopts[x]} = Plain_export ]]; then # generate save format ipset cmds
 		save_query_plain=1
 		str_cache_plain_file="${cachedir}/${me}_cache-plain_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
 	elif [[ ${xopts[x]} = XML_export ]]; then # generate xml format ipset output
@@ -1204,7 +1204,7 @@ if ((save_query_plain)); then
 	printf '%q ' "${arr_main_opts[@]}" >>"$str_cache_plain_file"
 	printf '\n\n' >>"$str_cache_plain_file"
 	printf 'ipset="%s"\n' "$ipset" >>"$str_cache_plain_file"
-	printf "Writing query results in plain format into:\n \`%s'\n" "$str_cache_plain_file"
+	printf "Writing query results in save format into:\n \`%s'\n" "$str_cache_plain_file"
 fi
 # write header of file to save representation of the query result as xml ipset output
 if ((save_query_xml)); then
