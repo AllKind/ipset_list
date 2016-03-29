@@ -335,6 +335,7 @@ declare -i i=x=y=idx=0
 declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
 declare -i iactive=0 # en/disable interactive mode
 declare -i iactive_err=0 # remember error state in interactive mode
+declare -i output_mode=0 # show regular output - yes/no
 declare -i generate_cmdline=global_gen_cmd=0 # generate command line in iactive mode
 declare -i save_query_plain=0 global_save_query_plain=0 # generate plain ipset commands
 declare -i save_query_xml=0 global_save_query_xml=0 # generate xml ipset output
@@ -1504,25 +1505,29 @@ for idx in "${!arr_sets[@]}"; do
 		if ((calc_mem)); then
 			let mem_total+=$mem_tmp
 		fi
-		if ((${#arr_hcache[@]})); then # print header
-			if ((colorize)); then
-				printf "$("$cl" $col_headers)%b$("$cl" normal $col_fg $col_bg)\n" "${arr_hcache[@]}"
-			else
-				printf "%s\n" "${arr_hcache[@]}"
+		if ((output_mode == 0)); then
+			if ((${#arr_hcache[@]})); then # print header
+				if ((colorize)); then
+					printf "$("$cl" $col_headers)%b$("$cl" normal $col_fg $col_bg)\n" "${arr_hcache[@]}"
+				else
+					printf "%s\n" "${arr_hcache[@]}"
+				fi
 			fi
 		fi
 		if ((${#arr_mcache[@]})); then # print members
 			if ((xclude_member_opts)); then
 				arr_mcache=( "${arr_mcache[@]%% *}" )
 			fi
-			IFS="${delim:=$default_delim}"
-			if ((colorize)); then
-				printf "$("$cl" $col_members)%s$("$cl" normal $col_fg $col_bg)" "${arr_mcache[*]}"
-			else
-				printf "%s" "${arr_mcache[*]}"
+			if ((output_mode == 0)); then
+				IFS="${delim:=$default_delim}"
+				if ((colorize)); then
+					printf "$("$cl" $col_members)%s$("$cl" normal $col_fg $col_bg)" "${arr_mcache[*]}"
+				else
+					printf "%s" "${arr_mcache[*]}"
+				fi
+				IFS="$oIFS"
+				printf "\n"
 			fi
-			IFS="$oIFS"
-			printf "\n"
 			if ((save_query_plain)); then # save query as plain ipset commands
 				# adding members commands
 				for i in ${!arr_mcache[@]}; do
@@ -1572,28 +1577,30 @@ for idx in "${!arr_sets[@]}"; do
 			let tag_idx-=1
 			c_xtag "ipset"
 		fi
-		if ((show_count)); then # print counters
-			if ((glob_search || regex_search || opt_int_search)); then
-				if ((colorize)); then
-					printf "$("$cl" $col_match)Match count$("$cl" normal $col_fg $col_bg):\
- $("$cl" bold $col_match)%d$("$cl" normal $col_fg $col_bg)\n" $match_count
-				else
-					printf "Match count: %d\n" $match_count
+		if ((output_mode == 0)); then
+			if ((show_count)); then # print counters
+				if ((glob_search || regex_search || opt_int_search)); then
+					if ((colorize)); then
+						printf "$("$cl" $col_match)Match count$("$cl" normal $col_fg $col_bg):\
+	 $("$cl" bold $col_match)%d$("$cl" normal $col_fg $col_bg)\n" $match_count
+					else
+						printf "Match count: %d\n" $match_count
+					fi
 				fi
-			fi
-			if ((glob_xclude_element || regex_xclude_element)); then
-				if ((colorize)); then
-					printf "$("$cl" $col_match)Exclude count$("$cl" normal $col_fg $col_bg):\
- $("$cl" bold $col_match)%d$("$cl" normal $col_fg $col_bg)\n" $xclude_count
-				else
-					printf "Exclude count: %d\n" $xclude_count
+				if ((glob_xclude_element || regex_xclude_element)); then
+					if ((colorize)); then
+						printf "$("$cl" $col_match)Exclude count$("$cl" normal $col_fg $col_bg):\
+	 $("$cl" bold $col_match)%d$("$cl" normal $col_fg $col_bg)\n" $xclude_count
+					else
+						printf "Exclude count: %d\n" $xclude_count
+					fi
 				fi
-			fi
-			if ((colorize)); then
-				printf "$("$cl" bold $col_highlight)Member count$("$cl" normal $col_fg $col_bg):\
- $("$cl" bold $col_members)%d$("$cl" normal $col_fg $col_bg)\n" $member_count
-			else
-				printf "Member count: %d\n" $member_count
+				if ((colorize)); then
+					printf "$("$cl" bold $col_highlight)Member count$("$cl" normal $col_fg $col_bg):\
+	 $("$cl" bold $col_members)%d$("$cl" normal $col_fg $col_bg)\n" $member_count
+				else
+					printf "Member count: %d\n" $member_count
+				fi
 			fi
 		fi
 	fi
@@ -1611,41 +1618,43 @@ if ((save_query_xml)); then
 fi
 
 # print global counters
-if ((count_sets || calc_mem || sets_total || exclude_set)); then
-	printf "\n"
-	if ((count_sets)); then
-		if ((colorize)); then
-			printf "$("$cl" bold $col_highlight)Count$("$cl" normal $col_fg $col_bg) of all\
- $("$cl" bold $col_set_count)matched sets$("$cl" normal $col_fg $col_bg):\
- $("$cl" bold $col_set_count)%d$("$cl" normal $col_fg $col_bg)\n" $set_count
-		else
-			printf "Count of all matched sets: %d\n" $set_count
-		fi
-		if ((exclude_set)); then
+if ((output_mode == 0)); then
+	if ((count_sets || calc_mem || sets_total || exclude_set)); then
+		printf "\n"
+		if ((count_sets)); then
 			if ((colorize)); then
 				printf "$("$cl" bold $col_highlight)Count$("$cl" normal $col_fg $col_bg) of all\
- $("$cl" bold $col_match)excluded sets$("$cl" normal $col_fg $col_bg):\
- $("$cl" bold $col_match)%d$("$cl" normal $col_fg $col_bg)\n" $found_sxclude
+	 $("$cl" bold $col_set_count)matched sets$("$cl" normal $col_fg $col_bg):\
+	 $("$cl" bold $col_set_count)%d$("$cl" normal $col_fg $col_bg)\n" $set_count
 			else
-				printf "Count of all excluded sets: %d\n" $found_sxclude
+				printf "Count of all matched sets: %d\n" $set_count
+			fi
+			if ((exclude_set)); then
+				if ((colorize)); then
+					printf "$("$cl" bold $col_highlight)Count$("$cl" normal $col_fg $col_bg) of all\
+	 $("$cl" bold $col_match)excluded sets$("$cl" normal $col_fg $col_bg):\
+	 $("$cl" bold $col_match)%d$("$cl" normal $col_fg $col_bg)\n" $found_sxclude
+				else
+					printf "Count of all excluded sets: %d\n" $found_sxclude
+				fi
 			fi
 		fi
-	fi
-	if ((sets_total)); then
-		if ((colorize)); then
-			printf "$("$cl" bold $col_highlight)Count$("$cl" normal $col_fg $col_bg) of all\
- $("$cl" bold $col_set_total)traversed sets$("$cl" normal $col_fg $col_bg):\
- $("$cl" bold $col_set_total)%d$("$cl" normal $col_fg $col_bg)\n" $sets_sum
-		else
-			printf "Count of all traversed sets: %d\n" $sets_sum
+		if ((sets_total)); then
+			if ((colorize)); then
+				printf "$("$cl" bold $col_highlight)Count$("$cl" normal $col_fg $col_bg) of all\
+	 $("$cl" bold $col_set_total)traversed sets$("$cl" normal $col_fg $col_bg):\
+	 $("$cl" bold $col_set_total)%d$("$cl" normal $col_fg $col_bg)\n" $sets_sum
+			else
+				printf "Count of all traversed sets: %d\n" $sets_sum
+			fi
 		fi
-	fi
-	if ((calc_mem)); then
-		if ((colorize)); then
-			printf "$("$cl" bold $col_memsize)Total memory size$("$cl" normal $col_fg $col_bg)\
- of all matched sets: $("$cl" bold $col_memsize)%d$("$cl" normal $col_fg $col_bg)\n" $mem_total
-		else
-			printf "Total memory size of all matched sets: %d\n" $mem_total
+		if ((calc_mem)); then
+			if ((colorize)); then
+				printf "$("$cl" bold $col_memsize)Total memory size$("$cl" normal $col_fg $col_bg)\
+	 of all matched sets: $("$cl" bold $col_memsize)%d$("$cl" normal $col_fg $col_bg)\n" $mem_total
+			else
+				printf "Total memory size of all matched sets: %d\n" $mem_total
+			fi
 		fi
 	fi
 fi
@@ -1672,16 +1681,16 @@ ipset_list [option [opt-arg]] [set-name-glob] [...]
 
 ipset_list {-?|-h} | -v
 ipset_list [-i|-r|-s|-Co|-T|-Xo] [-d char] [-To value]
-    [-Gp|-Gx {auto|file}] [-Fg|-Fr pattern] [-Xg|-Xr pattern]
+    [-Gp|-Gx {auto|none|file}] [-Fg|-Fr pattern] [-Xg|-Xr pattern]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name
 ipset_list [-n|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts|-Xs] [-To value]
-    [-Gp|-Gx {auto|file}] [-Fh header-glob:value-glob] [...]
+    [-Gp|-Gx {auto|none|file}] [-Fh header-glob:value-glob] [...]
     [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...]
     [-Xs set-name-glob] [...] -- [set-name-glob] [...]
-ipset_list [-t|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts] [-Gp|-Gx {auto|file}] [-To value]
-    [-Fh header-glob:value-glob] [...]
+ipset_list [-t|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts] [-To value]
+    [-Gp|-Gx {auto|none|file}] [-Fh header-glob:value-glob] [...]
     [-Fi header-glob:[!|<|>|<=|>=]value] [...]
     [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
@@ -1689,14 +1698,14 @@ ipset_list [-t|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts] [-Gp|-Gx {auto|file}] [-To value]
     [-Xh header-glob:value-glob] [...]
     [-Xs set-name-glob] [...] -- [set-name-glob] [...]
 ipset_list [-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-T|-Tm|-Ts|-Xo] [-d char] [-To value]
-    [-Gp|-Gx {auto|file}] [-Fh header-glob:value-glob] [...]
+    [-Gp|-Gx {auto|none|file}] [-Fh header-glob:value-glob] [...]
     [-Fi header-glob:[!|<|>|<=|>=]value] [...]
     [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...]
     [-Xh header-glob:value-glob] [...]
     [-Xg|-Xr pattern] [-Xs set-name-glob] [...] -- [set-name-glob] [...]
-ipset_list - [-r|-s|-G] [-d delim] [-Gp|-Gx {auto|file}] [-To value] --
+ipset_list - [-r|-s|-G] [-d delim] [-Gp|-Gx {auto|none|file}] [-To value] --
 
 options:
 -            interactive mode.
@@ -1721,8 +1730,8 @@ options:
 -Fi header-glob:[!|<|>|<=|>=]value [...]
     show sets matching one or more integer valued header entries.
 -G           when in interactive mode, generate command-line.
--Gp {auto|file}         generate ipset save format commands.
--Gx {auto|file}         generate ipset xml format output.
+-Gp {auto|none|file}         generate ipset save format commands.
+-Gx {auto|none|file}         generate ipset xml format output.
 -Hi header-glob:[!|<|>|<=|>=]value [...]
     match integer valued entries of the \`Header' header.
 -Ht set-type-glob       match on set type.
@@ -1799,8 +1808,13 @@ options:
 		-Gp) save_query_plain=1 global_save_query_plain=1 # generate plain ipset commands
 			[[ $2 ]] || ex_miss_optarg $1 "filename"
 			if [[ $2 = auto ]]; then
+				output_mode=0
 				str_cache_plain_file="${cachedir}/${me}_cache-plain_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
+			elif [[ $2 = none ]]; then
+				output_mode=1 # don't show the regular output
+				str_cache_plain_file="/dev/stdout" # instead of writing to file, send to stdout
 			else
+				output_mode=0
 				str_cache_plain_file="${cachedir}/$2"
 			fi
 			shift
@@ -1808,8 +1822,13 @@ options:
 		-Gx) save_query_xml=1 global_save_query_xml=1 # generate xml ipset output
 			[[ $2 ]] || ex_miss_optarg $1 "filename"
 			if [[ $2 = auto ]]; then
+				output_mode=0
 				str_cache_xml_file="${cachedir}/${me}_cache-xml_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.xml"
+			elif [[ $2 = none ]]; then
+				output_mode=1 # don't show the regular output
+				str_cache_xml_file="/dev/stdout" # instead of writing to file, send to stdout
 			else
+				output_mode=0
 				str_cache_xml_file="${cachedir}/$2"
 			fi
 			shift
