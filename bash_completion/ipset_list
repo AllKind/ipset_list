@@ -282,7 +282,7 @@ elif [[ $prev = @(-@(Hr|Hs|Hv|Mc)) ]]; then
 elif [[ $prev = @(-Gp|-Gx) ]]; then
 	if ((got_bashcompl)); then
 		_filedir
-		COMPREPLY=( $( compgen -W 'auto ${COMPREPLY[@]}' -- "$cur" ) )
+		COMPREPLY=( $( compgen -W 'auto none ${COMPREPLY[@]}' -- "$cur" ) )
 	else
 		COMPREPLY=( $( compgen -f -- "$cur" ) )
 	fi
