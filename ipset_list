@@ -1919,32 +1919,40 @@ options:
 		-G) generate_cmdline=1 global_generate_cmdline=1 # in interactive mode generate the cmd-line for ipset_list
 		;;
 		-Gp) save_query_plain=1 global_save_query_plain=1 # generate plain ipset commands
-			[[ $2 ]] || ex_miss_optarg $1 "filename"
-			if [[ $2 = auto ]]; then
+			if [[ -z $2 || $2 = -* ]]; then
 				global_plain_output_mode=0
 				str_cache_plain_file="${cachedir}/${me}_cache-plain_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
-			elif [[ $2 = none ]]; then
-				output_mode=1 global_plain_output_mode= # don't show the regular output1
-				str_cache_plain_file="/dev/stdout" # instead of writing to file, send to stdout
 			else
-				global_plain_output_mode=0
-				str_cache_plain_file="${cachedir}/$2"
+				if [[ $2 = auto ]]; then
+					global_plain_output_mode=0
+					str_cache_plain_file="${cachedir}/${me}_cache-plain_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
+				elif [[ $2 = none ]]; then
+					output_mode=1 global_plain_output_mode= # don't show the regular output1
+					str_cache_plain_file="/dev/stdout" # instead of writing to file, send to stdout
+				else
+					global_plain_output_mode=0
+					str_cache_plain_file="${cachedir}/$2"
+				fi
+				shift
 			fi
-			shift
 		;;
 		-Gx) save_query_xml=1 global_save_query_xml=1 # generate xml ipset output
-			[[ $2 ]] || ex_miss_optarg $1 "filename"
-			if [[ $2 = auto ]]; then
+			if [[ -z $2 || $2 = -* ]]; then
 				global_xml_output_mode=0
 				str_cache_xml_file="${cachedir}/${me}_cache-xml_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.xml"
-			elif [[ $2 = none ]]; then
-				output_mode=1 global_xml_output_mode=1 # don't show the regular output
-				str_cache_xml_file="/dev/stdout" # instead of writing to file, send to stdout
 			else
-				global_xml_output_mode=0
-				str_cache_xml_file="${cachedir}/$2"
+				if [[ $2 = auto ]]; then
+					global_xml_output_mode=0
+					str_cache_xml_file="${cachedir}/${me}_cache-xml_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.xml"
+				elif [[ $2 = none ]]; then
+					output_mode=1 global_xml_output_mode=1 # don't show the regular output
+					str_cache_xml_file="/dev/stdout" # instead of writing to file, send to stdout
+				else
+					global_xml_output_mode=0
+					str_cache_xml_file="${cachedir}/$2"
+				fi
+				shift
 			fi
-			shift
 		;;
 		-Oi) let opt_int_search+=1 # match member option values
 			[[ $2 ]] || ex_miss_optarg $1 "pattern"
