@@ -2,9 +2,10 @@ ipset_list
 ==========
 
 ipset set listing wrapper script written for the bash shell.
+
 It allows you to match and display sets, headers and elements in various ways.
-The resulting representation of the query can be saved to a file, either in
-`ipset save -o save`, or `ipset save -o xml` format.
+
+The resulting representation of the query can be saved, either in save or xml format.
 
 
 Features:
@@ -38,9 +39,13 @@ Installation:
 ==========
 
 An install script called install.bash ships with ipset_list.
+
 Running `install.bash -h` will show the available options.
+
 By default an installation path prefix of /usr/local is set.
+
 To install it into common locations run: `install.bash --prefix /usr --sysconfdir /etc`.
+
 The install script creates a log file, which will be used by the uninstall.bash uninstall script.
 
 
