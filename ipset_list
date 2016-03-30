@@ -1928,10 +1928,10 @@ options:
 				global_plain_output_mode=0
 				str_cache_plain_file="${cachedir}/${me}_cache-plain_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
 			else
-				if [[ $2 = auto ]]; then
+				if [[ $2 = @(a|au|aut|auto) ]]; then
 					global_plain_output_mode=0
 					str_cache_plain_file="${cachedir}/${me}_cache-plain_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
-				elif [[ $2 = none ]]; then
+				elif [[ $2 = @(n|no|non|none) ]]; then
 					output_mode=1 global_plain_output_mode= # don't show the regular output1
 					str_cache_plain_file="/dev/stdout" # instead of writing to file, send to stdout
 				else
@@ -1946,10 +1946,10 @@ options:
 				global_xml_output_mode=0
 				str_cache_xml_file="${cachedir}/${me}_cache-xml_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.xml"
 			else
-				if [[ $2 = auto ]]; then
+				if [[ $2 = @(a|au|aut|auto) ]]; then
 					global_xml_output_mode=0
 					str_cache_xml_file="${cachedir}/${me}_cache-xml_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.xml"
-				elif [[ $2 = none ]]; then
+				elif [[ $2 = @(n|no|non|none) ]]; then
 					output_mode=1 global_xml_output_mode=1 # don't show the regular output
 					str_cache_xml_file="/dev/stdout" # instead of writing to file, send to stdout
 				else
