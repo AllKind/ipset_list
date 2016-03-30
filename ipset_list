@@ -1321,7 +1321,6 @@ if ((save_query_plain)); then
 	printf '# QUERY: %s ' "$me" >>"$str_cache_plain_file"
 	printf '%q ' "${arr_main_opts[@]}" >>"$str_cache_plain_file"
 	printf '\n\n' >>"$str_cache_plain_file"
-	printf 'ipset="%s"\n' "$ipset" >>"$str_cache_plain_file"
 fi
 # write header of file to save representation of the query result as xml ipset output
 if ((save_query_xml)); then
@@ -1590,7 +1589,7 @@ for idx in "${!arr_sets[@]}"; do
 		let set_count+=1 # count amount of matching sets
 		if ((save_query_plain)); then # save query as plain ipset commands
 			# create command
-			printf '\n\"$ipset" create %s %s %s\n' "$str_set" "$str_type" "$str_header" >> "$str_cache_plain_file"
+			printf '\ncreate %s %s %s\n' "$str_set" "$str_type" "$str_header" >> "$str_cache_plain_file"
 		fi
 		if ((save_query_xml)); then
 			let tag_idx+=1
@@ -1647,7 +1646,7 @@ for idx in "${!arr_sets[@]}"; do
 			if ((save_query_plain)); then # save query as plain ipset commands
 				# adding members commands
 				for i in ${!arr_mcache[@]}; do
-					printf '"$ipset" add %s %s\n' "$str_set" "${arr_mcache[i]}" >> "$str_cache_plain_file"
+					printf 'add %s %s\n' "$str_set" "${arr_mcache[i]}" >> "$str_cache_plain_file"
 				done
 				# successfully finished writing to file, remove from created files list
 				for i in ${!arr_files[@]}; do

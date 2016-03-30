@@ -58,8 +58,8 @@
         <title>Description</title>
         <para>ipset_list is a wrapper script for listing sets of the netfilter
                 <command>ipset</command> program. It allows you to match and display sets, headers,
-            and elements in various ways. The resulting representation of the query can be saved to
-            a file in ipset `save' and/or `xml' format.</para>
+            and elements in various ways. The resulting representation of the query can be saved in
+            ipset `save' and/or `xml' format.</para>
         <para>It is written for the <command>bash</command> shell.</para>
         <para>It includes an interactive wizard based mode, that utilizes a dialog program
                 (<command>dialog</command> or <command>whiptail</command> are supported).</para>
@@ -177,12 +177,16 @@
                 <term>-r</term>
                 <listitem>
                     <para>Try to resolve ip addresses in the output (slow!).</para>
+                    <para>If this option is used when entering interactive mode, it will be
+                        pre-selected in the menu, as long the session lasts.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
                 <term>-s</term>
                 <listitem>
                     <para>Print elements sorted (if supported by the set type).</para>
+                    <para>If this option is used when entering interactive mode, it will be
+                        pre-selected in the menu, as long the session lasts.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -217,8 +221,8 @@
                         can be retrieved by running <command>cl --list</command>.</para>
                     <para>The default is not to use colored output. That can be changed by setting
                         the <varname>colorize</varname> variable to `1'.</para>
-                    <para>If this parameter is used when starting interactive mode, it will apply
-                        globally to all search queries performed.</para>
+                    <para>If this option is used when entering interactive mode, it will be
+                        pre-selected in the menu, as long the session lasts.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -258,34 +262,50 @@
                 <listitem>
                     <para>When in interactive mode, generate the <command>ipset_list</command>
                         command-line, as for use in 'normal' mode.</para>
+                    <para>If this option is used when entering interactive mode, then the option
+                        will be pre-selected in the menu, as long the session lasts.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
-                <term>-Gp {auto|file}</term>
+                <term>-Gp [a[uto]|n[one]file]</term>
                 <listitem>
                     <para>Save the result of the query as <command>ipset</command> set creation
                         commands. The format is equal to the output of `ipset save`.</para>
                     <para>If `<emphasis role="underline">auto</emphasis>' is used as option
                         argument, the file name is automatically generated. Otherwise it must be
                         specified.</para>
-                    <para>In interactive mode the file name will always be generated automatically,
-                        except for the first run, if a file name was give one the command
-                        line.</para>
+                    <para>If `<emphasis role="underline">none</emphasis>' is used as option
+                        argument, the output is sent to <emphasis role="underline"
+                        >stdout</emphasis>. This will suppress normal output.</para>
+                    <para>The option argument can be omitted. In that case `<emphasis
+                            role="underline">auto</emphasis>' is assumed.</para>
+                    <para>The arguments `auto' and `none' can be written in short form. Meaning only
+                        the first character is mandatory.</para>
+                    <para>It is not valid to use -Gp none together with -Gx none.</para>
+                    <para>If this option is used when entering interactive mode, it will be
+                        pre-selected in the menu, as long the session lasts.</para>
                     <para>The directory the file(s) will be saved into can be modified using the
                             <varname>cachedir</varname> variable.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
-                <term>-Gx {auto|file}</term>
+                <term>-Gx [a[uto]|n[one]|file]</term>
                 <listitem>
                     <para>Save the result of the query as <command>ipset</command> xml
                         output.</para>
                     <para>If `<emphasis role="underline">auto</emphasis>' is used as option
                         argument, the file name is automatically generated. Otherwise it must be
                         specified.</para>
-                    <para>In interactive mode the file name will always be generated automatically,
-                        except for the first run, if a file name was give one the command
-                        line.</para>
+                    <para>If `<emphasis role="underline">none</emphasis>' is used as option
+                        argument, the output is sent to <emphasis role="underline"
+                        >stdout</emphasis>. This will suppress normal output.</para>
+                    <para>The option argument can be omitted. In that case `<emphasis
+                            role="underline">auto</emphasis>' is assumed.</para>
+                    <para>The arguments `auto' and `none' can be written in short form. Meaning only
+                        the first character is mandatory.</para>
+                    <para>It is not valid to use -Gp none together with -Gx none.</para>
+                    <para>If this option is used when entering interactive mode, it will be
+                        pre-selected in the menu, as long the session lasts.</para>
                     <para>The directory the file(s) will be saved into can be modified using the
                             <varname>cachedir</varname> variable.</para>
                 </listitem>
@@ -403,9 +423,10 @@
                 </listitem>
             </varlistentry>
             <varlistentry>
-                <term>-Xs pattern</term>
+                <term>-Xs pattern [...]</term>
                 <listitem>
-                    <para>Exclude sets matching a [ext]glob pattern.</para>
+                    <para>Exclude sets matching a [ext]glob pattern. This option can be used
+                        multiple times.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>

@@ -2,12 +2,12 @@
 .\"     Title: ipset_list manual
 .\"    Author: Mart Frauenlob aka AllKind <AllKind@fastest.cc>
 .\" Generator: DocBook XSL-NS Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 03/28/2016
+.\"      Date: 03/30/2016
 .\"    Manual: ipset_list 3.6
 .\"    Source: ipset_list 3.6
 .\"  Language: English
 .\"
-.TH "IPSET_LIST MANUAL" "8" "03/28/2016" "ipset_list 3.6" "ipset_list 3\&.6"
+.TH "IPSET_LIST MANUAL" "8" "03/30/2016" "ipset_list 3.6" "ipset_list 3\&.6"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -43,7 +43,7 @@ ipset_list \- Match and display ipset (netfilter\&.org) sets in various ways
 .PP
 ipset_list is a wrapper script for listing sets of the netfilter
 \fBipset\fR
-program\&. It allows you to match and display sets, headers, and elements in various ways\&. The resulting representation of the query can be saved to a file in ipset `save\*(Aq and/or `xml\*(Aq format\&.
+program\&. It allows you to match and display sets, headers, and elements in various ways\&. The resulting representation of the query can be saved in ipset `save\*(Aq and/or `xml\*(Aq format\&.
 .PP
 It is written for the
 \fBbash\fR
@@ -155,11 +155,15 @@ without arguments\&.
 \-r
 .RS 4
 Try to resolve ip addresses in the output (slow!)\&.
+.sp
+If this option is used when entering interactive mode, it will be pre\-selected in the menu, as long the session lasts\&.
 .RE
 .PP
 \-s
 .RS 4
 Print elements sorted (if supported by the set type)\&.
+.sp
+If this option is used when entering interactive mode, it will be pre\-selected in the menu, as long the session lasts\&.
 .RE
 .PP
 \-t
@@ -192,7 +196,7 @@ The default is not to use colored output\&. That can be changed by setting the
 \fIcolorize\fR
 variable to `1\*(Aq\&.
 .sp
-If this parameter is used when starting interactive mode, it will apply globally to all search queries performed\&.
+If this option is used when entering interactive mode, it will be pre\-selected in the menu, as long the session lasts\&.
 .RE
 .PP
 \-Cs
@@ -225,9 +229,11 @@ Show sets matching one or more integer valued header entries\&. This option can 
 When in interactive mode, generate the
 \fBipset_list\fR
 command\-line, as for use in \*(Aqnormal\*(Aq mode\&.
+.sp
+If this option is used when entering interactive mode, then the option will be pre\-selected in the menu, as long the session lasts\&.
 .RE
 .PP
-\-Gp {auto|file}
+\-Gp [a[uto]|n[one]file]
 .RS 4
 Save the result of the query as
 \fBipset\fR
@@ -235,14 +241,23 @@ set creation commands\&. The format is equal to the output of `ipset save`\&.
 .sp
 If `\fIauto\fR\*(Aq is used as option argument, the file name is automatically generated\&. Otherwise it must be specified\&.
 .sp
-In interactive mode the file name will always be generated automatically, except for the first run, if a file name was give one the command line\&.
+If `\fInone\fR\*(Aq is used as option argument, the output is sent to
+\fIstdout\fR\&. This will suppress normal output\&.
+.sp
+The option argument can be omitted\&. In that case `\fIauto\fR\*(Aq is assumed\&.
+.sp
+The arguments `auto\*(Aq and `none\*(Aq can be written in short form\&. Meaning only the first character is mandatory\&.
+.sp
+It is not valid to use \-Gp none together with \-Gx none\&.
+.sp
+If this option is used when entering interactive mode, it will be pre\-selected in the menu, as long the session lasts\&.
 .sp
 The directory the file(s) will be saved into can be modified using the
 \fIcachedir\fR
 variable\&.
 .RE
 .PP
-\-Gx {auto|file}
+\-Gx [a[uto]|n[one]|file]
 .RS 4
 Save the result of the query as
 \fBipset\fR
@@ -250,7 +265,16 @@ xml output\&.
 .sp
 If `\fIauto\fR\*(Aq is used as option argument, the file name is automatically generated\&. Otherwise it must be specified\&.
 .sp
-In interactive mode the file name will always be generated automatically, except for the first run, if a file name was give one the command line\&.
+If `\fInone\fR\*(Aq is used as option argument, the output is sent to
+\fIstdout\fR\&. This will suppress normal output\&.
+.sp
+The option argument can be omitted\&. In that case `\fIauto\fR\*(Aq is assumed\&.
+.sp
+The arguments `auto\*(Aq and `none\*(Aq can be written in short form\&. Meaning only the first character is mandatory\&.
+.sp
+It is not valid to use \-Gp none together with \-Gx none\&.
+.sp
+If this option is used when entering interactive mode, it will be pre\-selected in the menu, as long the session lasts\&.
 .sp
 The directory the file(s) will be saved into can be modified using the
 \fIcachedir\fR
@@ -348,9 +372,9 @@ Exclude members matching a [ext]glob pattern\&.
 Exclude members matching a regex pattern\&.
 .RE
 .PP
-\-Xs pattern
+\-Xs pattern [\&.\&.\&.]
 .RS 4
-Exclude sets matching a [ext]glob pattern\&.
+Exclude sets matching a [ext]glob pattern\&. This option can be used multiple times\&.
 .RE
 .PP
 \-\-
