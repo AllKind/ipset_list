@@ -155,7 +155,7 @@
 # + Show the members and save the query result as commands in plain ipset format
 # + to a file, which name is auto-generated.
 #
-# $0 -m -Fg "192.168.*" -Xg "192.168.13.69*" -Gx -Gp none - Show members of all
+# $0 -m -Fg "192.168.*" -Xg "192.168.13.69*" -Gx -Gp n - Show members of all
 # + sets, that match the glob "192.168.*", but exclude "192.168.13.69*". Save
 # + the query result in xml to an auto generated file. Send the query result
 # + in ipset save format to stdout (suppressing normal output).
