@@ -1866,7 +1866,7 @@ options:
     exclude one or more [ext]glob matching header entries.
 -Xg pattern  exclude members matching a [ext]glob pattern.
 -Xr pattern  exclude members matching a regex pattern.
--Xs pattern  exclude sets matching a [ext]glob pattern.
+-Xs pattern [...] exclude sets matching a [ext]glob pattern.
 --           stop further option processing.
 "
 			exit 0
