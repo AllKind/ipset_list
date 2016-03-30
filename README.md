@@ -98,5 +98,5 @@ Examples:
 - `ipset_list - >/tmp/data`  - enter interactive mode and redirect the output to a file.
 - `ipset_list - -G`  - enter interactive mode, show generated command line.
 - `ipset_list -Ht hash:ip -T 1.1.1.1 -T 2.2.2.2 -m -Gp auto` - show all sets of type hash:ip. Test for existence of the elements 1.1.1.1 and 2.2.2.2. Show the members and save the query result as commands in ipset save format to a file, which name is auto-generated.
-- `ipset_list -m -Fg "192.168.*" -Xg "192.168.13.69*" -Gx -Gp n` - Show members of all sets that match the glob "192.168.*", but exclude "192.168.13.69*". Save the query result in xml to an auto generated file. Send the query result in ipset save format to stdout (suppressing normal output).
+- `ipset_list -m -Fg "192.168.*" -Xg "192.168.13.69*" -Gx -Gp n` - Show members of all sets that match the glob `192.168.*`, but exclude `192.168.13.69*`. Save the query result in xml to an auto generated file. Send the query result in ipset save format to stdout (suppressing normal output).
 
