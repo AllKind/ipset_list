@@ -291,8 +291,8 @@
             <varlistentry>
                 <term>-Gx [a[uto]|n[one]|file]</term>
                 <listitem>
-                    <para>Save the result of the query as <command>ipset</command> xml
-                        output.</para>
+                    <para>Save the result of the query as <command>ipset</command> xml output.  The
+                        format is equal to the output of `ipset save -o xml`.</para>
                     <para>If `<emphasis role="underline">auto</emphasis>' is used as option
                         argument, the file name is automatically generated. Otherwise it must be
                         specified.</para>

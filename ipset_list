@@ -1845,7 +1845,7 @@ options:
 -Fi header-glob:[!|<|>|<=|>=]value [...]
     show sets matching one or more integer valued header entries.
 -G           when in interactive mode, generate command-line.
--Gp [a[uto]|n[one]|file]     generate ipset save format commands.
+-Gp [a[uto]|n[one]|file]     generate ipset save format output.
 -Gx [a[uto]|n[one]|file]     generate ipset xml format output.
 -Hi header-glob:[!|<|>|<=|>=]value [...]
     match integer valued entries of the \`Header' header.
