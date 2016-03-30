@@ -190,8 +190,10 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
         *)
         ((set_index)) && break
         # options expecting an opt arg
-        str_tmp="@(-@(d|Fg|Fh|Fi|Fr|Gp|Gx|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Xg|Xh|Xr|Xs))"
+        str_tmp="-@(d|Fg|Fh|Fi|Fr|Gp|Gx|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Xg|Xh|Xr|Xs)"
         if [[ ${words[i-1]} = $str_tmp ]]; then
+            continue
+		elif [[ ${words[i-1]} = @(-Gp|-Gx) && ${words[i]} != -* ]]; then
             continue
         fi
         # if not an option, register set index
@@ -279,7 +281,7 @@ elif [[ $prev = @(-@(Hr|Hs|Hv|Mc)) ]]; then
     # options making use of arithmetic comparison
     compopt -o nospace
     COMPREPLY=( $( compgen -P '\' -W '\! \< \> \<= \>=' -- "$cur" ) )
-elif [[ $prev = @(-Gp|-Gx) ]]; then
+elif [[ $prev = @(-Gp|-Gx) && $cur != -* ]]; then # fails on files starting with a dash. I don't care.
 	if ((got_bashcompl)); then
 		_filedir
 		COMPREPLY=( $( compgen -W 'auto none ${COMPREPLY[@]}' -- "$cur" ) )
@@ -289,7 +291,7 @@ elif [[ $prev = @(-Gp|-Gx) ]]; then
 elif [[ $cur = -* ]]; then
     # any option is requested
     case "$prev" in
-        -@(-|\?|d|h|v|Fg|Fh|Fi|Fr|Gp|Gx|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Xg|Xh|Xr))
+        -@(-|\?|d|h|v|Fg|Fh|Fi|Fr|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Xg|Xh|Xr))
         # options that exclude any other option,
         # or need a value we can't predict
             return 0
