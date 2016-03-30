@@ -1797,16 +1797,16 @@ ipset_list [option [opt-arg]] [set-name-glob] [...]
 
 ipset_list {-?|-h} | -v
 ipset_list [-i|-r|-s|-Co|-T|-Xo] [-d char] [-To value]
-    [-Gp|-Gx {a[uto]|n[one]|file}] [-Fg|-Fr pattern] [-Xg|-Xr pattern]
+    [-Gp|-Gx [a[uto]|n[one]|file]] [-Fg|-Fr pattern] [-Xg|-Xr pattern]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name
 ipset_list [-n|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts|-Xs] [-To value]
-    [-Gp|-Gx {a[uto]|n[one]|file}] [-Fh header-glob:value-glob] [...]
+    [-Gp|-Gx [a[uto]|n[one]|file]] [-Fh header-glob:value-glob] [...]
     [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...]
     [-Xs set-name-glob] [...] -- [set-name-glob] [...]
 ipset_list [-t|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts] [-To value]
-    [-Gp|-Gx {a[uto]|n[one]|file}] [-Fh header-glob:value-glob] [...]
+    [-Gp|-Gx [a[uto]|n[one]|file]] [-Fh header-glob:value-glob] [...]
     [-Fi header-glob:[!|<|>|<=|>=]value] [...]
     [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
@@ -1814,14 +1814,14 @@ ipset_list [-t|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts] [-To value]
     [-Xh header-glob:value-glob] [...]
     [-Xs set-name-glob] [...] -- [set-name-glob] [...]
 ipset_list [-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-T|-Tm|-Ts|-Xo] [-d char] [-To value]
-    [-Gp|-Gx {a[uto]|n[one]|file}] [-Fh header-glob:value-glob] [...]
+    [-Gp|-Gx [a[uto]|n[one]|file]] [-Fh header-glob:value-glob] [...]
     [-Fi header-glob:[!|<|>|<=|>=]value] [...]
     [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...]
     [-Xh header-glob:value-glob] [...]
     [-Xg|-Xr pattern] [-Xs set-name-glob] [...] -- [set-name-glob] [...]
-ipset_list - [-r|-s|-G] [-d delim] [-Gp|-Gx {a[uto]|n[one]|file}] [-To value] --
+ipset_list - [-r|-s|-G] [-d delim] [-Gp|-Gx [a[uto]|n[one]|file]] [-To value] --
 
 options:
 -            interactive mode.
@@ -1846,8 +1846,8 @@ options:
 -Fi header-glob:[!|<|>|<=|>=]value [...]
     show sets matching one or more integer valued header entries.
 -G           when in interactive mode, generate command-line.
--Gp {a[uto]|n[one]|file}         generate ipset save format commands.
--Gx {a[uto]|n[one]|file}         generate ipset xml format output.
+-Gp [a[uto]|n[one]|file]     generate ipset save format commands.
+-Gx [a[uto]|n[one]|file]     generate ipset xml format output.
 -Hi header-glob:[!|<|>|<=|>=]value [...]
     match integer valued entries of the \`Header' header.
 -Ht set-type-glob       match on set type.
