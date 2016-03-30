@@ -5,7 +5,7 @@ ipset set listing wrapper script written for the bash shell.
 
 It allows you to match and display sets, headers and elements in various ways.
 
-The resulting representation of the query can be saved, either in save or xml format.
+The resulting representation of the query can be saved, either in save, or xml format.
 
 
 Features:
