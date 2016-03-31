@@ -331,7 +331,7 @@ readonly version=3.5.1
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_xclude=""
-declare str_type str_header str_references str_revision str_cache_plain_file str_cache_xml_file opt
+declare str_type str_header str_references str_revision str_cache_plain_file str_cache_save_file str_cache_xml_file opt
 declare -i member_count=match_count=do_count=show_count=calc_mem=count_sets=sets_total=0
 declare -i show_all=show_members=headers_only=names_only=isolate=0
 declare -i match_on_header=glob_search=regex_search=opt_int_search=test_element=0
@@ -343,6 +343,7 @@ declare -i iactive_err=0 # remember error state in interactive mode
 declare -i output_mode=0 global_plain_output_mode=0 global_xml_output_mode=0 # show regular output - yes/no
 declare -i generate_cmdline=global_generate_cmdline=0 # generate command line in iactive mode
 declare -i save_query_plain=0 global_save_query_plain=0 # generate plain ipset commands
+declare -i save_query_save=0 global_save_query_save=0 # generate ipset save format output
 declare -i save_query_xml=0 global_save_query_xml=0 # generate xml ipset output
 declare -i global_w_height=-1 global_w_with=-1 global_l_height=-1 # remember init values of window measures
 declare -ir default_set_tmout=30
@@ -462,11 +463,11 @@ fi
 get_header() { # gather the header information
 local str_n="${REPLY%%:*}" str_v="${REPLY#*:+([[:blank:]])}"
 if [[ $str_n = Type ]]; then
-	if ((save_query_plain || save_query_xml)); then
+	if ((save_query_plain || save_query_save|| save_query_xml)); then
 		str_type="$str_v"
 	fi
 elif [[ $str_n = Header ]]; then
-	if ((save_query_plain || save_query_xml)); then
+	if ((save_query_plain || save_query_save|| save_query_xml)); then
 		str_header="$str_v"
 	fi
 elif [[ ${REPLY%%:*} = "Size in memory" ]]; then
@@ -644,9 +645,9 @@ iactive=2 # -ge 1 means we are in interactive mode
 i=x=0
 local str_tmp
 local -i local_colorize=0 local_generate_cmdline=0 local_resolve=0 local_sort=0
-local -i local_plain_output_mode=0 local_xml_output_mode=0 local_save_query_plain=0 local_save_query_xml=0
-local -a xopts sopts arr_opts=() setglob=() arr_iopts=()
-local -a arr_cmdline=()
+local -i local_plain_output_mode=0 local_save_output_mode=0 local_xml_output_mode=0
+local -i local_save_query_plain=0 local_save_query_save=0 local_save_query_xml=0
+local -a xopts sopts arr_opts=() setglob=() arr_iopts=() arr_cmdline=()
 local -a arr_pre_opts=(
 "Select_sets" "Choose sets to operate on (default all)"
 "Show_header" "Show the set header (-t)"
@@ -682,7 +683,8 @@ local -a arr_pre_opts=(
 "Sort" "Print elements sorted (if supported) (-s)"
 "Timeout" "Timeout for reading sets (-To)"
 "Generate_cmd" "Generate the $me command line (-G)"
-"Plain_export" "Generate the save format ipset commands (-Gp)"
+"Plain_export" "Generate shell script with the ipset commands (-Gp)"
+"Save_export" "Generate the save format ipset output (-Gs)"
 "XML_export" "Generate the xml format ipset output (-Gx)"
 )
 
@@ -713,6 +715,13 @@ for ((i=0; i<${#arr_pre_opts[@]}; i=i+2)); do
 		fi
 	elif [[ ${arr_pre_opts[i]} = Plain_export ]]; then
 		if ((global_save_query_plain)); then
+			arr_opts[${#arr_opts[@]}]="${arr_pre_opts[i]}"
+			arr_opts[${#arr_opts[@]}]="${arr_pre_opts[i+1]}"
+			arr_opts[${#arr_opts[@]}]="on"
+			continue
+		fi
+	elif [[ ${arr_pre_opts[i]} = Save_export ]]; then
+		if ((global_save_query_save)); then
 			arr_opts[${#arr_opts[@]}]="${arr_pre_opts[i]}"
 			arr_opts[${#arr_opts[@]}]="${arr_pre_opts[i+1]}"
 			arr_opts[${#arr_opts[@]}]="on"
@@ -1059,7 +1068,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 		fi
 	elif [[ ${xopts[x]} = Generate_cmd ]]; then # generate ipset_list cmd-line
 		local_generate_cmdline=1
-	elif [[ ${xopts[x]} = Plain_export ]]; then # generate save format ipset cmds
+	elif [[ ${xopts[x]} = Plain_export ]]; then # generate shell script with ipset cmds
 		str_tmp=$(dia_menu "Select the output mode for: ${xopts[x]}" "auto" "Automatically generated file name" "none" "Send output to stdout" "file" "Enter a file name")
 		(($?)) && return 0
 		if [[ $str_tmp = auto ]]; then
@@ -1076,6 +1085,23 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 			local_plain_output_mode=0
 		fi
 		local_save_query_plain=1
+	elif [[ ${xopts[x]} = Save_export ]]; then # generate save format ipset cmds
+		str_tmp=$(dia_menu "Select the output mode for: ${xopts[x]}" "auto" "Automatically generated file name" "none" "Send output to stdout" "file" "Enter a file name")
+		(($?)) && return 0
+		if [[ $str_tmp = auto ]]; then
+			local_save_output_mode=0
+			str_cache_save_file="${cachedir}/${me}_cache-save_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
+		elif [[ $str_tmp = none ]]; then
+			local_save_output_mode=1 str_cache_save_file="/dev/stdout"
+		elif [[ $str_tmp = file ]]; then
+			while :; do
+				str_cache_save_file="$(dia_ibox "Enter a file name: ${xopts[x]}")"
+				(($?)) && return 0
+				[[ -n $str_cache_save_file && $str_cache_save_file != +([[:blank:]]) ]] && break
+			done
+			local_save_output_mode=0
+		fi
+		local_save_query_save=1
 	elif [[ ${xopts[x]} = XML_export ]]; then # generate xml format ipset output
 		str_tmp=$(dia_menu "Select the output mode for: ${xopts[x]}" "auto" "Automatically generated file name" "none" "Send output to stdout" "file" "Enter a file name")
 		(($?)) && return 0
@@ -1117,21 +1143,21 @@ if ((local_sort == 0)); then # turn of sorting
 	done
 fi
 colorize=$local_colorize generate_cmdline=$local_generate_cmdline
-output_mode=$((local_plain_output_mode || local_xml_output_mode ? 1 : 0))
-save_query_plain=$local_save_query_plain save_query_xml=$local_save_query_xml
-if ((global_save_query_plain || global_save_query_xml)); then
-	if ! ((save_query_plain || save_query_xml)); then
-		save_query_plain=0 save_query_xml=0 output_mode=0
+output_mode=$((local_plain_output_mode || local_save_output_mode || local_xml_output_mode ? 1 : 0))
+save_query_plain=$local_save_query_plain save_query_save=$local_save_query_save save_query_xml=$local_save_query_xml
+if ((global_save_query_plain || global_save_query_save || global_save_query_xml)); then
+	if ! ((save_query_plain || save_query_save || save_query_xml)); then
+		output_mode=0
 	fi
 fi
 # run main with set glob as optional option
-if ((save_query_plain || save_query_xml)); then
+if ((save_query_plain || save_query_save || save_query_xml)); then
 	arr_main_opts=( "${arr_cmdline[@]}" "${arr_par[@]}" "${setglob[@]}" )
 fi
 main "${setglob[@]}"
 pm
 # generate the ipset_list cmd-line
-# we don't show it if -Gp|-Gx none is set, as their output contains the cmdline
+# we don't show it if -Gp|-Gs|-Gx none is set, as their output contains the cmdline
 if ((generate_cmdline && output_mode == 0)); then
 	if ((${#arr_par[@]})); then
 		arr_cmdline[${#arr_cmdline[@]}]="${arr_par[*]}"
@@ -1209,9 +1235,13 @@ if ((glob_xclude_element || regex_xclude_element)); then
 		((iactive > 1)) && return 0
 	fi
 fi
-if ((output_mode && save_query_plain && save_query_xml)); then
-	if [[ $str_cache_plain_file = /dev/stdout && $str_cache_xml_file = /dev/stdout ]]; then
-		ex_err "Using \`none' as argument to both -Gp and -Gx is not valid"
+if ((output_mode)) && (( $((save_query_plain + save_query_save + save_query_xml)) > 1)); then
+	if [[ $str_cache_plain_file = /dev/stdout ]] && [[ $str_cache_save_file = /dev/stdout || $str_cache_xml_file = /dev/stdout ]]
+	then ex_err "Using \`none' as argument to -Gp, -Gs, or -Gx is only valid once"
+	elif [[ $str_cache_save_file = /dev/stdout ]] && [[ $str_cache_plain_file = /dev/stdout || $str_cache_xml_file = /dev/stdout ]]
+	then ex_err "Using \`none' as argument to -Gp, -Gs, or -Gx is only valid once"
+	elif [[ $str_cache_xml_file = /dev/stdout ]] && [[ $str_cache_plain_file = /dev/stdout || $str_cache_save_file = /dev/stdout ]]
+	then ex_err "Using \`none' as argument to -Gp, -Gs, or -Gx is only valid once"
 	fi
 fi
 if ((colorize)); then
@@ -1290,7 +1320,7 @@ else
 fi
 
 # take care about cache dir (save queries into)
-if ((save_query_plain || save_query_xml)); then
+if ((save_query_plain || save_query_save || save_query_xml)); then
 	if ! [[ -d $cachedir ]]; then
 		if ! command mkdir -p "$cachedir"; then
 			ex_err "Unable to create cache directory: \`$cachedir'."
@@ -1301,7 +1331,12 @@ fi
 # write header of file to save representation of the query result as plain ipset commmands
 if ((save_query_plain)); then
 	if [[ $str_cache_plain_file != /dev/stdout ]]; then
-		printf "Writing query results in save format into:\n \`%s'\n\n" "$str_cache_plain_file"
+		printf "Writing query results as shell script into:\n \`%s'\n\n" "$str_cache_plain_file"
+	fi
+fi
+if ((save_query_save)); then
+	if [[ $str_cache_save_file != /dev/stdout ]]; then
+		printf "Writing query results in save format into:\n \`%s'\n\n" "$str_cache_save_file"
 	fi
 fi
 if ((save_query_xml)); then
@@ -1321,6 +1356,20 @@ if ((save_query_plain)); then
 	printf '# QUERY: %s ' "$me" >>"$str_cache_plain_file"
 	printf '%q ' "${arr_main_opts[@]}" >>"$str_cache_plain_file"
 	printf '\n\n' >>"$str_cache_plain_file"
+	printf 'ipset="%s"\n' "$ipset" >>"$str_cache_plain_file"
+fi
+if ((save_query_save)); then
+	if (set -C; printf '#!/usr/bin/env bash\n' >"$str_cache_save_file"); then
+		# remember file as long we didn't successfully finish writing to it
+		arr_files[${#arr_files[@]}]="$str_cache_save_file"
+	else
+		ex_err "Unable to create file: \`$str_cache_save_file'."
+		ex_handler 1 # for iactive mode
+	fi
+	printf '# Generated by %s at: %s\n' "$me" "$(command date "+%F %T")" >>"$str_cache_save_file"
+	printf '# QUERY: %s ' "$me" >>"$str_cache_save_file"
+	printf '%q ' "${arr_main_opts[@]}" >>"$str_cache_save_file"
+	printf '\n\n' >>"$str_cache_save_file"
 fi
 # write header of file to save representation of the query result as xml ipset output
 if ((save_query_xml)); then
@@ -1390,7 +1439,7 @@ for idx in "${!arr_sets[@]}"; do
 						else
 							arr_hcache[x++]="$REPLY"
 						fi
-						if ((save_query_plain || save_query_xml)); then # save plain/xml ipset commands
+						if ((save_query_plain || save_query_save || save_query_xml)); then # save plain/save/xml ipset commands
 							# as nothing to do but to show the names, re-read header, so we can just break
 							while read -r -t ${set_tmout:=$default_set_tmout} || {
 								(($? > 128)) && pe "Timeout reached or signal received, while reading set \`$str_set'." && continue 3;
@@ -1589,7 +1638,11 @@ for idx in "${!arr_sets[@]}"; do
 		let set_count+=1 # count amount of matching sets
 		if ((save_query_plain)); then # save query as plain ipset commands
 			# create command
-			printf '\ncreate %s %s %s\n' "$str_set" "$str_type" "$str_header" >> "$str_cache_plain_file"
+			printf '\n"$ipset" create %s %s %s\n' "$str_set" "$str_type" "$str_header" >> "$str_cache_plain_file"
+		fi
+		if ((save_query_save)); then # save query as ipset save format output
+			# create command
+			printf '\ncreate %s %s %s\n' "$str_set" "$str_type" "$str_header" >> "$str_cache_save_file"
 		fi
 		if ((save_query_xml)); then
 			let tag_idx+=1
@@ -1646,7 +1699,19 @@ for idx in "${!arr_sets[@]}"; do
 			if ((save_query_plain)); then # save query as plain ipset commands
 				# adding members commands
 				for i in ${!arr_mcache[@]}; do
-					printf 'add %s %s\n' "$str_set" "${arr_mcache[i]}" >> "$str_cache_plain_file"
+					printf '"$ipset" add %s %s\n' "$str_set" "${arr_mcache[i]}" >> "$str_cache_plain_file"
+				done
+				# successfully finished writing to file, remove from created files list
+				for i in ${!arr_files[@]}; do
+					if [[ ${arr_files[i]} = $str_cache_plain_file ]]; then
+						unset arr_files[i]
+					fi
+				done
+			fi
+			if ((save_query_save)); then # save query as ipset save format output
+				# adding members commands
+				for i in ${!arr_mcache[@]}; do
+					printf 'add %s %s\n' "$str_set" "${arr_mcache[i]}" >> "$str_cache_save_file"
 				done
 				# successfully finished writing to file, remove from created files list
 				for i in ${!arr_files[@]}; do
@@ -1796,16 +1861,16 @@ ipset_list [option [opt-arg]] [set-name-glob] [...]
 
 ipset_list {-?|-h} | -v
 ipset_list [-i|-r|-s|-Co|-T|-Xo] [-d char] [-To value]
-    [-Gp|-Gx [a[uto]|n[one]|file]] [-Fg|-Fr pattern] [-Xg|-Xr pattern]
+    [-Gp|-Gs|-Gx [a[uto]|n[one]|file]] [-Fg|-Fr pattern] [-Xg|-Xr pattern]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...] -- set-name
 ipset_list [-n|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts|-Xs] [-To value]
-    [-Gp|-Gx [a[uto]|n[one]|file]] [-Fh header-glob:value-glob] [...]
+    [-Gp|-Gs|-Gx [a[uto]|n[one]|file]] [-Fh header-glob:value-glob] [...]
     [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...]
     [-Xs set-name-glob] [...] -- [set-name-glob] [...]
 ipset_list [-t|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts] [-To value]
-    [-Gp|-Gx [a[uto]|n[one]|file]] [-Fh header-glob:value-glob] [...]
+    [-Gp|-Gs|-Gx [a[uto]|n[one]|file]] [-Fh header-glob:value-glob] [...]
     [-Fi header-glob:[!|<|>|<=|>=]value] [...]
     [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
@@ -1813,14 +1878,14 @@ ipset_list [-t|-c|-Ca|-Co|-Cs|-T|-Tm|-Ts] [-To value]
     [-Xh header-glob:value-glob] [...]
     [-Xs set-name-glob] [...] -- [set-name-glob] [...]
 ipset_list [-a|-c|-m|-r|-s|-Ca|-Co|-Cs|-T|-Tm|-Ts|-Xo] [-d char] [-To value]
-    [-Gp|-Gx [a[uto]|n[one]|file]] [-Fh header-glob:value-glob] [...]
+    [-Gp|-Gs|-Gx [a[uto]|n[one]|file]] [-Fh header-glob:value-glob] [...]
     [-Fi header-glob:[!|<|>|<=|>=]value] [...]
     [-Fg|-Fr pattern] [-Ht type-glob] [-Hi glob:[!|<|>|<=|>=]value] [...]
     [-Hr|-Hs|-Hv [!|<|>|<=|>=]value] [-Mc [!|<|>|<=|>=]value] [...]
     [-Oi option-glob:[!|<|>|<=|>=]value] [...]
     [-Xh header-glob:value-glob] [...]
     [-Xg|-Xr pattern] [-Xs set-name-glob] [...] -- [set-name-glob] [...]
-ipset_list - [-r|-s|-G] [-d delim] [-Gp|-Gx [a[uto]|n[one]|file]] [-To value] --
+ipset_list - [-r|-s|-G] [-d delim] [-Gp|-Gs|-Gx [a[uto]|n[one]|file]] [-To value] --
 
 options:
 -            interactive mode.
@@ -1845,7 +1910,8 @@ options:
 -Fi header-glob:[!|<|>|<=|>=]value [...]
     show sets matching one or more integer valued header entries.
 -G           when in interactive mode, generate command-line.
--Gp [a[uto]|n[one]|file]     generate ipset save format output.
+-Gp [a[uto]|n[one]|file]     generate ipset set creation commands.
+-Gs [a[uto]|n[one]|file]     generate ipset save format output.
 -Gx [a[uto]|n[one]|file]     generate ipset xml format output.
 -Hi header-glob:[!|<|>|<=|>=]value [...]
     match integer valued entries of the \`Header' header.
@@ -1936,6 +2002,24 @@ options:
 				else
 					global_plain_output_mode=0
 					str_cache_plain_file="${cachedir}/$2"
+				fi
+				shift
+			fi
+		;;
+		-Gs) save_query_save=1 global_save_query_save=1 # generate ipset save format output
+			if [[ -z $2 || $2 = -* ]]; then
+				global_save_output_mode=0
+				str_cache_save_file="${cachedir}/${me}_cache-save_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
+			else
+				if [[ $2 = @(a|au|aut|auto) ]]; then
+					global_save_output_mode=0
+					str_cache_save_file="${cachedir}/${me}_cache-save_$(command date +%F_%H-%M-%S)_rnd${RANDOM}.bash"
+				elif [[ $2 = @(n|no|non|none) ]]; then
+					output_mode=1 global_plain_output_mode= # don't show the regular output1
+					str_cache_save_file="/dev/stdout" # instead of writing to file, send to stdout
+				else
+					global_save_output_mode=0
+					str_cache_save_file="${cachedir}/$2"
 				fi
 				shift
 			fi
@@ -2208,8 +2292,8 @@ if ((iactive)); then # interactive mode
 		match_on_header=0 glob_search=0 regex_search=0 opt_int_search=0 test_element=0
 		exclude_header=0 glob_xclude_element=0 regex_xclude_element=0 exclude_set=0 xclude_member_opts=0
 		generate_cmdline=$global_generate_cmdline delim="$global_delim" set_tmout=$global_tmout
-		save_query_plain=$global_save_query_plain save_query_xml=$global_save_query_xml
-		output_mode=$((global_plain_output_mode || global_xml_output_mode ? 1 : 0))
+		save_query_plain=$global_save_query_plain save_query_save=$global_save_query_save save_query_xml=$global_save_query_xml
+		output_mode=$((global_plain_output_mode || global_save_output_mode || global_xml_output_mode ? 1 : 0))
 		arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
 		arr_test_elem=() arr_hxclude=() arr_sxclude=()
 
