@@ -5,7 +5,7 @@ ipset set listing wrapper script written for the bash shell.
 
 It allows you to match and display sets, headers and elements in various ways.
 
-The resulting representation of the query can be saved in ipset save and/or xml format.
+The resulting representation of the query can be saved as shell script, in ipset save, or xml format.
 
 
 Features:
@@ -29,7 +29,9 @@ Features:
 - Save the query result in ipset save commands format.
 - Save the query result in ipset xml output format.
 - Operate on a single, selected, or all sets.
-- The query result can be saved as ipset set creation commands.
+- The query result can be saved as shell script containing the ipset set creation commands.
+- The query result can be saved in ipset save format.
+- The query result can be saved in ipset xml format.
 - A wizard based interactive mode.
 - Colorize the output.
 - Programmable completion is included to make usage easier and faster.
@@ -97,6 +99,6 @@ Examples:
 - `ipset_list - -d $'\n'`  - enter interactive mode, globally set delim to newline.
 - `ipset_list - >/tmp/data`  - enter interactive mode and redirect the output to a file.
 - `ipset_list - -G`  - enter interactive mode, show generated command line.
-- `ipset_list -Ht hash:ip -T 1.1.1.1 -T 2.2.2.2 -m -Gp auto` - show all sets of type hash:ip. Test for existence of the elements 1.1.1.1 and 2.2.2.2. Show the members and save the query result as commands in ipset save format to a file, which name is auto-generated.
-- `ipset_list -m -Fg "192.168.*" -Xg "192.168.13.69*" -Gx -Gp n` - Show members of all sets that match the glob `192.168.*`, but exclude `192.168.13.69*`. Save the query result in xml to an auto generated file. Send the query result in ipset save format to stdout (suppressing normal output).
+- `ipset_list -Ht hash:ip -T 1.1.1.1 -T 2.2.2.2 -m -Gp auto` - show all sets of type hash:ip. Test for existence of the elements 1.1.1.1 and 2.2.2.2. Show the members and save the query result as shell commands to a file, which name is auto-generated.
+- `ipset_list -m -Fg "192.168.*" -Xg "192.168.13.69*" -Gx -Gs n` - Show members of all sets that match the glob `192.168.*`, but exclude `192.168.13.69*`. Save the query result in xml to an auto generated file. Send the query result in ipset save format to stdout (suppressing normal output).
 
