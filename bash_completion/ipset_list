@@ -137,7 +137,7 @@ local sets=( $(command "${ipset_list:-ipset_list}" -n 2>/dev/null) ) 2>/dev/null
 local opts=(- -- -? -a -c -d -h -i -m -n -r -s -t -v)
 local Copts=(-Ca -Cs -Co)
 local Fopts=(-Fh -Fi -Fg -Fr -Oi)
-local Gopts=(-Gp -Gx)
+local Gopts=(-Gp -Gs -Gx)
 local Iopts=(-- -d -r -s -G ${Gopts[@]} -To)
 local Hopts=(-Hi -Hr -Hs -Ht -Hv)
 local Topts=(-T -Tm -To -Ts)
@@ -190,14 +190,14 @@ for ((i=1; i < ${#words[@]}-1; i++)); do
         *)
         ((set_index)) && break
         # options expecting an opt arg
-        str_tmp="-@(d|Fg|Fh|Fi|Fr|Gp|Gx|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Xg|Xh|Xr|Xs)"
+        str_tmp="-@(d|Fg|Fh|Fi|Fr|Gp|Gs|Gx|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Xg|Xh|Xr|Xs)"
         if [[ ${words[i-1]} = $str_tmp ]]; then
             continue
-		elif [[ ${words[i-1]} = @(-Gp|-Gx) && ${words[i]} != -* ]]; then
+		elif [[ ${words[i-1]} = @(-Gp|-Gs|-Gx) && ${words[i]} != -* ]]; then
             continue
         fi
         # if not an option, register set index
-        str_tmp="-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Gp|Gx|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Tm|Ts|Xg|Xh|Xo|Xr)"
+        str_tmp="-@(-|?|a|c|d|h|i|m|n|r|s|t|v|Ca|Cs|Co|Fg|Fh|Fi|Fr|Gp|Gs|Gx|Hi|Ht|Hr|Hs|Hv|Mc|Oi|T|To|Tm|Ts|Xg|Xh|Xo|Xr)"
         if [[ ${words[i]} != $str_tmp ]]; then
             for x in ${!sets[@]}; do
                 if [[ ${sets[x]} = ${words[i]} ]]; then
@@ -281,7 +281,7 @@ elif [[ $prev = @(-@(Hr|Hs|Hv|Mc)) ]]; then
     # options making use of arithmetic comparison
     compopt -o nospace
     COMPREPLY=( $( compgen -P '\' -W '\! \< \> \<= \>=' -- "$cur" ) )
-elif [[ $prev = @(-Gp|-Gx) && $cur != -* ]]; then # fails on files starting with a dash. I don't care.
+elif [[ $prev = @(-Gp|-Gs|-Gx) && $cur != -* ]]; then # fails on files starting with a dash. I don't care.
 	if ((got_bashcompl)); then
 		_filedir
 		COMPREPLY=( $( compgen -W 'auto none ${COMPREPLY[@]}' -- "$cur" ) )
