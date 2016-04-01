@@ -15,8 +15,9 @@
             <code class="filename">/etc/ipset_list/ipset_list.conf</code>
         </p></div><div class="refsect1" lang="en"><a name="description"></a><h2>Description</h2><p>ipset_list is a wrapper script for listing sets of the netfilter
                 <span class="command"><strong>ipset</strong></span> program. It allows you to match and display sets, headers,
-            and elements in various ways. The resulting representation of the query can be saved in
-            ipset `save' and/or `xml' format.</p><p>It is written for the <span class="command"><strong>bash</strong></span> shell.</p><p>It includes an interactive wizard based mode, that utilizes a dialog program
+            and elements in various ways. The resulting representation of the query can be saved as
+            shell script containing the set creation / population commands, or in ipset `save', or
+            `xml' format.</p><p>It is written for the <span class="command"><strong>bash</strong></span> shell.</p><p>It includes an interactive wizard based mode, that utilizes a dialog program
                 (<span class="command"><strong>dialog</strong></span> or <span class="command"><strong>whiptail</strong></span> are supported).</p><p>Optionally the output can be colorized.</p><p>A <span class="underline">compspec</span> (programmable completion
             specification) for bash completion is included.</p><p>Some variables are available inside the script configuration header, or the
             configuration file (<code class="filename">ipset_list.conf</code>). As the configuration file
@@ -26,8 +27,8 @@
             values. For details see section <span class="bold"><strong>Environment</strong></span>, or the
             comments inside <code class="filename">ipset_list[.conf]</code>.</p><p>Some options exclude or require each other. <span class="command"><strong>ipset_list</strong></span> will
             complain if that is the case. The output of <span class="command"><strong>ipset_list -h</strong></span> does
-            display the valid combinations.</p><p>Example usage is given in the header of the script itself, or in the Readme.md
-            shipping with <span class="command"><strong>ipset_list</strong></span>.</p></div><div class="refsect1" lang="en"><a name="options"></a><h2>Options</h2><p>All options are optional. Some require an argument, others do not. All options and
+            display the valid combinations.</p><p>Example usage is given in the header of the script itself, or in the
+                <code class="filename">Readme.md</code> shipping with <span class="command"><strong>ipset_list</strong></span>.</p></div><div class="refsect1" lang="en"><a name="options"></a><h2>Options</h2><p>All options are optional. Some require an argument, others do not. All options and
             their arguments must be separated by <span class="underline">blank</span>(s). If
             an option can be used more than once, it is mentioned explicitly. </p><p>When run without arguments, the names of all sets found, are displayed with the prefix
             `Name:'.</p><div class="variablelist"><dl><dt><span class="term">-h, -?</span></dt><dd><p>Show usage instructions.</p></dd><dt><span class="term">-v</span></dt><dd><p>Show version information.</p></dd><dt><span class="term">-</span></dt><dd><p>Enter interactive mode. This wizard based way to select the options
@@ -60,20 +61,16 @@
                         argument, the file name is automatically generated. Otherwise it must be
                         specified.</p><p>If `<span class="underline">none</span>' is used as option
                         argument, the output is sent to <span class="underline">stdout</span>. This will suppress normal output.</p><p>The option argument can be omitted. In that case `<span class="underline">auto</span>' is assumed.</p><p>The arguments `auto' and `none' can be written in short form. Meaning only
-                        the first character is mandatory.</p><p>It is not valid to use -Gp none together with -Gx none.</p><p>If this option is used when entering interactive mode, it will be
-                        pre-selected in the menu, as long the session lasts.</p><p>The directory the file(s) will be saved into can be modified using the
-                            <code class="varname">cachedir</code> variable.</p></dd><dt><span class="term">-Gx [a[uto]|n[one]|file]</span></dt><dd><p>Save the result of the query as <span class="command"><strong>ipset</strong></span> xml output.  The
-                        format is equal to the output of `ipset save -o xml`.</p><p>If `<span class="underline">auto</span>' is used as option
-                        argument, the file name is automatically generated. Otherwise it must be
-                        specified.</p><p>If `<span class="underline">none</span>' is used as option
-                        argument, the output is sent to <span class="underline">stdout</span>. This will suppress normal output.</p><p>The option argument can be omitted. In that case `<span class="underline">auto</span>' is assumed.</p><p>The arguments `auto' and `none' can be written in short form. Meaning only
-                        the first character is mandatory.</p><p>It is not valid to use -Gp none together with -Gx none.</p><p>If this option is used when entering interactive mode, it will be
-                        pre-selected in the menu, as long the session lasts.</p><p>The directory the file(s) will be saved into can be modified using the
-                            <code class="varname">cachedir</code> variable.</p></dd><dt><span class="term">-Hi header-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Match on integer valued entries of the `Header' header. i.e. timeout. This
+                        the first character is mandatory. While <code class="filename">file</code> should be
+                        a regular file name.</p><p>It is not valid to use <code class="code">-Gp none</code> together with <code class="code">-Gs
+                            none</code>, or <code class="code">-Gx none</code>.</p><p>If this option is used when entering interactive mode, it will be
+                        preselected in the menu, as long the session lasts.</p><p>The directory the file(s) will be saved into can be modified using the
+                            <code class="varname">cachedir</code> variable.</p></dd><dt><span class="term">-Gs [a[uto]|n[one]file]</span></dt><dd><p>Save the result of the query in `ipset save` output format.</p><p>Everything else is equal to option -Gp. See the above description.</p></dd><dt><span class="term">-Gx [a[uto]|n[one]|file]</span></dt><dd><p>Save the result of the query as <span class="command"><strong>ipset</strong></span> xml output. The
+                        format is equal to the output of `ipset save -o xml`.</p><p>Everything else is equal to option -Gp. See the above description.</p></dd><dt><span class="term">-Hi header-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Match on integer valued entries of the `Header' header. i.e. timeout. This
                         option can be used multiple times.</p></dd><dt><span class="term">-Ht set-type-glob</span></dt><dd><p>Match on the set type.</p></dd><dt><span class="term">-Hr [!|&lt;|&gt;|&lt;=|&gt;=]value</span></dt><dd><p>Match on number of references. value=integer.</p></dd><dt><span class="term">-Hs [!|&lt;|&gt;|&lt;=|&gt;=]value</span></dt><dd><p>Match on size in memory. value=integer.</p></dd><dt><span class="term">-Hv [!|&lt;|&gt;|&lt;=|&gt;=]value</span></dt><dd><p>Match on revision number. value=integer.</p></dd><dt><span class="term">-Mc [!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Match on the member count. value=integer.</p></dd><dt><span class="term">-Oi option-glob:[!|&lt;|&gt;|&lt;=|&gt;=]value [...]</span></dt><dd><p>Match values of member options. i.e. timeout. <code class="code">value=int |
                             0xhex[/0xhex] | hex:[!|&lt;|&gt;|&lt;=|&gt;=]hex</code>. This option can be
                         used multiple times.</p></dd><dt><span class="term">-T element [...]</span></dt><dd><p>Run <code class="code">`ipset test set element`</code> to check if the <span class="underline">element</span> is in the set. This option can be
-                        used multiple times.</p></dd><dt><span class="term">-Tm</span></dt><dd><p>Calculate the total memory usage of all matching sets.</p></dd><dt><span class="term">-To</span></dt><dd><p>Set timeout value (integer) in seconds for <span class="command"><strong>read</strong></span>. This affects
+                        used multiple times.</p></dd><dt><span class="term">-Tm</span></dt><dd><p>Calculate the total memory usage of all matching sets.</p></dd><dt><span class="term">-To</span></dt><dd><p>Set timeout value (integer) in seconds for the shell builtin <span class="command"><strong>read</strong></span>. This affects
                         the listing of sets. The default value of the <code class="varname">set_tmout</code> variable,
                         which can be set in the configuration header of the script, is 30. This
                         command line option overrides it.</p><p>If this parameter is used when starting interactive mode, it will apply

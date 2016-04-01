@@ -58,8 +58,9 @@
         <title>Description</title>
         <para>ipset_list is a wrapper script for listing sets of the netfilter
                 <command>ipset</command> program. It allows you to match and display sets, headers,
-            and elements in various ways. The resulting representation of the query can be saved in
-            ipset `save' and/or `xml' format.</para>
+            and elements in various ways. The resulting representation of the query can be saved as
+            shell script containing the set creation / population commands, or in ipset `save', or
+            `xml' format.</para>
         <para>It is written for the <command>bash</command> shell.</para>
         <para>It includes an interactive wizard based mode, that utilizes a dialog program
                 (<command>dialog</command> or <command>whiptail</command> are supported).</para>
@@ -76,8 +77,8 @@
         <para>Some options exclude or require each other. <command>ipset_list</command> will
             complain if that is the case. The output of <command>ipset_list -h</command> does
             display the valid combinations.</para>
-        <para>Example usage is given in the header of the script itself, or in the Readme.md
-            shipping with <command>ipset_list</command>.</para>
+        <para>Example usage is given in the header of the script itself, or in the
+                <filename>Readme.md</filename> shipping with <command>ipset_list</command>.</para>
     </refsect1>
     <refsect1 xml:id="options">
         <title>Options</title>
@@ -280,34 +281,29 @@
                     <para>The option argument can be omitted. In that case `<emphasis
                             role="underline">auto</emphasis>' is assumed.</para>
                     <para>The arguments `auto' and `none' can be written in short form. Meaning only
-                        the first character is mandatory.</para>
-                    <para>It is not valid to use -Gp none together with -Gx none.</para>
+                        the first character is mandatory. While <filename>file</filename> should be
+                        a regular file name.</para>
+                    <para>It is not valid to use <code>-Gp none</code> together with <code>-Gs
+                            none</code>, or <code>-Gx none</code>.</para>
                     <para>If this option is used when entering interactive mode, it will be
-                        pre-selected in the menu, as long the session lasts.</para>
+                        preselected in the menu, as long the session lasts.</para>
                     <para>The directory the file(s) will be saved into can be modified using the
                             <varname>cachedir</varname> variable.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
+                <term>-Gs [a[uto]|n[one]file]</term>
+                <listitem>
+                    <para>Save the result of the query in `ipset save` output format.</para>
+                    <para>Everything else is equal to option -Gp. See the above description.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
                 <term>-Gx [a[uto]|n[one]|file]</term>
                 <listitem>
-                    <para>Save the result of the query as <command>ipset</command> xml output.  The
+                    <para>Save the result of the query as <command>ipset</command> xml output. The
                         format is equal to the output of `ipset save -o xml`.</para>
-                    <para>If `<emphasis role="underline">auto</emphasis>' is used as option
-                        argument, the file name is automatically generated. Otherwise it must be
-                        specified.</para>
-                    <para>If `<emphasis role="underline">none</emphasis>' is used as option
-                        argument, the output is sent to <emphasis role="underline"
-                        >stdout</emphasis>. This will suppress normal output.</para>
-                    <para>The option argument can be omitted. In that case `<emphasis
-                            role="underline">auto</emphasis>' is assumed.</para>
-                    <para>The arguments `auto' and `none' can be written in short form. Meaning only
-                        the first character is mandatory.</para>
-                    <para>It is not valid to use -Gp none together with -Gx none.</para>
-                    <para>If this option is used when entering interactive mode, it will be
-                        pre-selected in the menu, as long the session lasts.</para>
-                    <para>The directory the file(s) will be saved into can be modified using the
-                            <varname>cachedir</varname> variable.</para>
+                    <para>Everything else is equal to option -Gp. See the above description.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -372,7 +368,7 @@
             <varlistentry>
                 <term>-To</term>
                 <listitem>
-                    <para>Set timeout value (integer) in seconds for <command
+                    <para>Set timeout value (integer) in seconds for the shell builtin <command
                             xmlns:xi="http://www.w3.org/2001/XInclude"
                             xmlns:xlink="http://www.w3.org/1999/xlink">read</command>. This affects
                         the listing of sets. The default value of the <varname
