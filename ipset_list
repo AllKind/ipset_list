@@ -428,11 +428,9 @@ return 0
 
 x_indent() { # xml tag indention
 local -i x
-#if ((tag_idx)); then
-	for ((x=1; x<=tag_idx; x++)); do
-		printf '    ' >> "$str_cache_xml_file"
-	done
-#fi
+for ((x=1; x<=tag_idx; x++)); do
+	printf '    ' >> "$str_cache_xml_file"
+done
 }
 
 o_xtag() { # <tag>
@@ -601,7 +599,6 @@ fi
 }
 
 rdia() { # run dialog program
-#"$dialog_prog" --title "ipset_list interactive mode" "$@" 2>&1 > /dev/tty
 "$dialog_prog" --title "ipset_list interactive mode" "$@" 3>&1 1>&2 2>&3
 }
 
@@ -1723,7 +1720,7 @@ for idx in "${!arr_sets[@]}"; do
 				done
 				# successfully finished writing to file, remove from created files list
 				for i in ${!arr_files[@]}; do
-					if [[ ${arr_files[i]} = $str_cache_plain_file ]]; then
+					if [[ ${arr_files[i]} = $str_cache_save_file ]]; then
 						unset arr_files[i]
 					fi
 				done
