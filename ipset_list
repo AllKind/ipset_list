@@ -391,6 +391,9 @@ for x in ${!arr_files[@]}; do
 	pm "Removing unfinished file: \`${arr_files[x]}'."
 	command rm -f "${arr_files[x]}"
 done
+if ((colorize)); then # colorize can leave the terminal misconfigured - reset it
+	"$cl" normal $col_fg $col_bg
+fi
 exit ${1:-1}
 }
 
