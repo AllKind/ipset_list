@@ -63,7 +63,7 @@
 # $0 -t                - show all sets, but headers only.
 # $0 -c -t setA        - show headers and member sum of setA.
 # $0 -i setA           - show only member entries of setA.
-# $0 -c -m setA setB   - show members and sum of setA & setB.
+# $0 -c -m setA setB   - show members and sum of setA and setB.
 # $0 -a -c -d :        - show all sets members, sum and use `:' as entry delimiter.
 # $0 -a -c setA        - show all info of setA and its members sum.
 # $0 -c -m -d $'\n' setA - show members and sum of setA, delim with newline.
@@ -332,27 +332,33 @@ export LC_ALL=C
 readonly version=3.5.1
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
-declare ips_version="" str_search="" str_xclude=""
-declare str_type str_header str_references str_revision str_cache_plain_file str_cache_save_file str_cache_xml_file opt
+declare ips_version="" str_search="" str_xclude="" opt
+declare -i i=x=y=idx=0
+# counter settings
 declare -i member_count=match_count=do_count=show_count=calc_mem=count_sets=sets_total=0
+# operation modes
 declare -i show_all=show_members=headers_only=names_only=isolate=0
 declare -i match_on_header=glob_search=regex_search=opt_int_search=test_element=0
 declare -i exclude_header=glob_xclude_element=regex_xclude_element=exclude_set=xclude_member_opts=0
-declare -i i=x=y=idx=0
 declare -i builtin_mc=-1 # member sum - if builtin since ipset v.6.25
 declare -i iactive=0 # en/disable interactive mode
 declare -i iactive_err=0 # remember error state in interactive mode
 declare -i output_mode=0 global_plain_output_mode=0 global_xml_output_mode=0 # show regular output - yes/no
 declare -i generate_cmdline=global_generate_cmdline=0 # generate command line in iactive mode
+# gernerate ipset output
+declare str_type str_header str_references str_revision str_cache_plain_file str_cache_save_file str_cache_xml_file
 declare -i save_query_plain=0 global_save_query_plain=0 # generate plain ipset commands
 declare -i save_query_save=0 global_save_query_save=0 # generate ipset save format output
 declare -i save_query_xml=0 global_save_query_xml=0 # generate xml ipset output
 declare -i global_w_height=-1 global_w_with=-1 global_l_height=-1 # remember init values of window measures
+# defaults
 declare -ir default_set_tmout=30
 declare -r default_delim=" "
+# options set at startup, when in iactive mode
 declare global_delim="${delim:=$default_delim}"
 declare -i global_colorize=${colorize:=0} global_tmout="${set_tmout:=$default_set_tmout}"
 declare -i global_resolve=0 global_sort=0
+# data arrays
 declare -a arr_hsearch=() arr_hsearch_int=() arr_hsearch_xint=() arr_match_on_msum=() arr_opt_int_search=()
 declare -a arr_hxclude=() arr_sxclude=() arr_par=() all_sets=() arr_cmdline=() arr_old_select=() arr_tmp=()
 declare -a arr_test_elem=() arr_files=()
