@@ -371,7 +371,7 @@ declare -a arr_main_opts=( "$@" )
 : ${cachedir:=/var/cache/ipset_list}
 
 # simple trap
-trap "echo trap on signal activated - exiting; ex_handler 111" HUP INT QUIT STOP TERM
+trap "echo trap on signal activated - exiting; ex_handler 111" INT QUIT STOP TERM
 
 # -----------------------------------------------------------------
 # functions
