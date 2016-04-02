@@ -388,14 +388,14 @@ printf "$*\n" >&2
 ex_handler() { # handle exit - cleanup before quitting
 local x
 for x in ${!arr_files[@]}; do
-	pm "Removing unfinished file: \`${arr_files[x]}'"
+	pm "Removing unfinished file: \`${arr_files[x]}'."
 	command rm -f "${arr_files[x]}"
 done
 exit ${1:-1}
 }
 
 ex_miss_optarg() { # missing option argument
-pe "$2 of option \`$1' is missing"
+pe "$2 of option \`$1' is missing."
 ex_handler 2
 }
 
@@ -1196,57 +1196,57 @@ if ((names_only)); then
 	if ((headers_only||show_members||show_all||isolate||\
 		glob_xclude_element||regex_xclude_element||xclude_member_opts))
    	then
-		ex_err "Option -n does not allow this combination of options"
+		ex_err "Option -n does not allow this combination of options."
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((headers_only)); then
 	if ((show_members || show_all || isolate)); then
-		ex_err "Options -t and -a|-i|-m are mutually exclusive"
+		ex_err "Options -t and -a|-i|-m are mutually exclusive."
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((headers_only)); then
 	if ((xclude_member_opts||glob_xclude_element||regex_xclude_element)); then
-		ex_err "Options -t and -Xg|-Xr|-Xo are mutually exclusive"
+		ex_err "Options -t and -Xg|-Xr|-Xo are mutually exclusive."
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((isolate)); then
 	if ((show_count||show_all||calc_mem||count_sets||sets_total||exclude_set)); then
-		ex_err "Options -i and -a|-c|-Ca|-Cs|-Tm|-Ts|-Xs are mutually exclusive"
+		ex_err "Options -i and -a|-c|-Ca|-Cs|-Tm|-Ts|-Xs are mutually exclusive."
 		((iactive > 1)) && return 0
 	fi
 	if ((match_on_header)); then
-		ex_err "Option -i does not allow matching on header entries"
+		ex_err "Option -i does not allow matching on header entries."
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((glob_search || regex_search)); then
 	if ((glob_search && regex_search)); then
-		ex_err "Options -Fg and -Fr are mutually exclusive"
+		ex_err "Options -Fg and -Fr are mutually exclusive."
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((exclude_header)); then
 	if ! ((headers_only || show_all)); then
-		ex_err "Option -Xh requires -a or -t"
+		ex_err "Option -Xh requires -a or -t."
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((glob_xclude_element || regex_xclude_element)); then
 	if ! ((show_members || show_all || isolate)); then
-		ex_err "Options -Xg|-Xr require any of -a|-i|-m"
+		ex_err "Options -Xg|-Xr require any of -a|-i|-m."
 		((iactive > 1)) && return 0
 	fi
 fi
 if ((output_mode)) && (( $((save_query_plain + save_query_save + save_query_xml)) > 1)); then
 	if [[ $str_cache_plain_file = /dev/stdout ]] && [[ $str_cache_save_file = /dev/stdout || $str_cache_xml_file = /dev/stdout ]]
-	then ex_err "Using \`none' as argument to -Gp, -Gs, or -Gx is only valid once"
+	then ex_err "Using \`none' as argument to -Gp, -Gs, or -Gx is only valid once."
 	elif [[ $str_cache_save_file = /dev/stdout ]] && [[ $str_cache_plain_file = /dev/stdout || $str_cache_xml_file = /dev/stdout ]]
-	then ex_err "Using \`none' as argument to -Gp, -Gs, or -Gx is only valid once"
+	then ex_err "Using \`none' as argument to -Gp, -Gs, or -Gx is only valid once."
 	elif [[ $str_cache_xml_file = /dev/stdout ]] && [[ $str_cache_plain_file = /dev/stdout || $str_cache_save_file = /dev/stdout ]]
-	then ex_err "Using \`none' as argument to -Gp, -Gs, or -Gx is only valid once"
+	then ex_err "Using \`none' as argument to -Gp, -Gs, or -Gx is only valid once."
 	fi
 fi
 if ((colorize)); then
@@ -1284,7 +1284,7 @@ https://github.com/AllKind/cl"
 	   	col_set_count col_set_total col_highlight
 	do
 		if ! ("$cl" "${!opt}"); then
-			ex_err "Variable \`$opt' has an invalid color value: \`${!opt}'"
+			ex_err "Variable \`$opt' has an invalid color value: \`${!opt}'."
 			return 1
 		fi
 	done
@@ -1301,24 +1301,24 @@ if [[ $1 ]]; then # there are remaining arg(s)
 			fi
 		done
 		if ! ((found_set)); then
-			ex_err "\`$opt' is not a valid option nor an existing set name"
+			ex_err "\`$opt' is not a valid option nor an existing set name."
 			((iactive > 1)) && return 0
 		fi
 	done
 	if ((isolate)); then
 		if (($# != 1)); then
-			ex_err "Option -i is only valid for a single set"
+			ex_err "Option -i is only valid for a single set."
 			((iactive > 1)) && return 0
 		fi
 	fi
 	arr_sets=("${arr_tmp[@]}") # reassign matched sets
 	if ((isolate && ${#arr_sets[@]} > 1)); then
-		ex_err "Option -i is only valid for a single set"
+		ex_err "Option -i is only valid for a single set."
 		((iactive > 1)) && return 0
 	fi
 else
 	if ((isolate)); then
-		ex_err "Option -i is only valid for a single set"
+		ex_err "Option -i is only valid for a single set."
 		((iactive > 1)) && return 0
 	fi
 	arr_sets=( "${all_sets[@]}" )
