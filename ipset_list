@@ -1076,6 +1076,7 @@ for ((x=0; x<=${#xopts[*]}; x++)); do
 		fi
 	elif [[ ${xopts[x]} = Generate_cmd ]]; then # generate ipset_list cmd-line
 		local_generate_cmdline=1
+		arr_cmdline[${#arr_cmdline[@]}]="-G"
 	elif [[ ${xopts[x]} = Plain_export ]]; then # generate shell script with ipset cmds
 		str_tmp=$(dia_menu "Select the output mode for: ${xopts[x]}" "auto" "Automatically generated file name" "none" "Send output to stdout" "file" "Enter a file name")
 		(($?)) && return 0
