@@ -247,15 +247,15 @@
             <varlistentry>
                 <term>-Fh header-glob:value-glob [...]</term>
                 <listitem>
-                    <para>Show sets containing one or more [ext]glob matching headers. This option
-                        can be used multiple times.</para>
+                    <para>Show sets containing one or more [ext]glob matching headers.</para>
+                    <para>This option can be used multiple times.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
                 <term>-Fi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
-                    <para>Show sets matching one or more integer valued header entries. This option
-                        can be used multiple times.</para>
+                    <para>Show sets matching one or more integer valued header entries.</para>
+                    <para>This option can be used multiple times.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -270,8 +270,8 @@
             <varlistentry>
                 <term>-Gp [a[uto]|n[one]file]</term>
                 <listitem>
-                    <para>Save the result of the query as <command>ipset</command> set creation
-                        commands. The format is equal to the output of `ipset save`.</para>
+                    <para>Save the result of the query as shell script containing the
+                            <command>ipset</command> set creation / population commands.</para>
                     <para>If `<emphasis role="underline">auto</emphasis>' is used as option
                         argument, the file name is automatically generated. Otherwise it must be
                         specified.</para>
@@ -281,10 +281,10 @@
                     <para>The option argument can be omitted. In that case `<emphasis
                             role="underline">auto</emphasis>' is assumed.</para>
                     <para>The arguments `auto' and `none' can be written in short form. Meaning only
-                        the first character is mandatory. While <filename>file</filename> should be
-                        a regular file name.</para>
-                    <para>It is not valid to use <code>-Gp none</code> together with <code>-Gs
-                            none</code>, or <code>-Gx none</code>.</para>
+                        the first character is mandatory. While <filename>`file'</filename> should
+                        be a regular file name.</para>
+                    <para>It is not valid to use <code>`-Gp none'</code> together with <code>`-Gs
+                            none'</code>, or <code>`-Gx none'</code>.</para>
                     <para>If this option is used when entering interactive mode, it will be
                         preselected in the menu, as long the session lasts.</para>
                     <para>The directory the file(s) will be saved into can be modified using the
@@ -309,8 +309,9 @@
             <varlistentry>
                 <term>-Hi header-glob:[!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
-                    <para>Match on integer valued entries of the `Header' header. i.e. timeout. This
-                        option can be used multiple times.</para>
+                    <para>Match on integer valued entries of the `Header' header. i.e.
+                        timeout.</para>
+                    <para>This option can be used multiple times.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -346,17 +347,18 @@
             <varlistentry>
                 <term>-Oi option-glob:[!|&lt;|>|&lt;=|>=]value [...]</term>
                 <listitem>
-                    <para>Match values of member options. i.e. timeout. <code>value=int |
-                            0xhex[/0xhex] | hex:[!|&lt;|>|&lt;=|>=]hex</code>. This option can be
-                        used multiple times.</para>
+                    <para><code>value = int | 0xhex[/0xhex] |
+                        hex:[!|&lt;|>|&lt;=|>=]hex</code>.</para>
+                    <para>Match values of member options. i.e. timeout.</para>
+                    <para>This option can be used multiple times.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
                 <term>-T element [...]</term>
                 <listitem>
                     <para>Run <code>`ipset test set element`</code> to check if the <emphasis
-                            role="underline">element</emphasis> is in the set. This option can be
-                        used multiple times.</para>
+                            role="underline">element</emphasis> is in the set.</para>
+                    <para>This option can be used multiple times.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -402,8 +404,8 @@
             <varlistentry>
                 <term>-Xh header-glob:value-glob [...]</term>
                 <listitem>
-                    <para>Exclude one or more [ext]glob matching header entries. This option can be
-                        used multiple times.</para>
+                    <para>Exclude one or more [ext]glob matching header entries.</para>
+                    <para>This option can be used multiple times.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -421,8 +423,8 @@
             <varlistentry>
                 <term>-Xs pattern [...]</term>
                 <listitem>
-                    <para>Exclude sets matching a [ext]glob pattern. This option can be used
-                        multiple times.</para>
+                    <para>Exclude sets matching a [ext]glob pattern.</para>
+                    <para>This option can be used multiple times.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -581,7 +583,7 @@
     <refsect1 xml:id="exit_stat">
         <title>Exit codes</title>
         <para>An exit code of `0' indicates success. A return value of `1' is a good sign of
-            failure.</para>
+            failure. Usage errors will cause an exit value of `2'.</para>
         <para>If a <emphasis role="underline">SIGNAL</emphasis> was received (HUP, INT, QUIT, STOP,
             TERM are trapped) the script exits with a return value of `111'. </para>
     </refsect1>
