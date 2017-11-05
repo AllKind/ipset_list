@@ -393,7 +393,7 @@ for x in ${!arr_files[@]}; do
 	command rm -f "${arr_files[x]}"
 done
 if ((colorize)); then # colorize can leave the terminal misconfigured - reset it
-	"$cl" normal $col_fg
+	"$cl" normal
 fi
 exit ${1:-1}
 }
@@ -1289,7 +1289,7 @@ https://github.com/AllKind/cl"
 		fi
 	done
 	# set color defaults if unset
-	: ${col_fg:=white}
+#	: ${col_fg:=white}
 #	: ${col_bg:=black}
 	: ${col_headers:=cyan}
 	: ${col_members:=yellow}
@@ -1303,6 +1303,7 @@ https://github.com/AllKind/cl"
 	for opt in col_fg col_bg col_headers col_members col_match col_memsize \
 	   	col_set_count col_set_total col_highlight
 	do
+		[[ ${!opt} ]] || continue # could be empty
 		if ! ("$cl" "${!opt}"); then
 			ex_err "Variable \`$opt' has an invalid color value: \`${!opt}'."
 			return 1
