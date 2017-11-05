@@ -225,6 +225,7 @@
 
 # default background color
 # defaults to: black
+# can be left empty (unconfigured)
 #col_bg="black"
 
 # color for headers
@@ -392,7 +393,7 @@ for x in ${!arr_files[@]}; do
 	command rm -f "${arr_files[x]}"
 done
 if ((colorize)); then # colorize can leave the terminal misconfigured - reset it
-	"$cl" normal $col_fg $col_bg
+	"$cl" normal $col_fg
 fi
 exit ${1:-1}
 }
@@ -1289,7 +1290,7 @@ https://github.com/AllKind/cl"
 	done
 	# set color defaults if unset
 	: ${col_fg:=white}
-	: ${col_bg:=black}
+#	: ${col_bg:=black}
 	: ${col_headers:=cyan}
 	: ${col_members:=yellow}
 	: ${col_match:=red}
