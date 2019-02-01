@@ -101,7 +101,7 @@ done
 }
 
 # check if the variable are defined
-for f in SYSCONFDIR BINDIR BASHCOMPDIR DATAROOTDIR MANDIR DOCDIR
+for f in SYSCONFDIR BINDIR BASHCOMPDIR CACHEDIR DATAROOTDIR MANDIR DOCDIR
 do
 	if [[ -z ${!f} ]]; then
 		printf "Need variable \`%s'. Aborting.\n" "$f" >&2
@@ -129,7 +129,7 @@ else
 fi
 
 # start deletion
-for f in SYSCONFDIR DOCDIR; do
+for f in SYSCONFDIR DOCDIR CHACHEDIR; do
 	rem_dir "${!f}/$ME"
 done
 

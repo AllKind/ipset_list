@@ -41,6 +41,7 @@ umask 0022
 ME=ipset_list
 BACKUP=
 BASHCOMPDIR=
+CACHEDIR=
 GROUP=
 BINDIR=
 DATAROOTDIR=
@@ -77,6 +78,7 @@ Options:
 --sysconfdir /path            Default: PREFIX/etc
 --bashcompdir /path           Default: Retrieved with pkg-config, or as fallback:
                               /etc/bash_completion.d, or ~/.bash_completion
+--cachedir /path              Default: /var/cache
 \n"
 }
 
@@ -135,6 +137,7 @@ while (($#)); do
 		;;
 		--bashcompdir) BASHCOMPDIR="$opt_arg" ;;
 		--bindir) BINDIR="$opt_arg" ;;
+		--cachedir) CACHEDIR="$opt_arg" ;;
 		--datarootdir) DATAROOTDIR="$opt_arg" ;;
 		--docdir) DOCDIR="$opt_arg" ;;
 		--mandir) MANDIR="$opt_arg" ;;
@@ -149,6 +152,7 @@ done
 # set defaults
 : ${PREFIX:=/usr/local}
 : ${BINDIR:=${PREFIX}/sbin}
+: ${CACHEDIR:=/var/cache}
 : ${DATAROOTDIR:=${PREFIX}/share}
 : ${SYSCONFDIR:=${PREFIX}/etc}
 : ${DOCDIR:=${DATAROOTDIR}/doc}
@@ -191,7 +195,7 @@ if ((EUID != 0)); then
 fi
 
 # create directories
-create_dirs "${BINDIR}" "${SYSCONFDIR}/$ME" "${DOCDIR}/$ME" "${MANDIR}/man8" "${BASHCOMPDIR}"
+create_dirs "${BINDIR}" "${SYSCONFDIR}/$ME" "${DOCDIR}/$ME" "${MANDIR}/man8" "${BASHCOMPDIR}" "${CACHEDIR}/$ME"
 
 # copy files
 install_dir -m 0664 doc/*.8 "${MANDIR}/man8"
@@ -217,7 +221,7 @@ if ! [[ $NOACT ]]; then
 	printf "Creating \`./${ME}-install.log' - Will need this for uninstallation!\n"
 	(set +C; printf '#!/usr/bin/env bash\n\n' > ./${ME}-install.log)
 	printf "# install arguments: %s\n\n" "${arr_args[*]}" >> ./${ME}-install.log
-	for var in PREFIX BASHCOMPDIR BINDIR DATAROOTDIR DOCDIR MANDIR SYSCONFDIR; do
+	for var in PREFIX BASHCOMPDIR BINDIR CACHEDIR DATAROOTDIR DOCDIR MANDIR SYSCONFDIR; do
 		declare -p "$var" >> ./${ME}-install.log
 	done
 fi
