@@ -15,12 +15,12 @@
             <contrib>Thanks go to the open source community.</contrib>
         </author>
         <productname>ipset_list</productname>
-        <productnumber>3.6</productnumber>
+        <productnumber>3.7</productnumber>
     </info>
     <refmeta>
         <refentrytitle>ipset_list manual</refentrytitle>
         <manvolnum>8</manvolnum>
-        <refmiscinfo class="manual">ipset_list 3.6</refmiscinfo>
+        <refmiscinfo class="manual">ipset_list 3.7</refmiscinfo>
     </refmeta>
     <refnamediv>
         <refdescriptor>ipset set listing wrapper script</refdescriptor>
