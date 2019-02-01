@@ -307,7 +307,7 @@
 
 # all the above variables can be loaded from a configuration file
 # overwritting the values defined above.
-config_file="/etc/default/ipset_list.conf"
+config_file="/etc/ipset_list/ipset_list.conf"
 
 # -----------------------------------------------------------------
 # DO NOT MODIFY ANYTHING BEYOND THIS LINE!
