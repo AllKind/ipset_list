@@ -330,7 +330,7 @@ umask 077
 
 # variables
 export LC_ALL=C
-readonly version=3.7
+readonly version=3.7.1
 readonly me="${0//*\//}"
 readonly oIFS="$IFS"
 declare ips_version="" str_search="" str_xclude="" opt
