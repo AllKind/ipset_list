@@ -129,7 +129,7 @@ else
 fi
 
 # start deletion
-for f in SYSCONFDIR DOCDIR CHACHEDIR; do
+for f in SYSCONFDIR DOCDIR CACHEDIR; do
 	rem_dir "${!f}/$ME"
 done
 
